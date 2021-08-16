@@ -7,7 +7,7 @@ Game::Game(Input* _input)
 	phyEng = new PhysicsEngine();
 
 	//scene = new Scene(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, phyEng);
-	sceneA = new SceneA(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, phyEng);
+	sceneB = new SceneB(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, phyEng);
 }
 
 void Game::Update(float deltaTime)
@@ -18,11 +18,11 @@ void Game::Update(float deltaTime)
 	phyEng->Solve(deltaTime);
 
 	//scene->Update(deltaTime);
-	sceneA->Update(deltaTime);
+	sceneB->Update(deltaTime);
 }
 
 void Game::Render(float deltaTime)
 {
 	//scene->Render();
-	sceneA->Render();
+	sceneB->Render();
 }

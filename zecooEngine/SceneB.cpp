@@ -1,6 +1,6 @@
-#include "SceneA.h"
+#include "SceneB.h"
 
-SceneA::SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
+SceneB::SceneB(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 {
 	phyEng = physicsEngine;
 
@@ -13,13 +13,6 @@ SceneA::SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	floorTexture->SetSamplerObjectParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	floorTexture->SetSamplerObjectParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
 	floorTexture->SetSamplerObjectParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	cubeTexture = new Texture();
-	cubeTexture->Load("resources\\textures\\container.jpg");
-	cubeTexture->SetSamplerObjectParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	cubeTexture->SetSamplerObjectParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	cubeTexture->SetSamplerObjectParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
-	cubeTexture->SetSamplerObjectParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	camera = new Camera(SCR_WIDTH, SCR_HEIGHT);
 	camera->SetPerspectiveProjectionMatrix(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.0f, 5000.0f);
@@ -42,32 +35,25 @@ SceneA::SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	cubeMaterial->linkLight(dlight);
 	cubeMaterial->linkCamera(camera);
 
-	plane = new Plane(floorMaterial, floorTexture);
+	plane = new Plane(floorMaterial, NULL);
 	plane->transform->scale(glm::vec3(5.0f, 5.0f, 5.0f));
 
-	for (size_t i = 0; i < 10; i++)
-	{
-		cube = new Cube(cubeMaterial, cubeTexture);
-		cube->transform->translate(glm::vec3(0.0f, 0.5f + i, 0.0f));
-		cubes[i] = cube;
-	}
+	cube = new Cube(cubeMaterial, NULL);
+	cube->transform->translate(glm::vec3(0.0f, 0.5f, 0.0f));
 }
 
-void SceneA::Update(float deltaTime)
+void SceneB::Update(float deltaTime)
 {
 	camera->RotateViewPoint(800, glfwGetTime());
 	projection = camera->GetPerspectiveProjectionMatrix();
 }
 
-void SceneA::Render()
+void SceneB::Render()
 {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	plane->render();
+	cube->render();
 	
-	for (size_t i = 0; i < 10; i++)
-	{
-		cubes[i]->render();
-	}
 }

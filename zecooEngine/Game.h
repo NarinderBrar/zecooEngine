@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Scene.h"
-#include "SceneA.h"
+#include "SceneB.h"
 
 #include <iostream>
 
@@ -16,8 +15,8 @@ class Game
 {
 public:
 	Input* input;
-	Scene* scene;
-	SceneA* sceneA;
+
+	SceneB* sceneB;
 	PhysicsEngine* phyEng;
 
 	Game(Input* _input);

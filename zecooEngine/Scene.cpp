@@ -8,14 +8,14 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	glEnable(GL_DEPTH_TEST);
 
 	texture = new Texture();
-	texture->Load("resources\\textures\\container.jpg", true);
+	texture->Load("resources\\textures\\container.jpg");
 	texture->SetSamplerObjectParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	texture->SetSamplerObjectParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	texture->SetSamplerObjectParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
 	texture->SetSamplerObjectParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	texture1 = new Texture();
-	texture1->Load("resources\\textures\\marble.jpg", true);
+	texture1->Load("resources\\textures\\marble.jpg");
 	texture1->SetSamplerObjectParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	texture1->SetSamplerObjectParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	texture1->SetSamplerObjectParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
