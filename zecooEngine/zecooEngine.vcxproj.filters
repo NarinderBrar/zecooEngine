@@ -13,5 +13,325 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Resource Files\shader">
+      <UniqueIdentifier>{1d2ab552-d1d5-472c-926d-620878ed88eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\textures">
+      <UniqueIdentifier>{be4bcb7a-701c-4d35-81bd-915bbd091aca}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Cube.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CubeMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MatrixStack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Plane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlaneMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TestMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TestModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Triangle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TriangleMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBufferObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="glad.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Cube.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MatrixStack.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Plane.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PlaneMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TestMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TestModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Triangle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TriangleMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexBufferObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\shader\2.1.basic_lighting.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\2.1.basic_lighting.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\2.1.light_cube.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\2.1.light_cube.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\2.2.basic_lighting.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\2.2.basic_lighting.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\2.2.light_cube.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\2.2.light_cube.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\3.1.light_cube.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\3.1.light_cube.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\3.1.materials.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\3.1.materials.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\3.3.shader.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\3.3.shader.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\4.1.texture.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\4.1.texture.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\4.3.texture.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\4.3.texture.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\4.5.texture.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\4.5.texture.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\5.1.transform.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\5.1.transform.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\5.2.transform.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\5.2.transform.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\6.1.coordinate_systems.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\6.1.coordinate_systems.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\6.hdr.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\6.hdr.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\6.light_cube.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\6.light_cube.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\6.lighting.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\6.lighting.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\6.multiple_lights.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\6.multiple_lights.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\7.1.camera.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\7.1.camera.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\basicTextureLight.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\basicTextureLight.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\mainShader.frag">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\mainShader.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\mainShader.vert">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\mainShader.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\testShader.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\testShader.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\textShader.frag">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\textShader.fs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\textShader.vert">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+    <None Include="resources\shader\textShader.vs">
+      <Filter>Resource Files\shader</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="zecooEngine.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

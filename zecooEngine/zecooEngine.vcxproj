@@ -17,7 +17,6 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -53,25 +52,23 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
-  <ImportGroup Label="Shared" >
+  <ImportGroup Label="Shared">
   </ImportGroup>
-    <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    </ImportGroup>
-    <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    </ImportGroup>
-    <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    </ImportGroup>
-    <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    </ImportGroup>
-
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -85,7 +82,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
-
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -120,10 +116,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)\zecooEngine\Vendor;$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\include\GLFW;$(SolutionDir)\zecooEngine\\assimp;$(SolutionDir)\zecooEngine\Vendor\glad\include;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\build\src\Debug;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;FreeImage.lib;BulletDynamics_Debug.lib;BulletCollision_Debug.lib;LinearMath_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -142,8 +142,116 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-
-  <ItemGroup></ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="Cube.h" />
+    <ClInclude Include="CubeMesh.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="Light.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="MatrixStack.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="PhysicsEngine.h" />
+    <ClInclude Include="Plane.h" />
+    <ClInclude Include="PlaneMesh.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneA.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="stb_image.h" />
+    <ClInclude Include="TestMesh.h" />
+    <ClInclude Include="TestModel.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="Transform.h" />
+    <ClInclude Include="Triangle.h" />
+    <ClInclude Include="TriangleMesh.h" />
+    <ClInclude Include="VertexBufferObject.h" />
+    <ClInclude Include="Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Cube.cpp" />
+    <ClCompile Include="CubeMesh.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="glad.c" />
+    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="Light.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="MatrixStack.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="PhysicsEngine.cpp" />
+    <ClCompile Include="Plane.cpp" />
+    <ClCompile Include="PlaneMesh.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneA.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="TestMesh.cpp" />
+    <ClCompile Include="TestModel.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="Triangle.cpp" />
+    <ClCompile Include="TriangleMesh.cpp" />
+    <ClCompile Include="VertexBufferObject.cpp" />
+    <ClCompile Include="Window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\shader\2.1.basic_lighting.fs" />
+    <None Include="resources\shader\2.1.basic_lighting.vs" />
+    <None Include="resources\shader\2.1.light_cube.fs" />
+    <None Include="resources\shader\2.1.light_cube.vs" />
+    <None Include="resources\shader\2.2.basic_lighting.fs" />
+    <None Include="resources\shader\2.2.basic_lighting.vs" />
+    <None Include="resources\shader\2.2.light_cube.fs" />
+    <None Include="resources\shader\2.2.light_cube.vs" />
+    <None Include="resources\shader\3.1.light_cube.fs" />
+    <None Include="resources\shader\3.1.light_cube.vs" />
+    <None Include="resources\shader\3.1.materials.fs" />
+    <None Include="resources\shader\3.1.materials.vs" />
+    <None Include="resources\shader\3.3.shader.fs" />
+    <None Include="resources\shader\3.3.shader.vs" />
+    <None Include="resources\shader\4.1.texture.fs" />
+    <None Include="resources\shader\4.1.texture.vs" />
+    <None Include="resources\shader\4.3.texture.fs" />
+    <None Include="resources\shader\4.3.texture.vs" />
+    <None Include="resources\shader\4.5.texture.fs" />
+    <None Include="resources\shader\4.5.texture.vs" />
+    <None Include="resources\shader\5.1.transform.fs" />
+    <None Include="resources\shader\5.1.transform.vs" />
+    <None Include="resources\shader\5.2.transform.fs" />
+    <None Include="resources\shader\5.2.transform.vs" />
+    <None Include="resources\shader\6.1.coordinate_systems.fs" />
+    <None Include="resources\shader\6.1.coordinate_systems.vs" />
+    <None Include="resources\shader\6.hdr.fs" />
+    <None Include="resources\shader\6.hdr.vs" />
+    <None Include="resources\shader\6.lighting.fs" />
+    <None Include="resources\shader\6.lighting.vs" />
+    <None Include="resources\shader\6.light_cube.fs" />
+    <None Include="resources\shader\6.light_cube.vs" />
+    <None Include="resources\shader\6.multiple_lights.fs" />
+    <None Include="resources\shader\6.multiple_lights.vs" />
+    <None Include="resources\shader\7.1.camera.fs" />
+    <None Include="resources\shader\7.1.camera.vs" />
+    <None Include="resources\shader\basicTextureLight.fs" />
+    <None Include="resources\shader\basicTextureLight.vs" />
+    <None Include="resources\shader\mainShader.frag" />
+    <None Include="resources\shader\mainShader.fs" />
+    <None Include="resources\shader\mainShader.vert" />
+    <None Include="resources\shader\mainShader.vs" />
+    <None Include="resources\shader\testShader.fs" />
+    <None Include="resources\shader\testShader.vs" />
+    <None Include="resources\shader\textShader.frag" />
+    <None Include="resources\shader\textShader.fs" />
+    <None Include="resources\shader\textShader.vert" />
+    <None Include="resources\shader\textShader.vs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="zecooEngine.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
