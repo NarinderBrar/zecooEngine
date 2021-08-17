@@ -8,6 +8,8 @@ Material::Material(Shader* _shader)
 	shader->setInt("material.diffuse", 0);
 	shader->setInt("material.specular", 1);
 	shader->setFloat("material.shininess", 32.0f);
+
+	shader->setVec4("color", glm::vec4(1, 1, 1, 1));
 }
 
 void Material::updateLight(DirectionalLight* light)

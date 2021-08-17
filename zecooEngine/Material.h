@@ -12,9 +12,12 @@ class Material
 public:
 	Shader* shader;
 	Material(Shader* shader);
+	
+	
 	int directionalLightId = 0;
 	int pointLightId = 0;
 	int spotLightId = 0;
+
 	void linkLight(DirectionalLight* light);
 	void linkLight(PointLight* light);
 	void linkLight(SpotLight* light);

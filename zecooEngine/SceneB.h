@@ -19,22 +19,9 @@
 class SceneB
 {
 public:
-	Texture* floorTexture;
-
-	Shader* floorShader;
-	Shader* cubeShader;
-
+	Shader* shader;
 	DirectionalLight* dlight;
-
-	PointLight* plight0;
-	PointLight* plight1;
-	PointLight* plight2;
-	PointLight* plight3;
-
-	SpotLight* slight;
-
-	Material* floorMaterial;
-	Material* cubeMaterial;
+	Material* material;
 
 	Plane* plane;
 	Cube* cube;
