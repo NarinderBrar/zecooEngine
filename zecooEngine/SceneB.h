@@ -25,11 +25,11 @@ public:
 
 	Plane* plane;
 	Cube* cube;
+	Cube* cubeChild;
 
 	PhysicsEngine* phyEng;
 
 	Camera* camera;
-
 	glm::mat4 projection;
 
 	SceneB(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);

@@ -12,7 +12,7 @@ class Transform
 		Transform();
 
 		void position(glm::vec3 vec);
-	
+		void setParent(Transform* parent);
 		void translate(glm::vec3 vec);
 		void rotate(float angle, glm::vec3 axis);
 		void scale(glm::vec3 vec);
