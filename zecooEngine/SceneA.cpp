@@ -34,11 +34,12 @@ SceneA::SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	dlight->diffuse = glm::vec3(1.0, 1.0, 1.0);
 	dlight->ambient = glm::vec3(0.5, 0.5, 0.5);
 
-	floorMaterial = new Material(cubeShader);
+	glm::vec4 color = glm::vec4(0.5f, 0.5f, 0.5f, 0.5f);
+	floorMaterial = new Material(cubeShader, color);
 	floorMaterial->linkLight(dlight);
 	floorMaterial->linkCamera(camera);
 
-	cubeMaterial = new Material(cubeShader);
+	cubeMaterial = new Material(cubeShader, color);
 	cubeMaterial->linkLight(dlight);
 	cubeMaterial->linkCamera(camera);
 

@@ -105,6 +105,9 @@
     <ClInclude Include="SceneB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SceneC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -186,6 +189,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SceneB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

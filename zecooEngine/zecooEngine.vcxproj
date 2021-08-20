@@ -160,6 +160,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneA.h" />
     <ClInclude Include="SceneB.h" />
+    <ClInclude Include="SceneC.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="stb_image.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneA.cpp" />
     <ClCompile Include="SceneB.cpp" />
+    <ClCompile Include="SceneC.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="TestMesh.cpp" />

@@ -7,13 +7,20 @@
 
 #include<list>  
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include <glm/gtx/string_cast.hpp>
+
 class Material
 {
 public:
+	//glm::vec3 color = glm::vec3(0.5, 0.5, 0.5);
+
 	Shader* shader;
-	Material(Shader* shader);
-	
-	
+	Material(Shader* shader, glm::vec4 color);
+
 	int directionalLightId = 0;
 	int pointLightId = 0;
 	int spotLightId = 0;

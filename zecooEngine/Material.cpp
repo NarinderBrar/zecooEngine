@@ -1,6 +1,6 @@
 #include "Material.h"
 
-Material::Material(Shader* _shader)
+Material::Material(Shader* _shader, glm::vec4 color)
 {
 	shader = _shader;
 
@@ -9,7 +9,7 @@ Material::Material(Shader* _shader)
 	shader->setInt("material.specular", 1);
 	shader->setFloat("material.shininess", 32.0f);
 
-	shader->setVec4("color", glm::vec4(1, 1, 1, 1));
+	shader->setVec4("color", color);
 }
 
 void Material::updateLight(DirectionalLight* light)

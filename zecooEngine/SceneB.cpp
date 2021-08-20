@@ -20,7 +20,8 @@ SceneB::SceneB(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	dlight->diffuse = glm::vec3(1.0, 1.0, 1.0);
 	dlight->ambient = glm::vec3(0.5, 0.5, 0.5);
 
-	material = new Material(shader);
+	glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	material = new Material(shader, color);
 	material->linkLight(dlight);
 	material->linkCamera(camera);
 
