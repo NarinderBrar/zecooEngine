@@ -7,6 +7,7 @@
 
 #include "Plane.h"
 #include "Cube.h"
+#include "Triangle.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -29,6 +30,8 @@ public:
 	Plane* plane;
 	Cube* cube;
 	Cube* cubes[2];
+
+	Triangle* triangle;
 
 	PhysicsEngine* phyEng;
 

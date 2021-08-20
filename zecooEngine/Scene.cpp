@@ -43,6 +43,10 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	cube->transform->translate(glm::vec3(0.0f, 2.0f, 0.0f));
 	cube->transform->rotate(45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	cubes[1] = cube;
+
+	triangle = new Triangle(material2, NULL);
+	triangle->transform->scale(glm::vec3(2.0f, 2.0f, 2.0f));
+	triangle->transform->translate(glm::vec3(0.0f, 3.0f, 0.0f));
 }
 
 void Scene::Update(float deltaTime)
@@ -57,6 +61,7 @@ void Scene::Render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	plane->render();
+	triangle->render();
 
 	//cube->render();
 
