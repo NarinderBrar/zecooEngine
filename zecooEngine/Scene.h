@@ -29,9 +29,10 @@ public:
 
 	Plane* plane;
 	Cube* cube;
-	Cube* cubes[2];
-
-	Triangle* triangle;
+	Cube* cubeA;
+	Cube* cubeB;
+	int count = 30;
+	Cube* cubes[30];
 
 	PhysicsEngine* phyEng;
 

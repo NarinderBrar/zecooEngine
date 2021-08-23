@@ -29,24 +29,39 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	plane = new Plane(material, NULL);
 	plane->transform->scale(glm::vec3(5.0f, 5.0f, 5.0f));
 
-	cube = new Cube(material, NULL);
-	cube->transform->position(glm::vec3(0.0f, 3.0f, 0.0f));
-	cube->transform->scale(glm::vec3(5.0f, 0.2f, 2.0f));
-	cubes[0] = cube;
-
 	color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	material2 = new Material(shader2, color);
 	material2->linkLight(dlight);
 	material2->linkCamera(camera);
 
-	cube = new Cube(material2, NULL);
-	cube->transform->translate(glm::vec3(0.0f, 2.0f, 0.0f));
-	cube->transform->rotate(45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-	cubes[1] = cube;
+	int k = 0;
+	for (int i = 0; i < 10; i++)
+	{
+		cube = new Cube(material2, NULL);
+		cube->transform->translate(glm::vec3(i*0.8f, i*1.0f, 0.0f));
+		cube->transform->scale(glm::vec3(1.0f, 0.2f, 5.0f));
+		cubes[k] = cube;
+		k++;
 
-	triangle = new Triangle(material2, NULL);
-	triangle->transform->scale(glm::vec3(2.0f, 2.0f, 2.0f));
-	triangle->transform->translate(glm::vec3(0.0f, 3.0f, 0.0f));
+		cube = new Cube(material2, NULL);
+		cube->transform->translate(glm::vec3(i * 0.8f, i * 1.0f + 2.5f, 2.0f));
+		cube->transform->scale(glm::vec3(0.1f, 5.0f, 0.1f));
+		cubes[k] = cube;
+		k++;
+
+		cube = new Cube(material2, NULL);
+		cube->transform->translate(glm::vec3(i * 0.8f, i * 1.0f + 2.5f, -2.0f));
+		cube->transform->scale(glm::vec3(0.1f, 5.0f, 0.1f));
+		cubes[k] = cube;
+		k++;
+	}
+
+	cubeA = new Cube(material2, NULL);
+	cubeA->transform->translate(glm::vec3(0.0f, 5.0f, 2.0f));
+	cubeA->transform->rotate(-0.8f, glm::vec3(0.0f, 0.0f, 1.0f));
+	cubeA->transform->scale(glm::vec3(0.1f, 10.0f, 0.1f));
+
+	k++;
 }
 
 void Scene::Update(float deltaTime)
@@ -61,12 +76,11 @@ void Scene::Render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	plane->render();
-	triangle->render();
 
-	//cube->render();
-
-	for (size_t i = 0; i < 2; i++)
+	for (size_t i = 0; i < count; i++)
 	{
 		cubes[i]->render();
 	}
+
+	cubeA->render();
 }
