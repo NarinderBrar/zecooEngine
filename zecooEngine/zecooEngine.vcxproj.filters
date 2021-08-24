@@ -111,6 +111,9 @@
     <ClInclude Include="TriangleIndexMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SceneTriangle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -200,12 +203,15 @@
     <ClCompile Include="TriangleIndexMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SceneTriangle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="resources\shader\2.1.basic_lighting.fs">
+    <None Include="resources\shader\SceneTriangle.fs">
       <Filter>Resource Files\shader</Filter>
     </None>
-    <None Include="resources\shader\2.1.basic_lighting.vs">
+    <None Include="resources\shader\SceneTriangle.vs">
       <Filter>Resource Files\shader</Filter>
     </None>
     <None Include="resources\shader\2.1.light_cube.fs">

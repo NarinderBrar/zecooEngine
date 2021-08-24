@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 #include "Shader.h"
 #include "Texture.h"
 #include "Camera.h"
@@ -17,36 +18,20 @@
 
 #include "PhysicsEngine.h"
 
-class Scene
+class SceneTriangle
 {
 public:
 	Shader* shader;
-	Shader* shader2;
 
 	DirectionalLight* dlight;
 	Material* material;
-	Material* material2;
-
-	Plane* plane;
-
-	Cube* cube;
-	Cube* cubeA;
-	Cube* cubeB;
 
 	Triangle* triangle;
 
-	int count = 30;
-	Cube* cubes[30];
-
 	PhysicsEngine* phyEng;
 
-	Camera* camera;
-	glm::mat4 projection;
-
-	Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);
+	SceneTriangle(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);
 
 	void Update(float deltaTime);
-
 	void Render();
-
 };

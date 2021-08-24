@@ -10,8 +10,8 @@
 class Triangle:public Model
 {
 private:
-	//TriangleMesh* triangleMesh;
-	TriangleIndexMesh* triangleIndexMesh;
+	TriangleMesh* triangleMesh;
+	//TriangleIndexMesh* triangleIndexMesh;
 
 public:
 	Triangle(Material* material, Texture* texture);

@@ -9,7 +9,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 
 	camera = new Camera(SCR_WIDTH, SCR_HEIGHT);
 	camera->SetPerspectiveProjectionMatrix(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.0f, 5000.0f);
-	glm::vec3 camPos = glm::vec3(0.0, 300.0, 800.0);
+	glm::vec3 camPos = glm::vec3(0.0, 300.0, -1500.0);
 	glm::vec3 camView = glm::vec3(0.0, 3.0, 0.0);
 	glm::vec3 camUp = glm::vec3(0.0, 1.0, 0.0);
 	camera->Set(camPos, camView, camUp);
@@ -25,6 +25,8 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	material = new Material(shader, color);
 	material->linkLight(dlight);
 	material->linkCamera(camera);
+
+	triangle = new Triangle(material,NULL);
 
 	plane = new Plane(material, NULL);
 	plane->transform->scale(glm::vec3(5.0f, 5.0f, 5.0f));
@@ -66,7 +68,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 
 void Scene::Update(float deltaTime)
 {
-	camera->RotateViewPoint(800, glfwGetTime());
+	//camera->RotateViewPoint(900, glfwGetTime());
 	projection = camera->GetPerspectiveProjectionMatrix();
 }
 
@@ -83,4 +85,5 @@ void Scene::Render()
 	}
 
 	cubeA->render();
+	triangle->render();
 }

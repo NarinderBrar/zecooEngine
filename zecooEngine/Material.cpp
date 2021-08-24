@@ -84,17 +84,27 @@ void Material::linkCamera(Camera* _camera)
 
 void Material::update()
 {
-	directionalLightId = 0;
-	for (std::list <DirectionalLight*> ::iterator it = directionalLights.begin(); it != directionalLights.end(); ++it)
-		updateLight(*it);
-	
-	pointLightId = 0;
-	for (std::list <PointLight*> ::iterator pl = pointLights.begin(); pl != pointLights.end(); ++pl)
-		updateLight(*pl);
-		
-	spotLightId = 0;
-	for (std::list <SpotLight*> ::iterator sl = spotLighs.begin(); sl != spotLighs.end(); ++sl)
-		updateLight(*sl);
+	if (directionalLights.size() > 0)
+	{
+		directionalLightId = 0;
+		for (std::list <DirectionalLight*> ::iterator it = directionalLights.begin(); it != directionalLights.end(); ++it)
+			updateLight(*it);
+	}
+	if (pointLights.size() > 0 )
+	{
+		pointLightId = 0;
+		for (std::list <PointLight*> ::iterator pl = pointLights.begin(); pl != pointLights.end(); ++pl)
+			updateLight(*pl);
+	}
+	if (spotLighs.size() > 0)
+	{
+		spotLightId = 0;
+		for (std::list <SpotLight*> ::iterator sl = spotLighs.begin(); sl != spotLighs.end(); ++sl)
+			updateLight(*sl);
+	}
+
+	if (camera == NULL)
+		return;
 
 	updateCamera(camera);
 }
