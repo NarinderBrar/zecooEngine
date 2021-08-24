@@ -16,6 +16,7 @@ class Game
 {
 public:
 	Input* input;
+
 	Scene* scene;
 	SceneTriangle* sceneTriangle;
 

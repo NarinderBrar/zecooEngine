@@ -1,4 +1,5 @@
 #include "TriangleMesh.h"
+#include "math.h"
 
 TriangleMesh::TriangleMesh ()
 {
