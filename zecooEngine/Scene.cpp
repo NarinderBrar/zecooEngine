@@ -68,7 +68,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 
 void Scene::Update(float deltaTime)
 {
-	//camera->RotateViewPoint(900, glfwGetTime());
+	camera->RotateViewPoint(900, glfwGetTime());
 	projection = camera->GetPerspectiveProjectionMatrix();
 }
 

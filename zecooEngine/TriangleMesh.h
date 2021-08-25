@@ -9,17 +9,22 @@
 
 #include <glm/gtx/string_cast.hpp>
 
+#include <iostream>
+
+using namespace std; 
 class TriangleMesh
 {
     private:
-        float vertices[18] = {
+       float vertices[18] = {
            -0.1f, -0.1f, 0.0f, //left
             0.1f, -0.1f, 0.0f,  //right
             0.0f,  0.1f, 0.0f,   //top
            -0.5f, -0.1f, 0.0f, //left
            -0.3f, -0.1f, 0.0f,  //right
-            -0.4f,  0.1f, 0.0f,   //top
+           -0.4f,  0.1f, 0.0f,   //top
         };
+
+        //float vertices[300];
 
         unsigned int VBO;
         unsigned int VAO;

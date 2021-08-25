@@ -3,6 +3,32 @@
 
 TriangleMesh::TriangleMesh ()
 {
+    /*float angle = 0;
+    float M_PI = 3.14;
+    float xo = 0;
+    float yo = 0;
+    float rad = 0.5;
+    
+    int k = 0;
+
+    cout << "hi";
+    for (int i = 0; i < 100; i++) 
+    {
+        // Change the angle
+        angle = i * 2 * (M_PI / 100);
+
+        vertices[k] = (xo + (cos(angle) * rad));
+        vertices[k+1] = (yo + (sin(angle) * rad));
+        vertices[k+2] = 0.0f;
+
+        cout << i;
+        //cout << angle;
+        //cout << k;
+        cout << "\n";
+
+        k+=3;
+    }*/
+
     //glGenBuffers returns n buffer object names in buffers.
     glGenBuffers(1, &VBO);
     

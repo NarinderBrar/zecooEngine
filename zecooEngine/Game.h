@@ -20,7 +20,6 @@ public:
 
 	//Scene* scene;
 	//SceneBasic* sceneBasic;
-
 	SceneTriangle* sceneTriangle;
 
 	PhysicsEngine* phyEng;
