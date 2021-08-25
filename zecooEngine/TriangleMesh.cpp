@@ -3,8 +3,6 @@
 
 TriangleMesh::TriangleMesh ()
 {
-    DrawLoop(0, 0, 20, 0.1, 0.5);
-
     //glGenBuffers returns n buffer object names in buffers.
     glGenBuffers(1, &VBO);
     
@@ -19,23 +17,12 @@ TriangleMesh::TriangleMesh ()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     //Copy vertex data into the buffer's memory
-    glBufferData(GL_ARRAY_BUFFER, sizeof(verticies), verticies, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     //Define an array of generic vertex attribute data
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-}
-
-void TriangleMesh::DrawLoop(float centerX, float centerY, float sides, float innerRadius, float outerRadius) 
-{    
-    for (int i = 0; i <= sides; i += 4) 
-    {
-        verticies[i + 0] = centerX + (sin(glm::radians(360.0f * (i / sides))) * innerRadius);
-        verticies[i + 1] = centerY - (cos(glm::radians(360.0f * (i / sides))) * innerRadius);
-        verticies[i + 2] = centerX + (sin(glm::radians(360.0f * (i / sides))) * outerRadius);
-        verticies[i + 3] = centerY - (cos(glm::radians(360.0f * (i / sides))) * outerRadius);
-    }
 }
 
 
@@ -45,5 +32,5 @@ void TriangleMesh::Render()
     glBindVertexArray(VAO);
 
     //glDrawArrays — render primitives from array data
-    glDrawArrays(GL_LINE_LOOP, 0, 27);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }

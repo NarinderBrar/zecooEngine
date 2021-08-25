@@ -6,8 +6,8 @@ Game::Game(Input* _input)
 
 	phyEng = new PhysicsEngine();
 
-	sceneBasic = new SceneBasic(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, phyEng);
-	//sceneTriangle = new SceneTriangle(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, phyEng);
+	//sceneBasic = new SceneBasic(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, phyEng);
+	sceneTriangle = new SceneTriangle(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, phyEng);
 	//scene = new Scene(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, phyEng);
 }
 
@@ -18,14 +18,14 @@ void Game::Update(float deltaTime)
 
 	phyEng->Solve(deltaTime);
 	
-	//sceneTriangle->Update(deltaTime);
-	sceneBasic->Update(deltaTime);
+	sceneTriangle->Update(deltaTime);
+	//sceneBasic->Update(deltaTime);
 	//scene->Update(deltaTime);
 }
 
 void Game::Render(float deltaTime)
 {
-	//sceneTriangle->Render();
-	sceneBasic->Render();
+	sceneTriangle->Render();
+	//sceneBasic->Render();
 	//scene->Render();
 }

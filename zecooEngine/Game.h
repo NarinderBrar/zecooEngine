@@ -18,8 +18,8 @@ class Game
 public:
 	Input* input;
 
-	Scene* scene;
-	SceneBasic* sceneBasic;
+	//Scene* scene;
+	//SceneBasic* sceneBasic;
 
 	SceneTriangle* sceneTriangle;
 
