@@ -2,6 +2,7 @@
 
 #include "SceneTriangle.h"
 #include "Scene.h"
+#include "SceneBasic.h"
 
 #include <iostream>
 
@@ -18,6 +19,8 @@ public:
 	Input* input;
 
 	Scene* scene;
+	SceneBasic* sceneBasic;
+
 	SceneTriangle* sceneTriangle;
 
 	PhysicsEngine* phyEng;

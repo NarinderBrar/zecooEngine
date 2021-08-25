@@ -160,6 +160,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneA.h" />
     <ClInclude Include="SceneB.h" />
+    <ClInclude Include="SceneBasic.h" />
     <ClInclude Include="SceneC.h" />
     <ClInclude Include="SceneTriangle.h" />
     <ClInclude Include="Settings.h" />
@@ -193,6 +194,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneA.cpp" />
     <ClCompile Include="SceneB.cpp" />
+    <ClCompile Include="SceneBasic.cpp" />
     <ClCompile Include="SceneC.cpp" />
     <ClCompile Include="SceneTriangle.cpp" />
     <ClCompile Include="Settings.cpp" />
