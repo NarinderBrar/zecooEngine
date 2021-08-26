@@ -117,6 +117,12 @@
     <ClInclude Include="SceneBasic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CustomMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -210,6 +216,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SceneBasic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

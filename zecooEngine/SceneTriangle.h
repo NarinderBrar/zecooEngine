@@ -6,9 +6,7 @@
 #include "Light.h"
 #include "Material.h"
 
-#include "Plane.h"
-#include "Cube.h"
-#include "Triangle.h"
+#include "CustomModel.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -23,10 +21,10 @@ class SceneTriangle
 public:
 	Shader* shader;
 
-	DirectionalLight* dlight;
+	DirectionalLight* dlight = NULL;
 	Material* material;
 
-	Triangle* triangle;
+	CustomModel* customModel;
 
 	PhysicsEngine* phyEng;
 

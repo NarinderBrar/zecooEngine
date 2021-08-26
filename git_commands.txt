@@ -1,0 +1,20 @@
+
+git clone url
+
+
+pull changes from github
+----------------------
+git pull
+----------------------
+
+Force merge local changes
+----------------------
+git fetch
+git reset --hard HEAD
+git merge origin/master
+----------------------
+
+Checkout From Specific Commit ID
+----------------------
+git checkout commit-id
+----------------------
