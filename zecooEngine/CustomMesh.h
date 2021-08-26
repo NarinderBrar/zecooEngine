@@ -17,7 +17,7 @@ class CustomMesh
 private:
     int pointCount = 30;
     float circlePoints[90]; // pointCount*3
-    float vertices[135];// circlePoints + circlePoints/2
+    float vertices[136];// circlePoints + circlePoints/2
 
     unsigned int VBO;
     unsigned int VAO;

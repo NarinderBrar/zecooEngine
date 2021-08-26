@@ -30,7 +30,8 @@ CustomMesh::CustomMesh()
     k = 0;
     int p = 0;
 
-    for (int i = 0; i < 133; i++)
+    //i must be increment by 3 not 1
+    for (int i = 0; i < 133; i+=3)
     {
         vertices[i] = 0;
         vertices[i+1] = 0;
@@ -47,13 +48,6 @@ CustomMesh::CustomMesh()
         p++;
         if (p == 3)
             p = 0;
-
-        cout << " x:";
-        cout << vertices[i];
-        cout << " y:";
-        cout << vertices[i+1];
-        cout << " z:";
-        cout << vertices[i+2] << endl;
     }
 
     //glGenBuffers returns n buffer object names in buffers.
