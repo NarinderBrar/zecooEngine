@@ -8,6 +8,7 @@
 #include "Plane.h"
 #include "Cube.h"
 #include "Triangle.h"
+#include "CustomModel.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -32,6 +33,8 @@ public:
 	Cube* cube;
 	Cube* cubeA;
 	Cube* cubeB;
+
+	CustomModel* customModel;
 
 	Triangle* triangle;
 

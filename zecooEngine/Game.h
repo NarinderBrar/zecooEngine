@@ -18,9 +18,9 @@ class Game
 public:
 	Input* input;
 
-	//Scene* scene;
 	//SceneBasic* sceneBasic;
-	SceneTriangle* sceneTriangle;
+	//SceneTriangle* sceneTriangle;
+	Scene* scene;
 
 	PhysicsEngine* phyEng;
 

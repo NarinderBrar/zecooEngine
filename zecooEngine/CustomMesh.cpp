@@ -4,25 +4,17 @@
 CustomMesh::CustomMesh()
 {
     float angle = 0;
-    float PI = 3.14;
-
-    float xo = 0;
-    float yo = 0;
-
-    float rad = 0.5;
 
     int k = 0;
     for (int i = 0; i < pointCount; i++)
     {
+        //divide the circle into angles acc to given points
         angle = 2.0 * i * (PI / pointCount);
 
-        //circlePoints[0] = x
-        //circlePoints[1] = y
-        //circlePoints[2] = z
-
-        circlePoints[k] = cos(angle) * rad;
-        circlePoints[k+1] = sin(angle) * rad;
-        circlePoints[k+2] = 0.0;
+        //defining vertex points accorcing to cos and sin angles
+        circlePoints[k] =   xo + cos(angle) * rad;
+        circlePoints[k+1] = yo + sin(angle) * rad;
+        circlePoints[k+2] = zo;
 
         k += 3;
     }
@@ -30,13 +22,18 @@ CustomMesh::CustomMesh()
     k = 0;
     int p = 0;
 
-    //i must be increment by 3 not 1
-    for (int i = 0; i < 133; i+=3)
+    for (size_t i = 0; i < (totalVertices-2); i+=3)
     {
-        vertices[i] = 0;
-        vertices[i+1] = 0;
-        vertices[i+2] = 0;
+        //we need to set all vertices to zero, 
+        //setting it at cicle center
+        vertices[i] = xo;
+        vertices[i+1] = yo;
+        vertices[i+2] = 2;
+    }
 
+    for (int i = 0; i < (totalVertices - 3); i+=3)
+    {
+        //we have used p to skip one value, to keep it at zero or given offset
         if (p != 0)
         {
             vertices[i] = circlePoints[k];
@@ -46,6 +43,8 @@ CustomMesh::CustomMesh()
         }
 
         p++;
+
+        //reset the p after every 2 values
         if (p == 3)
             p = 0;
     }
@@ -79,5 +78,5 @@ void CustomMesh::Render()
     glBindVertexArray(VAO);
 
     //glDrawArrays — render primitives from array data
-    glDrawArrays(GL_TRIANGLES, 0, 45);
+    glDrawArrays(GL_TRIANGLES, 0, (totalVertices/3));
 }

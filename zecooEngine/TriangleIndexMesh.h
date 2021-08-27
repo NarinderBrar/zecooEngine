@@ -6,16 +6,18 @@
 class TriangleIndexMesh
 {
 private:
-    float vertices[9] =
+    float vertices[12] =
     {
-        0.0f,  0.5f, 0.0f,   //top
-      - 0.5f, -0.5f, 0.0f, //left
-        0.5f, -0.5f, 0.0f,  //right
-        //0.5f, 0.5f, 0.0f  //extra
+        0.0f,  0.5f, 0.0f,   //top //0
+      - 0.5f, -0.5f, 0.0f, //left //1
+        0.5f, -0.5f, 0.0f,  //right//2
+        0.5f, 0.5f, 0.0f  //extra
     };
-    unsigned int indices[3] = {
+
+    unsigned int indices[6] = 
+    {
         0, 1, 2, // first triangle
-        //0, 2, 3
+        0, 2, 3 // second triangle
     };
 
     unsigned int VBO;

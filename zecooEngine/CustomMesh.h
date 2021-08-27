@@ -15,9 +15,19 @@ using namespace std;
 class CustomMesh
 {
 private:
+    float PI = 3.14;
+
+    //offset values
+    float xo = 0.0;
+    float yo = 0.0;
+    float zo = 0.0;
+
+    float rad = 1.0;
+
     int pointCount = 30;
-    float circlePoints[90]; // pointCount*3
-    float vertices[136];// circlePoints + circlePoints/2
+    float circlePoints[90];// pointCount*3
+    int totalVertices = 136;
+    float vertices[136];// circlePoints + circlePoints/2 + 1
 
     unsigned int VBO;
     unsigned int VAO;
