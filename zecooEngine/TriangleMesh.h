@@ -10,8 +10,8 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include <iostream>
+using namespace std;
 
-using namespace std; 
 class TriangleMesh
 {
     private:

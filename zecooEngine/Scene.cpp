@@ -28,7 +28,9 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 
 	//customModel = new CustomModel(material, NULL);
 
-	triangle = new Triangle(material, NULL);
+	//triangle = new Triangle(material, NULL);
+
+	pyramid = new Pyramid(material, NULL);
 
 	/*plane = new Plane(material, NULL);
 	plane->transform->scale(glm::vec3(5.0f, 5.0f, 5.0f));
@@ -88,5 +90,7 @@ void Scene::Render()
 	}
 
 	cubeA->render();*/
-	triangle->render();
+	//triangle->render();
+	pyramid->render();
+
 }

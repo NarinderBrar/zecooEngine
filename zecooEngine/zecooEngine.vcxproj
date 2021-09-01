@@ -158,6 +158,8 @@
     <ClInclude Include="PhysicsEngine.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="PlaneMesh.h" />
+    <ClInclude Include="Pyramid.h" />
+    <ClInclude Include="PyramidMesh.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneA.h" />
@@ -195,6 +197,8 @@
     <ClCompile Include="PhysicsEngine.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="PlaneMesh.cpp" />
+    <ClCompile Include="Pyramid.cpp" />
+    <ClCompile Include="PyramidMesh.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneA.cpp" />
     <ClCompile Include="SceneB.cpp" />
