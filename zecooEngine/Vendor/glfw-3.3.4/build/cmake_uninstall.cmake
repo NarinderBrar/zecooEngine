@@ -1,9 +1,9 @@
 
-if (NOT EXISTS "D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/install_manifest.txt")
-  message(FATAL_ERROR "Cannot find install manifest: \"D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/install_manifest.txt\"")
+if (NOT EXISTS "E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/install_manifest.txt")
+  message(FATAL_ERROR "Cannot find install manifest: \"E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/install_manifest.txt\"")
 endif()
 
-file(READ "D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/install_manifest.txt" files)
+file(READ "E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/install_manifest.txt" files)
 string(REGEX REPLACE "\n" ";" files "${files}")
 
 foreach (file ${files})

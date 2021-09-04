@@ -22,8 +22,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{0219AB74-7EE9-30FD-9084-D5166E01DC54}</ProjectGuid>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <ProjectGuid>{E42D32D1-3C9A-3204-B323-80F86371DC58}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
     <Keyword>Win32Proj</Keyword>
     <Platform>x64</Platform>
     <ProjectName>icon</ProjectName>
@@ -59,25 +59,25 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\build\tests\Debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\build\tests\Debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">icon.dir\Debug\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">icon</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\build\tests\Release\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\build\tests\Release\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">icon.dir\Release\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">icon</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\build\tests\MinSizeRel\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\build\tests\MinSizeRel\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">icon.dir\MinSizeRel\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">icon</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\build\tests\RelWithDebInfo\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\build\tests\RelWithDebInfo\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">icon.dir\RelWithDebInfo\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">icon</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.exe</TargetExt>
@@ -86,7 +86,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\deps;D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\deps;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -103,10 +103,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\deps;D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\deps;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\deps;D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\deps;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -120,8 +120,8 @@
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/tests/Debug/icon.lib</ImportLibrary>
-      <ProgramDataBaseFile>D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/tests/Debug/icon.pdb</ProgramDataBaseFile>
+      <ImportLibrary>E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/tests/Debug/icon.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/tests/Debug/icon.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -130,7 +130,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\deps;D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\deps;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ExceptionHandling>
       </ExceptionHandling>
@@ -147,10 +147,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\deps;D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\deps;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\deps;D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\deps;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -164,8 +164,8 @@
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/tests/Release/icon.lib</ImportLibrary>
-      <ProgramDataBaseFile>D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/tests/Release/icon.pdb</ProgramDataBaseFile>
+      <ImportLibrary>E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/tests/Release/icon.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/tests/Release/icon.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -174,7 +174,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\deps;D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\deps;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ExceptionHandling>
       </ExceptionHandling>
@@ -191,10 +191,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\deps;D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\deps;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\deps;D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\deps;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -208,8 +208,8 @@
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/tests/MinSizeRel/icon.lib</ImportLibrary>
-      <ProgramDataBaseFile>D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/tests/MinSizeRel/icon.pdb</ProgramDataBaseFile>
+      <ImportLibrary>E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/tests/MinSizeRel/icon.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/tests/MinSizeRel/icon.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -218,7 +218,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\deps;D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\deps;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>
@@ -234,10 +234,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\deps;D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\deps;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\deps;D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\deps;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -251,8 +251,8 @@
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/tests/RelWithDebInfo/icon.lib</ImportLibrary>
-      <ProgramDataBaseFile>D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/tests/RelWithDebInfo/icon.pdb</ProgramDataBaseFile>
+      <ImportLibrary>E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/tests/RelWithDebInfo/icon.lib</ImportLibrary>
+      <ProgramDataBaseFile>E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/tests/RelWithDebInfo/icon.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -260,11 +260,11 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\tests\CMakeLists.txt">
+    <CustomBuild Include="E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\tests\CMakeLists.txt">
       <UseUtf8Encoding>Always</UseUtf8Encoding>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/tests/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/tests/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -SD:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4 -BD:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build --check-stamp-file D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/tests/CMakeFiles/generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4 -BE:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build --check-stamp-file E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/tests/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -273,11 +273,11 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\build\tests\CMakeFiles\generate.stamp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\build\tests\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/tests/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/tests/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -SD:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4 -BD:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build --check-stamp-file D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/tests/CMakeFiles/generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4 -BE:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build --check-stamp-file E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/tests/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -286,11 +286,11 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\build\tests\CMakeFiles\generate.stamp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\build\tests\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/tests/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/tests/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -SD:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4 -BD:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build --check-stamp-file D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/tests/CMakeFiles/generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4 -BE:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build --check-stamp-file E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/tests/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -299,11 +299,11 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\build\tests\CMakeFiles\generate.stamp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\build\tests\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/tests/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/tests/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -SD:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4 -BD:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build --check-stamp-file D:/Narinder/gl_project_0/Project0/Vendor/glfw-3.3.4/build/tests/CMakeFiles/generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4 -BE:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build --check-stamp-file E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/build/tests/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -312,24 +312,24 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\build\tests\CMakeFiles\generate.stamp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\build\tests\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\tests\icon.c" />
-    <ClInclude Include="D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\deps\glad\gl.h" />
-    <ClCompile Include="D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\deps\glad_gl.c" />
+    <ClCompile Include="E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\tests\icon.c" />
+    <ClInclude Include="E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\deps\glad\gl.h" />
+    <ClCompile Include="E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\deps\glad_gl.c" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\build\ZERO_CHECK.vcxproj">
-      <Project>{57CF0036-E6C2-3C8A-AC3E-206F7C6F067D}</Project>
+    <ProjectReference Include="E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\build\ZERO_CHECK.vcxproj">
+      <Project>{DC1CCDE8-2154-3356-9B4C-780AD11BC848}</Project>
       <Name>ZERO_CHECK</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
-    <ProjectReference Include="D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\build\src\glfw.vcxproj">
-      <Project>{687070C1-70A4-3897-98FB-D3109D4DCFFE}</Project>
+    <ProjectReference Include="E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\build\src\glfw.vcxproj">
+      <Project>{70F87A50-FABD-3239-90C6-6F2498E87D6F}</Project>
       <Name>glfw</Name>
     </ProjectReference>
   </ItemGroup>

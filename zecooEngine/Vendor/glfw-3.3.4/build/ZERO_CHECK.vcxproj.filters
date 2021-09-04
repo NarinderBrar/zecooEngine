@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CustomBuild Include="D:\Narinder\gl_project_0\Project0\Vendor\glfw-3.3.4\build\CMakeFiles\f7ddb98670a62191e89763f7a03b1260\generate.stamp.rule">
+    <CustomBuild Include="E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\glfw-3.3.4\build\CMakeFiles\e572874ccbd1803190c73e11a9c97752\generate.stamp.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CMake Rules">
-      <UniqueIdentifier>{D69D9D39-2814-35F4-8ED4-430F24EB871C}</UniqueIdentifier>
+      <UniqueIdentifier>{C9C06750-4FE5-336A-A74B-19573CA43145}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
