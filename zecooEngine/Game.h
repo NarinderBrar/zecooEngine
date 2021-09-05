@@ -1,8 +1,6 @@
 #pragma once
 
-#include "SceneTriangle.h"
 #include "Scene.h"
-#include "SceneBasic.h"
 
 #include <iostream>
 
@@ -18,8 +16,6 @@ class Game
 public:
 	Input* input;
 
-	//SceneBasic* sceneBasic;
-	//SceneTriangle* sceneTriangle;
 	Scene* scene;
 
 	PhysicsEngine* phyEng;

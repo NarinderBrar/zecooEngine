@@ -26,48 +26,9 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	material->linkLight(dlight);
 	material->linkCamera(camera);
 
-	//customModel = new CustomModel(material, NULL);
+	//circle = new Circle(material, NULL);
 
-	//triangle = new Triangle(material, NULL);
-
-	pyramid = new Pyramid(material, NULL);
-
-	/*plane = new Plane(material, NULL);
-	plane->transform->scale(glm::vec3(5.0f, 5.0f, 5.0f));
-
-	color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-	material2 = new Material(shader2, color);
-	material2->linkLight(dlight);
-	material2->linkCamera(camera);
-
-	int k = 0;
-	for (int i = 0; i < 10; i++)
-	{
-		cube = new Cube(material2, NULL);
-		cube->transform->translate(glm::vec3(i*0.8f, i*1.0f, 0.0f));
-		cube->transform->scale(glm::vec3(1.0f, 0.2f, 5.0f));
-		cubes[k] = cube;
-		k++;
-
-		cube = new Cube(material2, NULL);
-		cube->transform->translate(glm::vec3(i * 0.8f, i * 1.0f + 2.5f, 2.0f));
-		cube->transform->scale(glm::vec3(0.1f, 5.0f, 0.1f));
-		cubes[k] = cube;
-		k++;
-
-		cube = new Cube(material2, NULL);
-		cube->transform->translate(glm::vec3(i * 0.8f, i * 1.0f + 2.5f, -2.0f));
-		cube->transform->scale(glm::vec3(0.1f, 5.0f, 0.1f));
-		cubes[k] = cube;
-		k++;
-	}
-
-	cubeA = new Cube(material2, NULL);
-	cubeA->transform->translate(glm::vec3(0.0f, 5.0f, 2.0f));
-	cubeA->transform->rotate(-0.8f, glm::vec3(0.0f, 0.0f, 1.0f));
-	cubeA->transform->scale(glm::vec3(0.1f, 10.0f, 0.1f));
-
-	k++;*/
+	cylinder = new Cylinder(material, NULL);
 }
 
 void Scene::Update(float deltaTime)
@@ -81,16 +42,7 @@ void Scene::Render()
 	glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//customModel->render();
-	/*plane->render();
+	//circle->render();
 
-	for (size_t i = 0; i < count; i++)
-	{
-		cubes[i]->render();
-	}
-
-	cubeA->render();*/
-	//triangle->render();
-	pyramid->render();
-
+	cylinder->render();
 }

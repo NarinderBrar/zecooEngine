@@ -5,11 +5,8 @@
 #include "Light.h"
 #include "Material.h"
 
-#include "Plane.h"
-#include "Cube.h"
-#include "Triangle.h"
-#include "CustomModel.h"
-#include "Pyramid.h"
+#include "Circle.h"
+#include "Cylinder.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -29,20 +26,8 @@ public:
 	Material* material;
 	Material* material2;
 
-	Plane* plane;
-
-	Cube* cube;
-	Cube* cubeA;
-	Cube* cubeB;
-
-	Pyramid* pyramid;
-
-	CustomModel* customModel;
-
-	Triangle* triangle;
-
-	int count = 30;
-	Cube* cubes[30];
+	Circle* circle;
+	Cylinder* cylinder;
 
 	PhysicsEngine* phyEng;
 
