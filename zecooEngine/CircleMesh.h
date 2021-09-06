@@ -32,8 +32,6 @@ private:
     vector<float> vertices;
     vector<int> indices;
 
-    //unsigned int indices[138];
-
     unsigned int VBO;
     unsigned int VAO;
     unsigned int EBO;

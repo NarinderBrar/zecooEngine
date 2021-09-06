@@ -10,7 +10,6 @@ std::vector<float> CylinderMesh::getCircleVertices(glm::vec3 origin, int points)
     circleVertices.push_back(origin[1]);
     circleVertices.push_back(origin[2]);
 
-    int k = 3;
     for (int i = 0; i < points; i++)
     {
         //divide the circle into angles acc to given points
@@ -20,8 +19,6 @@ std::vector<float> CylinderMesh::getCircleVertices(glm::vec3 origin, int points)
         circleVertices.push_back(origin[0] + cos(angle) * rad);
         circleVertices.push_back(origin[1]);
         circleVertices.push_back(origin[2] + sin(angle) * rad);
-
-        k += 3;
     }
 
     return circleVertices;
@@ -76,6 +73,10 @@ CylinderMesh::CylinderMesh()
 
     cout << " x : " << pointCount + 1 << " y: " << pointCount * 2 +1 << " z: " << pointCount + 2 << endl << endl;
 
+    //example for 3 points
+    //1 2 3 -> 0
+    //5 6 7 -> 4
+
     // 1 5 6, 2 6 7, 3 7 8
     int k = pointCount;
     for (int i = 1; i < double(pointCount); i++)
@@ -122,6 +123,6 @@ CylinderMesh::CylinderMesh()
 void CylinderMesh::Render()
 {
     glBindVertexArray(VAO);
-   //glDrawElements(GL_LINE_STRIP, totalVertices+50, GL_UNSIGNED_INT, 0);
-    glDrawElements(GL_TRIANGLES, totalVertices + 50, GL_UNSIGNED_INT, 0);
+   glDrawElements(GL_LINE_STRIP, totalVertices+150, GL_UNSIGNED_INT, 0);
+    //glDrawElements(GL_TRIANGLES, totalVertices + 150, GL_UNSIGNED_INT, 0);
 }

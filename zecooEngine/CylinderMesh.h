@@ -28,13 +28,11 @@ private:
 
     float height = 2;
 
-    int pointCount = 5;
+    int pointCount = 30;
     int totalVertices = 0;
 
     vector<float> vertices;
     vector<int> indices;
-
-    //unsigned int indices[138];
 
     unsigned int VBO;
     unsigned int VAO;
