@@ -123,6 +123,6 @@ CylinderMesh::CylinderMesh()
 void CylinderMesh::Render()
 {
     glBindVertexArray(VAO);
-   glDrawElements(GL_LINE_STRIP, totalVertices+150, GL_UNSIGNED_INT, 0);
-    //glDrawElements(GL_TRIANGLES, totalVertices + 150, GL_UNSIGNED_INT, 0);
+    //glDrawElements(GL_LINE_STRIP, totalVertices+150, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, totalVertices + 150, GL_UNSIGNED_INT, 0);
 }

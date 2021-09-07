@@ -26,15 +26,28 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	material->linkLight(dlight);
 	material->linkCamera(camera);
 
-	//circle = new Circle(material, NULL);
+	//cone = new Cone(material, NULL);
 
-	cylinder = new Cylinder(material, NULL);
+	//circle = new Circle(material, NULL);
+	//cylinder = new Cylinder(material, NULL);
+
+	cube = new Cube(material, NULL);
 }
 
 void Scene::Update(float deltaTime)
 {
-	camera->RotateViewPoint(500, glfwGetTime());
-	projection = camera->GetPerspectiveProjectionMatrix();
+	phi += deltaTime * 2;
+	theta = glm::radians(0.0f) ;
+
+	float x = 5 * sin(phi) * cos(theta);
+	float y = 5 * cos(phi);
+	float z = 5 * sin(phi) * sin(theta);
+
+	glm::vec3 pos = glm::vec3(x, y, z);
+	cube->transform->position(pos);
+
+	//camera->RotateViewPoint(500, glfwGetTime());
+	//projection = camera->GetPerspectiveProjectionMatrix();
 }
 
 void Scene::Render()
@@ -44,5 +57,6 @@ void Scene::Render()
 
 	//circle->render();
 
-	cylinder->render();
+	cube->render();
+	//cone->render();
 }

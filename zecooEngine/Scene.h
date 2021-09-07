@@ -7,6 +7,9 @@
 
 #include "Circle.h"
 #include "Cylinder.h"
+#include "Cube.h"
+
+#include "Cone.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -28,11 +31,17 @@ public:
 
 	Circle* circle;
 	Cylinder* cylinder;
+	Cube* cube;
+
+	Cone* cone;
 
 	PhysicsEngine* phyEng;
 
 	Camera* camera;
 	glm::mat4 projection;
+
+	float phi = 0.0;
+	float theta = 0.0;
 
 	Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);
 
