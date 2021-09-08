@@ -2,8 +2,6 @@
 
 SceneTriangle::SceneTriangle(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 {
-
-
 	phyEng = physicsEngine;
 
 	// configure global opengl state
@@ -14,7 +12,7 @@ SceneTriangle::SceneTriangle(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physi
 	glm::vec4 color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 	material = new Material(shader, color);
 
-	customModel = new CustomModel(material, NULL);
+	plane = new Plane(material, NULL);
 }
 
 void SceneTriangle::Update(float deltaTime)
@@ -27,5 +25,5 @@ void SceneTriangle::Render()
 	glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	customModel->render();
+	plane->render();
 }

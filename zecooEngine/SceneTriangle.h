@@ -6,7 +6,7 @@
 #include "Light.h"
 #include "Material.h"
 
-#include "CustomModel.h"
+#include "Plane.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -24,7 +24,7 @@ public:
 	DirectionalLight* dlight = NULL;
 	Material* material;
 
-	CustomModel* customModel;
+	Plane* plane;
 
 	PhysicsEngine* phyEng;
 

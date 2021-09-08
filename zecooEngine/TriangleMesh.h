@@ -15,14 +15,11 @@ using namespace std;
 class TriangleMesh
 {
     private:
-       float vertices[18] = 
+       float vertices[9] = 
        {
            -0.1f, -0.1f, 0.0f, //left
             0.1f, -0.1f, 0.0f,  //right
             0.0f,  0.1f, 0.0f,   //top
-           -0.5f, -0.1f, 0.0f, //left
-           -0.3f, -0.1f, 0.0f,  //right
-           -0.4f,  0.1f, 0.0f,   //top
         };
 
         unsigned int VBO;

@@ -5,11 +5,8 @@
 #include "Light.h"
 #include "Material.h"
 
-#include "Circle.h"
-#include "Cylinder.h"
 #include "Cube.h"
-
-#include "Cone.h"
+#include "Plane.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -29,11 +26,10 @@ public:
 	Material* material;
 	Material* material2;
 
-	Circle* circle;
-	Cylinder* cylinder;
-	Cube* cube;
+	Texture* floorTexture;
 
-	Cone* cone;
+	Cube* cube;
+	Plane* plane;
 
 	PhysicsEngine* phyEng;
 

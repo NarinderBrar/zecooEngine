@@ -4,7 +4,8 @@
 #include "Material.h"
 #include "Camera.h"
 #include "Light.h"
-#include "Cube.h"
+
+#include "Triangle.h"
 
 #include "PhysicsEngine.h"
 
@@ -15,7 +16,7 @@ class SceneBasic
 	Material* material;
 
 	Camera* camera;
-	Cube* cube;
+	Triangle* triangle;
 
 public:
 	SceneBasic(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);

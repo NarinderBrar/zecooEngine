@@ -56,9 +56,13 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 
     // combine results
-    vec3 ambient = (light.ambient * vec3(texture(material.diffuse, TexCoords))) + (light.ambient * vec3(0.2,0.2,0.2));
-    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords)) + (light.diffuse * diff * vec3(color.r,color.g,color.b));
-    vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords))+ (light.specular * spec * vec3(0.2,0.2,0.2));
+    vec3 ambient = (light.ambient * vec3(texture(material.diffuse, TexCoords)));
+    vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
+    vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
+
+    //vec3 ambient = (light.ambient * vec3(texture(material.diffuse, TexCoords))) + (light.ambient * vec3(0.2,0.2,0.2));
+    //vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords)) + (light.diffuse * diff * vec3(color.r,color.g,color.b));
+    //vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords))+ (light.specular * spec * vec3(0.2,0.2,0.2));
 
     return (ambient + diffuse + specular);
 }
