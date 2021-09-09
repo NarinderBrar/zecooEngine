@@ -32,8 +32,10 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	material->linkLight(dlight);
 	material->linkCamera(camera);
 
-	//cube = new Cube(material, NULL);
-	plane = new Plane(material, floorTexture);
+	cube = new Cube(material, floorTexture);
+	cube->transform->position(glm::vec3(2, 0.0, 2));
+	cube->transform->scale(glm::vec3(0.2, 0.2, 0.2));
+	grid = new Grid(camera);
 }
 
 void Scene::Update(float deltaTime)
@@ -47,6 +49,7 @@ void Scene::Render()
 	glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//cube->render();
-	plane->render();
+	cube->render();
+
+	grid->Render();
 }

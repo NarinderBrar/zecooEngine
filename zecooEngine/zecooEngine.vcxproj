@@ -156,6 +156,7 @@
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="CylinderMesh.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Grid.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Material.h" />
@@ -200,6 +201,7 @@
     <ClCompile Include="CylinderMesh.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
@@ -278,6 +280,8 @@
     <None Include="resources\shader\textShader.fs" />
     <None Include="resources\shader\textShader.vert" />
     <None Include="resources\shader\textShader.vs" />
+    <None Include="resources\shader\unlit.fs" />
+    <None Include="resources\shader\unlit.vs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="zecooEngine.rc" />

@@ -31,5 +31,5 @@ PlaneMesh::PlaneMesh()
 void PlaneMesh::Render()
 {
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

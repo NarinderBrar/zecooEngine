@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Shader.h"
 #include "Texture.h"
 #include "Camera.h"
@@ -6,8 +7,7 @@
 #include "Material.h"
 
 #include "Cube.h"
-
-#include "Grid.h"
+#include "Plane.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -17,28 +17,20 @@
 
 #include "PhysicsEngine.h"
 
-class Scene
+class Grid
 {
 public:
-	Shader* shader;
+	Shader* shaderX;
+	Shader* shaderZ;
+	Shader* shaderGrid;
 
-	DirectionalLight* dlight;
-	Material* material;
+	Material* materialX;
+	Material* materialZ;
+	Material* materialGrid;
 
-	Texture* floorTexture;
+	Plane* planes[22];
 
-	Cube* cube;
-	Grid* grid;
-
-	PhysicsEngine* phyEng;
-
-	Camera* camera;
-	glm::mat4 projection;
-
-	Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);
-
-	void Update(float deltaTime);
+	Grid(Camera* camera);
 
 	void Render();
-
 };
