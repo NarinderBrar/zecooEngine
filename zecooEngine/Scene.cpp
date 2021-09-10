@@ -8,7 +8,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	glEnable(GL_DEPTH_TEST);
 
 	floorTexture = new Texture();
-	floorTexture->Load("resources\\textures\\awesomeface.png");
+	floorTexture->Load("resources\\textures\\uv.jpg");
 	floorTexture->SetSamplerObjectParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	floorTexture->SetSamplerObjectParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	floorTexture->SetSamplerObjectParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -34,7 +34,9 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 
 	cube = new Cube(material, floorTexture);
 	cube->transform->position(glm::vec3(2, 0.0, 2));
-	cube->transform->scale(glm::vec3(0.2, 0.2, 0.2));
+	//cube->transform->scale(glm::vec3(0.2, 0.2, 0.2));
+
+	//cylinder = new Cylinder(material, floorTexture);
 	grid = new Grid(camera);
 }
 
@@ -52,4 +54,6 @@ void Scene::Render()
 	cube->render();
 
 	grid->Render();
+
+	//cylinder->render();
 }

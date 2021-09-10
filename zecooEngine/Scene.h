@@ -6,7 +6,7 @@
 #include "Material.h"
 
 #include "Cube.h"
-
+#include "Cylinder.h"
 #include "Grid.h"
 
 #include <glm/glm.hpp>
@@ -29,6 +29,8 @@ public:
 
 	Cube* cube;
 	Grid* grid;
+
+	//Cylinder* cylinder;
 
 	PhysicsEngine* phyEng;
 

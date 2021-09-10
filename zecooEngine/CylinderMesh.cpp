@@ -1,106 +1,148 @@
 #include "CylinderMesh.h"
 #include "math.h"
 
-std::vector<float> CylinderMesh::getCircleVertices(glm::vec3 origin, int points)
+std::vector<float> CylinderMesh::getUnitCircleVertices()
 {
-    std::vector<float> circleVertices;
+    const float PI = 3.1415926f;
+    float sectorStep = 2 * PI / sectorCount;
+    float sectorAngle;  // radian
 
-    //Center of the circle will be at 0,0,0
-    circleVertices.push_back(origin[0]);
-    circleVertices.push_back(origin[1]);
-    circleVertices.push_back(origin[2]);
-
-    for (int i = 0; i < points; i++)
+    std::vector<float> unitCircleVertices;
+    for (int i = 0; i <= sectorCount; ++i)
     {
-        //divide the circle into angles acc to given points
-        float angle = 2.0 * i * (PI / points);
-
-        //defining vertex points accorcing to cos and sin angles
-        circleVertices.push_back(origin[0] + cos(angle) * rad);
-        circleVertices.push_back(origin[1]);
-        circleVertices.push_back(origin[2] + sin(angle) * rad);
+        sectorAngle = i * sectorStep;
+        unitCircleVertices.push_back(cos(sectorAngle)); // x
+        unitCircleVertices.push_back(sin(sectorAngle)); // y
+        unitCircleVertices.push_back(0);                // z
     }
-
-    return circleVertices;
+    return unitCircleVertices;
 }
+
 
 CylinderMesh::CylinderMesh()
 {
-    std::vector<float> circleVerticesTop = getCircleVertices(glm::vec3(0, height/2,0), pointCount);
-    std::vector<float> circleVerticesBottom = getCircleVertices(glm::vec3(0, -height/2, 0), pointCount);
+    // clear memory of prev arrays
+    std::vector<float>().swap(vertices);
+    std::vector<float>().swap(normals);
+    std::vector<float>().swap(texCoords);
 
-    for (int i = 0; i < circleVerticesTop.size(); i++)
+    // get unit circle vectors on XY-plane
+    std::vector<float> unitVertices = getUnitCircleVertices();
+
+    // put side vertices to arrays
+    for (int i = 0; i < 2; ++i)
     {
-        vertices.push_back(circleVerticesTop[i]);
+        float h = -height / 2.0f + i * height;           // z value; -h/2 to h/2
+        float t = 1.0f - i;                              // vertical tex coord; 1 to 0
+
+        for (int j = 0, k = 0; j <= sectorCount; ++j, k += 3)
+        {
+            float ux = unitVertices[k];
+            float uy = unitVertices[k + 1];
+            float uz = unitVertices[k + 2];
+            // position vector
+            vertices.push_back(ux * radius);             // vx
+            vertices.push_back(uy * radius);             // vy
+            vertices.push_back(h);                       // vz
+            // normal vector
+            normals.push_back(ux);                       // nx
+            normals.push_back(uy);                       // ny
+            normals.push_back(uz);                       // nz
+            // texture coordinate
+            texCoords.push_back((float)j / sectorCount); // s
+            texCoords.push_back(t);                      // t
+        }
     }
 
-    for (int i = 0; i < circleVerticesBottom.size(); i++)
+    // the starting index for the base/top surface
+    //NOTE: it is used for generating indices later
+    int baseCenterIndex = (int)vertices.size() / 3;
+    int topCenterIndex = baseCenterIndex + sectorCount + 1; // include center vertex
+
+    // put base and top vertices to arrays
+    for (int i = 0; i < 2; ++i)
     {
-        vertices.push_back(circleVerticesBottom[i]);
+        float h = -height / 2.0f + i * height;           // z value; -h/2 to h/2
+        float nz = -1 + i * 2;                           // z value of normal; -1 to 1
+
+        // center point
+        vertices.push_back(0);     vertices.push_back(0);     vertices.push_back(h);
+        normals.push_back(0);      normals.push_back(0);      normals.push_back(nz);
+        texCoords.push_back(0.5f); texCoords.push_back(0.5f);
+
+        for (int j = 0, k = 0; j < sectorCount; ++j, k += 3)
+        {
+            float ux = unitVertices[k];
+            float uy = unitVertices[k + 1];
+
+            // position vector
+            vertices.push_back(ux * radius);             // vx
+            vertices.push_back(uy * radius);             // vy
+            vertices.push_back(h);                       // vz
+
+            // normal vector
+            normals.push_back(0);                        // nx
+            normals.push_back(0);                        // ny
+            normals.push_back(nz);                       // nz
+
+            // texture coordinate
+            texCoords.push_back(-ux * 0.5f + 0.5f);      // s
+            texCoords.push_back(-uy * 0.5f + 0.5f);      // t
+        }
     }
 
-    totalVertices = vertices.size();
+    int k1 = 0;                         // 1st vertex index at base
+    int k2 = sectorCount + 1;           // 1st vertex index at top
 
-    for (int i = 0; i < double(pointCount)-1; i++)
+    // indices for the side surface
+    for (int i = 0; i < sectorCount; ++i, ++k1, ++k2)
     {
-        indices.push_back(0);
-        indices.push_back(i + 1);
-        indices.push_back(i + 2);
+        // 2 triangles per sector
+        // k1 => k1+1 => k2
+        indices.push_back(k1);
+        indices.push_back(k1 + 1);
+        indices.push_back(k2);
 
-        cout << " x : " << 0 << " y: " << i + 1 << " z: " << i + 2 << endl;
+        // k2 => k1+1 => k2+1
+        indices.push_back(k2);
+        indices.push_back(k1 + 1);
+        indices.push_back(k2 + 1);
     }
 
-    //Need to close the shape
-    indices.push_back(0);
-    indices.push_back(pointCount);
-    indices.push_back(1);
-
-    cout << " x : " << 0 << " y: " << pointCount << " z: " << 1 << endl << endl;
-
-    for (int i = pointCount+1; i < (double(pointCount)*2); i++)
+    // indices for the base surface
+    //NOTE: baseCenterIndex and topCenterIndices are pre-computed during vertex generation
+    //      please see the previous code snippet
+    for (int i = 0, k = baseCenterIndex + 1; i < sectorCount; ++i, ++k)
     {
-        indices.push_back(pointCount+1);
-        indices.push_back(i + 1);
-        indices.push_back(i + 2);
-
-        cout <<" x : " << pointCount + 1 << " y: " << i+1 << " z: " << i+2 << endl;
+        if (i < sectorCount - 1)
+        {
+            indices.push_back(baseCenterIndex);
+            indices.push_back(k + 1);
+            indices.push_back(k);
+        }
+        else // last triangle
+        {
+            indices.push_back(baseCenterIndex);
+            indices.push_back(baseCenterIndex + 1);
+            indices.push_back(k);
+        }
     }
 
-    //Need to close the shape
-    indices.push_back(pointCount + 1);
-    indices.push_back(pointCount*2+1);
-    indices.push_back(pointCount + 2);
-
-    cout << " x : " << pointCount + 1 << " y: " << pointCount * 2 +1 << " z: " << pointCount + 2 << endl << endl;
-
-    //example for 3 points
-    //1 2 3 -> 0
-    //5 6 7 -> 4
-
-    // 1 5 6, 2 6 7, 3 7 8
-    int k = pointCount;
-    for (int i = 1; i < double(pointCount); i++)
+    // indices for the top surface
+    for (int i = 0, k = topCenterIndex + 1; i < sectorCount; ++i, ++k)
     {
-        indices.push_back(i);
-        indices.push_back(k+2);
-        indices.push_back(k+3);
-
-        cout << " x : " << i << " y: " << k + 2 << " z: " << k + 3 << endl;
-
-        k++;
-    }
-
-    //1 6 2, 2 7 3, 3 8 4
-    k = pointCount;
-    for (int i = 1; i < double(pointCount); i++)
-    {
-        indices.push_back(i);
-        indices.push_back(k + 3);
-        indices.push_back(i + 1);
-
-        cout << " x : " << i << " y: " << k + 2 << " z: " << k + 3 << endl;
-
-        k++;
+        if (i < sectorCount - 1)
+        {
+            indices.push_back(topCenterIndex);
+            indices.push_back(k);
+            indices.push_back(k + 1);
+        }
+        else // last triangle
+        {
+            indices.push_back(topCenterIndex);
+            indices.push_back(k);
+            indices.push_back(topCenterIndex + 1);
+        }
     }
 
     glGenVertexArrays(1, &VAO);
@@ -118,11 +160,17 @@ CylinderMesh::CylinderMesh()
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(sizeof(float) * 3));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(sizeof(float) * 6));
+    glEnableVertexAttribArray(2);
 }
 
 void CylinderMesh::Render()
 {
     glBindVertexArray(VAO);
     //glDrawElements(GL_LINE_STRIP, totalVertices+150, GL_UNSIGNED_INT, 0);
-    glDrawElements(GL_TRIANGLES, totalVertices + 150, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 }

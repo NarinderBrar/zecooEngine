@@ -24,7 +24,7 @@ private:
     float yo = 0.0;
     float zo = 0.0;
 
-    float rad = 1.0;
+    float radius = 1.0;
 
     float height = 2;
 
@@ -32,6 +32,11 @@ private:
     int totalVertices = 0;
 
     vector<float> vertices;
+    vector<float> normals;
+    vector<float> texCoords;
+
+    int sectorCount = 10;
+
     vector<int> indices;
 
     unsigned int VBO;
@@ -39,7 +44,8 @@ private:
     unsigned int EBO;
 
 public:
-    std::vector<float> getCircleVertices(glm::vec3 origin, int points);
+    std::vector<float> getUnitCircleVertices();
+
     CylinderMesh();
     void Render();
 };
