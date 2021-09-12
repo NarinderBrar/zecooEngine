@@ -10,7 +10,6 @@
 class Triangle:public Model
 {
 private:
-	//TriangleMesh* triangleMesh;
 	TriangleIndexMesh* triangleIndexMesh;
 
 public:

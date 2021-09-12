@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Material.h"
+#include "Debugger.h"
 
 #include "Cube.h"
 #include "Cylinder.h"
@@ -29,8 +30,9 @@ public:
 
 	Cube* cube;
 	Grid* grid;
+	Debugger debugger;
 
-	//Cylinder* cylinder;
+	Cylinder* cylinder;
 
 	PhysicsEngine* phyEng;
 

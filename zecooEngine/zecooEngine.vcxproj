@@ -155,10 +155,13 @@
     <ClInclude Include="CustomModel.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="CylinderMesh.h" />
+    <ClInclude Include="Debugger.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Light.h" />
+    <ClInclude Include="Line.h" />
+    <ClInclude Include="LineMesh.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MatrixStack.h" />
     <ClInclude Include="Model.h" />
@@ -167,6 +170,7 @@
     <ClInclude Include="PlaneMesh.h" />
     <ClInclude Include="Pyramid.h" />
     <ClInclude Include="PyramidMesh.h" />
+    <ClInclude Include="Ray.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneA.h" />
@@ -199,11 +203,14 @@
     <ClCompile Include="CustomModel.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="CylinderMesh.cpp" />
+    <ClCompile Include="Debugger.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Light.cpp" />
+    <ClCompile Include="Line.cpp" />
+    <ClCompile Include="LineMesh.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MatrixStack.cpp" />
@@ -213,6 +220,7 @@
     <ClCompile Include="PlaneMesh.cpp" />
     <ClCompile Include="Pyramid.cpp" />
     <ClCompile Include="PyramidMesh.cpp" />
+    <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneA.cpp" />
     <ClCompile Include="SceneB.cpp" />

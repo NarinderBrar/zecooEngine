@@ -29,7 +29,7 @@ CylinderMesh::CylinderMesh()
     // get unit circle vectors on XY-plane
     std::vector<float> unitVertices = getUnitCircleVertices();
 
-    // put side vertices to arrays
+    // put side tmpVertices to arrays
     for (int i = 0; i < 2; ++i)
     {
         float h = -height / 2.0f + i * height;           // z value; -h/2 to h/2
@@ -40,33 +40,38 @@ CylinderMesh::CylinderMesh()
             float ux = unitVertices[k];
             float uy = unitVertices[k + 1];
             float uz = unitVertices[k + 2];
+
             // position vector
-            vertices.push_back(ux * radius);             // vx
-            vertices.push_back(uy * radius);             // vy
-            vertices.push_back(h);                       // vz
+            tmpVertices.push_back(ux * radius);             // vx
+            tmpVertices.push_back(uy * radius);             // vy
+            tmpVertices.push_back(h);                       // vz
+
             // normal vector
             normals.push_back(ux);                       // nx
             normals.push_back(uy);                       // ny
             normals.push_back(uz);                       // nz
+
             // texture coordinate
             texCoords.push_back((float)j / sectorCount); // s
             texCoords.push_back(t);                      // t
+
+            debugger.printMsg(std::to_string(ux) + " : " + std::to_string(uy));
         }
     }
 
     // the starting index for the base/top surface
     //NOTE: it is used for generating indices later
-    int baseCenterIndex = (int)vertices.size() / 3;
+    int baseCenterIndex = (int)tmpVertices.size() / 3;
     int topCenterIndex = baseCenterIndex + sectorCount + 1; // include center vertex
 
-    // put base and top vertices to arrays
+    // put base and top tmpVertices to arrays
     for (int i = 0; i < 2; ++i)
     {
         float h = -height / 2.0f + i * height;           // z value; -h/2 to h/2
         float nz = -1 + i * 2;                           // z value of normal; -1 to 1
 
         // center point
-        vertices.push_back(0);     vertices.push_back(0);     vertices.push_back(h);
+        tmpVertices.push_back(0);     tmpVertices.push_back(0);     tmpVertices.push_back(h);
         normals.push_back(0);      normals.push_back(0);      normals.push_back(nz);
         texCoords.push_back(0.5f); texCoords.push_back(0.5f);
 
@@ -76,9 +81,9 @@ CylinderMesh::CylinderMesh()
             float uy = unitVertices[k + 1];
 
             // position vector
-            vertices.push_back(ux * radius);             // vx
-            vertices.push_back(uy * radius);             // vy
-            vertices.push_back(h);                       // vz
+            tmpVertices.push_back(ux * radius);             // vx
+            tmpVertices.push_back(uy * radius);             // vy
+            tmpVertices.push_back(h);                       // vz
 
             // normal vector
             normals.push_back(0);                        // nx
@@ -93,6 +98,21 @@ CylinderMesh::CylinderMesh()
 
     int k1 = 0;                         // 1st vertex index at base
     int k2 = sectorCount + 1;           // 1st vertex index at top
+
+    for (int v = 0, t = 0; v < tmpVertices.size() ; v+=3, t+=2)
+    {
+        vertices.push_back(tmpVertices[v]);
+        vertices.push_back(tmpVertices[v+1]);
+        vertices.push_back(tmpVertices[v+2]);
+
+        vertices.push_back(normals[v]);
+        vertices.push_back(normals[v+1]);
+        vertices.push_back(normals[v+2]);
+
+        vertices.push_back(texCoords[t]);
+        vertices.push_back(texCoords[t+1]);
+    }
+
 
     // indices for the side surface
     for (int i = 0; i < sectorCount; ++i, ++k1, ++k2)
@@ -112,7 +132,7 @@ CylinderMesh::CylinderMesh()
     // indices for the base surface
     //NOTE: baseCenterIndex and topCenterIndices are pre-computed during vertex generation
     //      please see the previous code snippet
-    for (int i = 0, k = baseCenterIndex + 1; i < sectorCount; ++i, ++k)
+   for (int i = 0, k = baseCenterIndex + 1; i < sectorCount; ++i, ++k)
     {
         if (i < sectorCount - 1)
         {
@@ -158,13 +178,13 @@ CylinderMesh::CylinderMesh()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), &indices[0], GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(sizeof(float) * 3));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 3));
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(sizeof(float) * 6));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(sizeof(float) * 6));
     glEnableVertexAttribArray(2);
 }
 

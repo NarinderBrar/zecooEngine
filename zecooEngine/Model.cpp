@@ -14,7 +14,14 @@ void Model::render()
 	material->update();
 
 	if (texture != NULL)
+	{
 		texture->Bind();
+		material->shader->setInt("textureSample", 1);
+	}
+	else
+	{
+		material->shader->setInt("textureSample", 0);
+	}
 }
 
 Model::~Model()

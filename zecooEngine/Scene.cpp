@@ -32,7 +32,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	material->linkLight(dlight);
 	material->linkCamera(camera);
 
-	cube = new Cube(material, floorTexture);
+	cube = new Cube(material, NULL);
 	cube->transform->position(glm::vec3(2, 0.0, 2));
 	//cube->transform->scale(glm::vec3(0.2, 0.2, 0.2));
 

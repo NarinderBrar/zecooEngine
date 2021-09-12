@@ -11,37 +11,31 @@
 
 #include <iostream>
 #include <vector>
+#include "Debugger.h"
 
 using namespace std;
 
 class CylinderMesh
 {
 private:
-    float PI = 3.14;
-
-    //offset values
-    float xo = 0.0;
-    float yo = 0.0;
-    float zo = 0.0;
-
     float radius = 1.0;
-
     float height = 2;
 
-    int pointCount = 30;
-    int totalVertices = 0;
+    vector<float> tmpVertices;
 
     vector<float> vertices;
     vector<float> normals;
     vector<float> texCoords;
 
-    int sectorCount = 10;
+    int sectorCount = 50;
 
     vector<int> indices;
 
     unsigned int VBO;
     unsigned int VAO;
     unsigned int EBO;
+
+    Debugger debugger;
 
 public:
     std::vector<float> getUnitCircleVertices();

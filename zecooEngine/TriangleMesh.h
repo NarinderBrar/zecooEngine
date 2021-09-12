@@ -27,7 +27,6 @@ class TriangleMesh
 
 	public:
 		TriangleMesh();
-        void DrawLoop(float centerX, float centerY, float sides, float innerRadius, float outerRadius);
         void Render();
 };
 
