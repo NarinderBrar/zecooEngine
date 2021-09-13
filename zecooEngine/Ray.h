@@ -2,7 +2,7 @@
 
 #include "Model.h";
 #include "Shader.h";
-#include "Texture.h";
+
 #include "LineMesh.h";
 #include "Transform.h";
 

@@ -12,11 +12,12 @@
 class LineMesh
 {
 private:
-    float vertices[9] =
+    float vertices[6] =
     {
-        0.0f, 0.0f, 0.0f, //left
-         0.0f, 1.0f, 0.0f,  //right
+        0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f
     };
+
     glm::vec3 pointA;
     glm::vec3 pointB;
 

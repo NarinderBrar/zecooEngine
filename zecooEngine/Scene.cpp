@@ -23,6 +23,8 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 
 	shader = new Shader("resources\\shader\\basicTextureLight.vs", "resources\\shader\\basicTextureLight.fs");
 
+	grid = new Grid(camera);
+
 	dlight = new DirectionalLight(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.2, -1.0, 0.2));
 	dlight->diffuse = glm::vec3(1.0, 1.0, 1.0);
 	dlight->ambient = glm::vec3(0.5, 0.5, 0.5);
@@ -32,12 +34,26 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	material->linkLight(dlight);
 	material->linkCamera(camera);
 
-	cube = new Cube(material, NULL);
+	cube = new Cube(material, floorTexture);
 	cube->transform->position(glm::vec3(2, 0.0, 2));
-	//cube->transform->scale(glm::vec3(0.2, 0.2, 0.2));
 
-	//cylinder = new Cylinder(material, floorTexture);
-	grid = new Grid(camera);
+	debugger = new Debugger(camera);
+	color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	glm::vec3 o = glm::vec3(0, 0, 0);
+	glm::vec3 aPos = glm::vec3(0,0,2);
+	glm::vec3 bPos = glm::vec3(0, 2, 0);	
+
+	glm::vec3 aoVec = glm::normalize(aPos - o);
+	glm::vec3 baVec = glm::normalize(bPos - o);
+
+	float addVec = glm::dot(aoVec , baVec);
+
+	debugger->addLine(o, aPos, color);
+	debugger->addLine(bPos, aPos, color);
+
+	color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+	debugger->printMsg(glm::to_string(addVec));
 }
 
 void Scene::Update(float deltaTime)
@@ -51,9 +67,9 @@ void Scene::Render()
 	glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	cube->render();
-
 	grid->Render();
 
-	//cylinder->render();
+	cube->render();
+
+	debugger->draw();
 }

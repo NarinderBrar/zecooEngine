@@ -4,11 +4,12 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Material.h"
+
+#include "Grid.h"
 #include "Debugger.h"
 
 #include "Cube.h"
 #include "Cylinder.h"
-#include "Grid.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -25,14 +26,13 @@ public:
 
 	DirectionalLight* dlight;
 	Material* material;
-
 	Texture* floorTexture;
 
 	Cube* cube;
-	Grid* grid;
-	Debugger debugger;
-
 	Cylinder* cylinder;
+
+	Grid* grid;
+	Debugger* debugger;
 
 	PhysicsEngine* phyEng;
 
@@ -44,5 +44,4 @@ public:
 	void Update(float deltaTime);
 
 	void Render();
-
 };

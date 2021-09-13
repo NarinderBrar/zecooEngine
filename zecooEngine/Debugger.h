@@ -7,9 +7,13 @@
 
 #include "Line.h";
 #include "Ray.h";
+#include "Cube.h";
+
 #include "Camera.h";
 
 #include <iostream>
+#include <vector>
+
 using namespace std;
 
 class Debugger
@@ -20,16 +24,25 @@ public:
 
 	Line* line;
 	Ray* ray;
+	Cube* cube;
+
 	Camera* camera;
+
+	vector<Line*> lines;
+	vector<Ray*> rays;
+	vector<Cube*> models;
+
+	Debugger(Camera* _camera);
 
 	void printMsg(string txt);
 	void printWarning(string txt);
 	void printError(string txt);
 
-	void createLine(glm::vec3 pointA, glm::vec3 pointB, Camera* camera);
-	void createRay(glm::vec3 origin, glm::vec3 direction, Camera* camera);
+	void addLine(glm::vec3 pointA, glm::vec3 pointB, glm::vec4 color);
+	void addRay(glm::vec3 origin, glm::vec3 direction, glm::vec4 color);
 
-	void drawLine();
-	void drawRay();
+	void addPoint(glm::vec3 position, glm::vec4 color);
+
+	void draw();
 };
 

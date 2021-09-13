@@ -9,7 +9,7 @@ void Ray::set(glm::vec3 _origin, glm::vec3 _direction)
 {
 	glm::vec3 normalizeDirection = glm::normalize(_direction);
 
-	double c = 3.0;
+	double c = 10.0;
 	normalizeDirection = glm::vec3(normalizeDirection.x * c, normalizeDirection.y * c, normalizeDirection.z * c);
 	
 	glm::vec3 pointB = _origin + normalizeDirection;

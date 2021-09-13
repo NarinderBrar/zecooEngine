@@ -14,20 +14,24 @@
 
 using namespace std;
 
-class CylinderMesh
+class TubeMesh
 {
 private:
-    float radius = 1.0;
+    float PI = 3.14;
+
+    //offset values
+    float xo = 0.0;
+    float yo = 0.0;
+    float zo = 0.0;
+
+    float rad = 1.0;
+
     float height = 2;
 
-    vector<float> tmpVertices;
+    int pointCount = 40;
+    int totalVertices = 0;
 
     vector<float> vertices;
-    vector<float> normals;
-    vector<float> texCoords;
-
-    int sectorCount = 50;
-
     vector<int> indices;
 
     unsigned int VBO;
@@ -35,9 +39,9 @@ private:
     unsigned int EBO;
 
 public:
-    std::vector<float> getUnitCircleVertices();
-
-    CylinderMesh();
+    std::vector<float> getCircleVertices(glm::vec3 origin, int points, float rad);
+    TubeMesh();
     void Render();
+
 };
 

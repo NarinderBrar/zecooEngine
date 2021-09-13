@@ -54,8 +54,6 @@ CylinderMesh::CylinderMesh()
             // texture coordinate
             texCoords.push_back((float)j / sectorCount); // s
             texCoords.push_back(t);                      // t
-
-            debugger.printMsg(std::to_string(ux) + " : " + std::to_string(uy));
         }
     }
 
