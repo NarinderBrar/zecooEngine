@@ -40,20 +40,22 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	debugger = new Debugger(camera);
 	color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
-	glm::vec3 o = glm::vec3(0, 0, 0);
-	glm::vec3 aPos = glm::vec3(0,0,2);
-	glm::vec3 bPos = glm::vec3(0, 2, 0);	
+	glm::vec3 oVec = glm::vec3(0, 0, 0);
+	glm::vec3 aVec = glm::vec3(2, 0, 2);
+	glm::vec3 bVec = glm::vec3(0, 2, 0);	
 
-	glm::vec3 aoVec = glm::normalize(aPos - o);
-	glm::vec3 baVec = glm::normalize(bPos - o);
+	glm::vec3 aVecN = glm::normalize(aVec);
+	glm::vec3 bVecN = glm::normalize(bVec);
 
-	float addVec = glm::dot(aoVec , baVec);
+	glm::vec3 crossVec = glm::cross(aVecN, bVecN);
 
-	debugger->addLine(o, aPos, color);
-	debugger->addLine(bPos, aPos, color);
-
+	debugger->addLine(oVec, aVec, color);
+	debugger->addLine(oVec, bVec, color);
+	
 	color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-	debugger->printMsg(glm::to_string(addVec));
+	debugger->addRay(oVec, crossVec, color);
+
+	cylinder = new Cylinder(material, floorTexture);
 }
 
 void Scene::Update(float deltaTime)
@@ -68,8 +70,9 @@ void Scene::Render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	grid->Render();
+	debugger->draw();
 
 	cube->render();
 
-	debugger->draw();
+	cylinder->render();
 }

@@ -1,5 +1,10 @@
 #include "Debugger.h"
 
+Debugger::Debugger()
+{
+
+}
+
 Debugger::Debugger(Camera* _camera)
 {
 	camera = _camera;

@@ -9,6 +9,11 @@
 
 #include <glm/gtx/string_cast.hpp>
 
+#include "Debugger.h"
+
+#include <string> 
+
+
 #include <iostream>
 #include <vector>
 
@@ -19,23 +24,24 @@ class CylinderMesh
 private:
     float radius = 1.0;
     float height = 2;
+    int sectors = 30;
 
-    vector<float> tmpVertices;
+    vector<float> circleVertices;
 
     vector<float> vertices;
     vector<float> normals;
     vector<float> texCoords;
 
-    int sectorCount = 50;
-
     vector<int> indices;
+
+    Debugger* debugger;
 
     unsigned int VBO;
     unsigned int VAO;
     unsigned int EBO;
 
 public:
-    std::vector<float> getUnitCircleVertices();
+    std::vector<float> getCircleVertices();
 
     CylinderMesh();
     void Render();

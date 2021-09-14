@@ -32,6 +32,7 @@ public:
 	vector<Ray*> rays;
 	vector<Cube*> models;
 
+	Debugger();
 	Debugger(Camera* _camera);
 
 	void printMsg(string txt);

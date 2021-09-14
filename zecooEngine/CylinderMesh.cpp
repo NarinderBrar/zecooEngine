@@ -1,107 +1,129 @@
 #include "CylinderMesh.h"
 #include "math.h"
 
-std::vector<float> CylinderMesh::getUnitCircleVertices()
+std::vector<float> CylinderMesh::getCircleVertices()
 {
     const float PI = 3.1415926f;
-    float sectorStep = 2 * PI / sectorCount;
-    float sectorAngle;  // radian
+    float sectorStep = 2 * PI / sectors;
+    float sectorAngle;
 
-    std::vector<float> unitCircleVertices;
-    for (int i = 0; i <= sectorCount; ++i)
+    std::vector<float> circleVertices;
+
+    for (int i = 0; i <= sectors; ++i)
     {
         sectorAngle = i * sectorStep;
-        unitCircleVertices.push_back(cos(sectorAngle)); // x
-        unitCircleVertices.push_back(sin(sectorAngle)); // y
-        unitCircleVertices.push_back(0);                // z
+
+        circleVertices.push_back(cos(sectorAngle));
+        circleVertices.push_back(sin(sectorAngle));
+        circleVertices.push_back(0);
     }
-    return unitCircleVertices;
+    return circleVertices;
 }
 
 
 CylinderMesh::CylinderMesh()
 {
-    // clear memory of prev arrays
-    std::vector<float>().swap(vertices);
-    std::vector<float>().swap(normals);
-    std::vector<float>().swap(texCoords);
+    std::vector<float> unitVertices = getCircleVertices();
 
-    // get unit circle vectors on XY-plane
-    std::vector<float> unitVertices = getUnitCircleVertices();
-
-    // put side tmpVertices to arrays
+    // Side vertices
+    //i = 0 for bottom circle, i = 1 for top circle
     for (int i = 0; i < 2; ++i)
     {
-        float h = -height / 2.0f + i * height;           // z value; -h/2 to h/2
-        float t = 1.0f - i;                              // vertical tex coord; 1 to 0
+        //height = -h/2 to h/2
+        float h = -height / 2.0f + i * height;
 
-        for (int j = 0, k = 0; j <= sectorCount; ++j, k += 3)
+        //texture coordinates t = 1 to 0
+        float t = 1.0f - i;
+
+        for (int j = 0, k = 0; j <= sectors; ++j, k += 3)
         {
             float ux = unitVertices[k];
             float uy = unitVertices[k + 1];
             float uz = unitVertices[k + 2];
 
             // position vector
-            tmpVertices.push_back(ux * radius);             // vx
-            tmpVertices.push_back(uy * radius);             // vy
-            tmpVertices.push_back(h);                       // vz
+            circleVertices.push_back(ux * radius); 
+            circleVertices.push_back(uy * radius); 
+            circleVertices.push_back(h);   
 
             // normal vector
-            normals.push_back(ux);                       // nx
-            normals.push_back(uy);                       // ny
-            normals.push_back(uz);                       // nz
+            normals.push_back(ux);             
+            normals.push_back(uy);                 
+            normals.push_back(uz);              
 
             // texture coordinate
-            texCoords.push_back((float)j / sectorCount); // s
-            texCoords.push_back(t);                      // t
+            //s -> start with 0
+            texCoords.push_back((float)j / sectors);
+            //t -> start with 1
+            //(0,1) first coordinate on top left
+            texCoords.push_back(t);                 
         }
     }
 
-    // the starting index for the base/top surface
-    //NOTE: it is used for generating indices later
-    int baseCenterIndex = (int)tmpVertices.size() / 3;
-    int topCenterIndex = baseCenterIndex + sectorCount + 1; // include center vertex
+    int baseCenterIndex = (int)circleVertices.size() / 3;
+    int topCenterIndex = baseCenterIndex + sectors + 1;
 
-    // put base and top tmpVertices to arrays
+    debugger = new Debugger(); 
+    debugger->printMsg(std::to_string(circleVertices.size()));
+    debugger->printMsg(std::to_string(baseCenterIndex));
+    debugger->printMsg(std::to_string(topCenterIndex));
+
+    //debugger->printMsg(glm::to_string(baseCenterIndex));
+    //debugger->printMsg(glm::to_string(topCenterIndex));
+
+    // put base and top vertices to arrays
     for (int i = 0; i < 2; ++i)
     {
-        float h = -height / 2.0f + i * height;           // z value; -h/2 to h/2
-        float nz = -1 + i * 2;                           // z value of normal; -1 to 1
+        // z value; -h/2 to h/2
+        float h = -height / 2.0f + i * height;  
+
+        // z value of normal; -1 to 1
+        float nz = -1 + i * 2;                           
 
         // center point
-        tmpVertices.push_back(0);     tmpVertices.push_back(0);     tmpVertices.push_back(h);
-        normals.push_back(0);      normals.push_back(0);      normals.push_back(nz);
-        texCoords.push_back(0.5f); texCoords.push_back(0.5f);
+        circleVertices.push_back(0);     
+        circleVertices.push_back(0);     
+        circleVertices.push_back(h);
 
-        for (int j = 0, k = 0; j < sectorCount; ++j, k += 3)
+        normals.push_back(0);
+        normals.push_back(0);
+        normals.push_back(nz);
+
+        texCoords.push_back(0.5f); 
+        texCoords.push_back(0.5f);
+
+        for (int j = 0, k = 0; j < sectors; ++j, k += 3)
         {
             float ux = unitVertices[k];
             float uy = unitVertices[k + 1];
 
             // position vector
-            tmpVertices.push_back(ux * radius);             // vx
-            tmpVertices.push_back(uy * radius);             // vy
-            tmpVertices.push_back(h);                       // vz
+            circleVertices.push_back(ux * radius);
+            circleVertices.push_back(uy * radius);
+            circleVertices.push_back(h);
 
             // normal vector
-            normals.push_back(0);                        // nx
-            normals.push_back(0);                        // ny
-            normals.push_back(nz);                       // nz
+            normals.push_back(0);
+            normals.push_back(0); 
+            normals.push_back(nz);
 
             // texture coordinate
-            texCoords.push_back(-ux * 0.5f + 0.5f);      // s
-            texCoords.push_back(-uy * 0.5f + 0.5f);      // t
+            texCoords.push_back(-ux * 0.5f + 0.5f);
+            texCoords.push_back(-uy * 0.5f + 0.5f);
         }
     }
 
-    int k1 = 0;                         // 1st vertex index at base
-    int k2 = sectorCount + 1;           // 1st vertex index at top
+    // 1st vertex index at base
+    int k1 = 0;
 
-    for (int v = 0, t = 0; v < tmpVertices.size() ; v+=3, t+=2)
+    // 1st vertex index at top
+    int k2 = sectors + 1;           
+
+    for (int v = 0, t = 0; v < circleVertices.size() ; v+=3, t+=2)
     {
-        vertices.push_back(tmpVertices[v]);
-        vertices.push_back(tmpVertices[v+1]);
-        vertices.push_back(tmpVertices[v+2]);
+        vertices.push_back(circleVertices[v]);
+        vertices.push_back(circleVertices[v+1]);
+        vertices.push_back(circleVertices[v+2]);
 
         vertices.push_back(normals[v]);
         vertices.push_back(normals[v+1]);
@@ -113,7 +135,7 @@ CylinderMesh::CylinderMesh()
 
 
     // indices for the side surface
-    for (int i = 0; i < sectorCount; ++i, ++k1, ++k2)
+    for (int i = 0; i < sectors; ++i, ++k1, ++k2)
     {
         // 2 triangles per sector
         // k1 => k1+1 => k2
@@ -128,11 +150,9 @@ CylinderMesh::CylinderMesh()
     }
 
     // indices for the base surface
-    //NOTE: baseCenterIndex and topCenterIndices are pre-computed during vertex generation
-    //      please see the previous code snippet
-   for (int i = 0, k = baseCenterIndex + 1; i < sectorCount; ++i, ++k)
+   for (int i = 0, k = baseCenterIndex + 1; i < sectors; ++i, ++k)
     {
-        if (i < sectorCount - 1)
+        if (i < sectors - 1)
         {
             indices.push_back(baseCenterIndex);
             indices.push_back(k + 1);
@@ -147,9 +167,9 @@ CylinderMesh::CylinderMesh()
     }
 
     // indices for the top surface
-    for (int i = 0, k = topCenterIndex + 1; i < sectorCount; ++i, ++k)
+    for (int i = 0, k = topCenterIndex + 1; i < sectors; ++i, ++k)
     {
-        if (i < sectorCount - 1)
+        if (i < sectors - 1)
         {
             indices.push_back(topCenterIndex);
             indices.push_back(k);
