@@ -9,11 +9,6 @@
 
 #include <glm/gtx/string_cast.hpp>
 
-#include "Debugger.h"
-
-#include <string> 
-
-
 #include <iostream>
 #include <vector>
 
@@ -33,8 +28,6 @@ private:
     vector<float> texCoords;
 
     vector<int> indices;
-
-    Debugger* debugger;
 
     unsigned int VBO;
     unsigned int VAO;

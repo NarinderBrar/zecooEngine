@@ -10,6 +10,7 @@
 
 #include "Cube.h"
 #include "Cylinder.h"
+#include "Triangle.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -30,6 +31,7 @@ public:
 
 	Cube* cube;
 	Cylinder* cylinder;
+	Triangle* triangle;
 
 	Grid* grid;
 	Debugger* debugger;

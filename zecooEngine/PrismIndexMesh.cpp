@@ -1,6 +1,6 @@
-#include "TriangleIndexMesh.h"
+#include "PrismIndexMesh.h"
 
-TriangleIndexMesh::TriangleIndexMesh()
+PrismIndexMesh::PrismIndexMesh()
 {
     glGenVertexArrays(1, &VAO);
 
@@ -20,10 +20,10 @@ TriangleIndexMesh::TriangleIndexMesh()
     glEnableVertexAttribArray(0);
 }
 
-void TriangleIndexMesh::Render()
+void PrismIndexMesh::Render()
 {
     // render container
     glBindVertexArray(VAO);
-    
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+   // glDrawElements(GL_TRIANGLES, 100, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_LINE_STRIP, 72, GL_UNSIGNED_INT, 0);
 }

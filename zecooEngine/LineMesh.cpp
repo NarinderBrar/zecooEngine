@@ -3,7 +3,7 @@
 
 LineMesh::LineMesh()
 {
-    glLineWidth(2.0);
+    glLineWidth(1.0);
 
     glGenBuffers(1, &VBO);
     glGenVertexArrays(1, &VAO);

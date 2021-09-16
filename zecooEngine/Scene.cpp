@@ -8,9 +8,10 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	glEnable(GL_DEPTH_TEST);
 
 	floorTexture = new Texture();
-	floorTexture->Load("resources\\textures\\uv.jpg");
+	floorTexture->Load("resources\\textures\\cylinder.jpg");
 	floorTexture->SetSamplerObjectParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	floorTexture->SetSamplerObjectParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 	floorTexture->SetSamplerObjectParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
 	floorTexture->SetSamplerObjectParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -34,28 +35,14 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	material->linkLight(dlight);
 	material->linkCamera(camera);
 
-	cube = new Cube(material, floorTexture);
-	cube->transform->position(glm::vec3(2, 0.0, 2));
+	//cube = new Cube(material, floorTexture);
+	//cube->transform->position(glm::vec3(2, 0.0, 2));
 
 	debugger = new Debugger(camera);
-	color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-
-	glm::vec3 oVec = glm::vec3(0, 0, 0);
-	glm::vec3 aVec = glm::vec3(2, 0, 2);
-	glm::vec3 bVec = glm::vec3(0, 2, 0);	
-
-	glm::vec3 aVecN = glm::normalize(aVec);
-	glm::vec3 bVecN = glm::normalize(bVec);
-
-	glm::vec3 crossVec = glm::cross(aVecN, bVecN);
-
-	debugger->addLine(oVec, aVec, color);
-	debugger->addLine(oVec, bVec, color);
-	
-	color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-	debugger->addRay(oVec, crossVec, color);
 
 	cylinder = new Cylinder(material, floorTexture);
+
+	//triangle = new Triangle(material, floorTexture);
 }
 
 void Scene::Update(float deltaTime)
@@ -69,10 +56,14 @@ void Scene::Render()
 	glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	grid->Render();
+	
 	debugger->draw();
 
-	cube->render();
+	//cube->render();
 
 	cylinder->render();
+
+	grid->Render();
+
+	//triangle->render();
 }

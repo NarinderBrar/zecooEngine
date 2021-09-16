@@ -33,7 +33,7 @@ CylinderMesh::CylinderMesh()
         float h = -height / 2.0f + i * height;
 
         //texture coordinates t = 1 to 0
-        float t = 1.0f - i;
+        float t = 0.5f - i*0.5f;
 
         for (int j = 0, k = 0; j <= sectors; ++j, k += 3)
         {
@@ -63,11 +63,6 @@ CylinderMesh::CylinderMesh()
     int baseCenterIndex = (int)circleVertices.size() / 3;
     int topCenterIndex = baseCenterIndex + sectors + 1;
 
-    debugger = new Debugger(); 
-    debugger->printMsg(std::to_string(circleVertices.size()));
-    debugger->printMsg(std::to_string(baseCenterIndex));
-    debugger->printMsg(std::to_string(topCenterIndex));
-
     //debugger->printMsg(glm::to_string(baseCenterIndex));
     //debugger->printMsg(glm::to_string(topCenterIndex));
 
@@ -89,8 +84,16 @@ CylinderMesh::CylinderMesh()
         normals.push_back(0);
         normals.push_back(nz);
 
-        texCoords.push_back(0.5f); 
-        texCoords.push_back(0.5f);
+        if (i == 0)
+        {
+            texCoords.push_back(0.75f);
+            texCoords.push_back(0.75f);
+        }
+        else
+        {
+            texCoords.push_back(0.25f);
+            texCoords.push_back(0.75f);
+        }
 
         for (int j = 0, k = 0; j < sectors; ++j, k += 3)
         {
@@ -107,9 +110,17 @@ CylinderMesh::CylinderMesh()
             normals.push_back(0); 
             normals.push_back(nz);
 
-            // texture coordinate
-            texCoords.push_back(-ux * 0.5f + 0.5f);
-            texCoords.push_back(-uy * 0.5f + 0.5f);
+           if (i == 0)
+           {
+                // texture coordinate
+                texCoords.push_back(ux * 0.25f + 0.75f);
+                texCoords.push_back(uy * 0.25f + 0.75f);
+           }
+           else
+            {
+                texCoords.push_back(ux * 0.25f + 0.25f);
+                texCoords.push_back(uy * 0.25f + 0.75f);
+            }
         }
     }
 

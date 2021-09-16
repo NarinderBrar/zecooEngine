@@ -168,6 +168,8 @@
     <ClInclude Include="PhysicsEngine.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="PlaneMesh.h" />
+    <ClInclude Include="Prism.h" />
+    <ClInclude Include="PrismIndexMesh.h" />
     <ClInclude Include="Pyramid.h" />
     <ClInclude Include="PyramidMesh.h" />
     <ClInclude Include="Ray.h" />
@@ -188,6 +190,8 @@
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="TriangleIndexMesh.h" />
     <ClInclude Include="TriangleMesh.h" />
+    <ClInclude Include="Tube.h" />
+    <ClInclude Include="TubeMesh.h" />
     <ClInclude Include="VertexBufferObject.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
@@ -218,6 +222,8 @@
     <ClCompile Include="PhysicsEngine.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="PlaneMesh.cpp" />
+    <ClCompile Include="Prism.cpp" />
+    <ClCompile Include="PrismIndexMesh.cpp" />
     <ClCompile Include="Pyramid.cpp" />
     <ClCompile Include="PyramidMesh.cpp" />
     <ClCompile Include="Ray.cpp" />
@@ -236,6 +242,8 @@
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="TriangleIndexMesh.cpp" />
     <ClCompile Include="TriangleMesh.cpp" />
+    <ClCompile Include="Tube.cpp" />
+    <ClCompile Include="TubeMesh.cpp" />
     <ClCompile Include="VertexBufferObject.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
