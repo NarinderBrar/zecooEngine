@@ -28,29 +28,76 @@ TubeMesh::TubeMesh()
 
     for (int i = 0; i < circleVerticesTop.size(); i++)
     {
-        vertices.push_back(circleVerticesTop[i]);
+        positions.push_back(circleVerticesTop[i]);
     }
+    for (int i = 0; i < (circleVerticesTop.size() / 3)-2; i+=3)
+    {
+        normals.push_back(circleVerticesTop[i]);
+        normals.push_back(circleVerticesTop[i+1]);
+        normals.push_back(circleVerticesTop[i+2]);
+    }
+
+    /*for (int i = 0; i < circleVerticesTop.size(); i++)
+    {
+        positions.push_back(circleVerticesTop[i]);
+    }
+    for (int i = 0; i < circleVerticesTop.size()/3; i++)
+    {
+        normals.push_back(0);
+        normals.push_back(0);
+        normals.push_back(1);
+    }*/
 
     for (int i = 0; i < circleVerticesBottom.size(); i++)
     {
-        vertices.push_back(circleVerticesBottom[i]);
+        positions.push_back(circleVerticesBottom[i]);
+    }
+    for (int i = 0; i < circleVerticesBottom.size() / 3; i++)
+    {
+        normals.push_back(0);
+        normals.push_back(0);
+        normals.push_back(-1);
     }
 
     for (int i = 0; i < circleVerticesInnerTop.size(); i++)
     {
-        vertices.push_back(circleVerticesInnerTop[i]);
+        positions.push_back(circleVerticesInnerTop[i]);
+    }
+    for (int i = 0; i < circleVerticesInnerTop.size() / 3; i++)
+    {
+        normals.push_back(0);
+        normals.push_back(0);
+        normals.push_back(-1);
     }
 
     for (int i = 0; i < circleVerticesInnerBottom.size(); i++)
     {
-        vertices.push_back(circleVerticesInnerBottom[i]);
+        positions.push_back(circleVerticesInnerBottom[i]);
+    }
+    for (int i = 0; i < circleVerticesInnerBottom.size() / 3; i++)
+    {
+        normals.push_back(0);
+        normals.push_back(0);
+        normals.push_back(-1);
     }
 
-    totalVertices = vertices.size();
+    
+    for (int i = 0, k = 0; i < positions.size()/3; i++, k+=3)
+    {
+        vertices.push_back(positions[k]);
+        vertices.push_back(positions[k+1]);
+        vertices.push_back(positions[k+2]);
+
+        vertices.push_back(normals[k]);
+        vertices.push_back(normals[k+1]);
+        vertices.push_back(normals[k+2]);
+    }
+
+    totalVertices = positions.size();
     int k;
     int l;
     k = pointCount;
-    for (int i = 0; i < pointCount-1; i++)
+    for (int i = 0; i < pointCount - 1; i++)
     {
         indices.push_back(i);
         indices.push_back(k);
@@ -146,6 +193,9 @@ TubeMesh::TubeMesh()
     indices.push_back((pointCount * 4) - 1);
     indices.push_back(pointCount * 3);
 
+    debugger->printMsg(std::to_string(positions.size()));
+    debugger->printMsg(std::to_string(normals.size()));
+
     glGenVertexArrays(1, &VAO);
 
     glGenBuffers(1, &VBO);
@@ -159,13 +209,15 @@ TubeMesh::TubeMesh()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), &indices[0], GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(sizeof(float) * 3));
+    glEnableVertexAttribArray(1);
 }
 
 void TubeMesh::Render()
 {
     glBindVertexArray(VAO);
-    //glDrawElements(GL_LINE_STRIP, totalVertices + 500, GL_UNSIGNED_INT, 0);
-    glDrawElements(GL_TRIANGLES, totalVertices + 500, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 }

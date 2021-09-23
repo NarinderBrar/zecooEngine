@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <glm/gtx/string_cast.hpp>
+#include "Debugger.h"
 
 #include <iostream>
 #include <vector>
@@ -28,12 +29,17 @@ private:
 
     float height = 2;
 
-    int pointCount = 40;
+    int pointCount = 5;
     int totalVertices = 0;
 
     vector<float> vertices;
-    vector<int> indices;
+    
+    vector<float> positions;
+    vector<float> normals;
 
+    vector<int> indices;
+    Debugger* debugger;
+    
     unsigned int VBO;
     unsigned int VAO;
     unsigned int EBO;

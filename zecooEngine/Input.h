@@ -7,6 +7,8 @@ class Input
 	GLFWwindow* window;
 
 	public:
+		static double mouse_xpos, mouse_ypos;
+
 		Input(GLFWwindow* _window);
 		std::string getPressedKey();
 };

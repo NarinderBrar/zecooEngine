@@ -11,6 +11,8 @@
 #include "Cube.h"
 #include "Cylinder.h"
 #include "Triangle.h"
+#include "Plane.h"
+#include "Tube.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -32,6 +34,8 @@ public:
 	Cube* cube;
 	Cylinder* cylinder;
 	Triangle* triangle;
+	Plane* plane;
+	Tube* tube;
 
 	Grid* grid;
 	Debugger* debugger;
@@ -41,6 +45,8 @@ public:
 	Camera* camera;
 	glm::mat4 projection;
 
+	float v = 0.0f;
+	float u_time = 0.0f;
 	Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);
 
 	void Update(float deltaTime);

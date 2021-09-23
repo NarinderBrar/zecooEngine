@@ -14,3 +14,4 @@ std::string Input::getPressedKey()
 
 	return "";
 }
+

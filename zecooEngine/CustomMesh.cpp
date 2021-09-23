@@ -12,6 +12,7 @@ CustomMesh::CustomMesh()
     for (int i = 0; i <= stackCount; ++i)
     {
         stackAngle = PI / 2 - i * stackStep;        // starting from pi/2 to -pi/2
+
         xz = radius * cos(stackAngle);             // r * cos(u)
         y = radius * sin(stackAngle);              // r * sin(u)
 
@@ -24,6 +25,7 @@ CustomMesh::CustomMesh()
             // vertex position (x, y, z)
             x = xz * cos(sectorAngle);             // r * cos(u) * cos(v)
             z = xz * sin(sectorAngle);             // r * cos(u) * sin(v)
+
             vertices.push_back(x);
             vertices.push_back(y);
             vertices.push_back(z);

@@ -5,7 +5,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	phyEng = physicsEngine;
 
 	// configure global opengl state
-	glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
 	floorTexture = new Texture();
 	floorTexture->Load("resources\\textures\\cylinder.jpg");
@@ -30,7 +30,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	dlight->diffuse = glm::vec3(1.0, 1.0, 1.0);
 	dlight->ambient = glm::vec3(0.5, 0.5, 0.5);
 
-	glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
 	material = new Material(shader, color);
 	material->linkLight(dlight);
 	material->linkCamera(camera);
@@ -40,15 +40,26 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 
 	debugger = new Debugger(camera);
 
+	std::string versionString = std::string((const char*)glGetString(GL_VERSION));
+	debugger->printMsg("OpenGl : " + versionString);
+
 	cylinder = new Cylinder(material, floorTexture);
+	cylinder->transform->position(glm::vec3(0, 1, 0));
 
 	//triangle = new Triangle(material, floorTexture);
+
+	tube = new Tube(material, NULL);
 }
 
 void Scene::Update(float deltaTime)
 {
 	camera->RotateViewPoint(500, glfwGetTime());
 	projection = camera->GetPerspectiveProjectionMatrix();
+
+	u_time += deltaTime;
+
+	shader->use();
+	shader->setFloat("u_time", u_time);
 }
 
 void Scene::Render()
@@ -61,9 +72,10 @@ void Scene::Render()
 
 	//cube->render();
 
-	cylinder->render();
+	//cylinder->render();
 
-	grid->Render();
+	//grid->Render();
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	tube->render();
 
-	//triangle->render();
 }

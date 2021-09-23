@@ -25,5 +25,5 @@ void TriangleIndexMesh::Render()
     // render container
     glBindVertexArray(VAO);
     
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 }

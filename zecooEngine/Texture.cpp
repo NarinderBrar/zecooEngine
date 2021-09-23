@@ -6,6 +6,7 @@ Texture::Texture()
 {
 
 }
+
 Texture::~Texture()
 {}
 
