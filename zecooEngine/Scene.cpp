@@ -35,7 +35,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	material->linkLight(dlight);
 	material->linkCamera(camera);
 
-	//cube = new Cube(material, floorTexture);
+	cube = new Cube(material, floorTexture);
 	//cube->transform->position(glm::vec3(2, 0.0, 2));
 
 	debugger = new Debugger(camera);
@@ -70,7 +70,7 @@ void Scene::Render()
 	
 	debugger->draw();
 
-	//cube->render();
+	cube->render();
 
 	//cylinder->render();
 
