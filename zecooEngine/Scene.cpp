@@ -22,7 +22,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	glm::vec3 camUp = glm::vec3(0.0, 1.0, 0.0);
 	camera->Set(camPos, camView, camUp);
 
-	shader = new Shader("resources\\shader\\basicTextureLight.vs", "resources\\shader\\basicTextureLight.fs");
+	shader = new Shader("resources\\shader\\3.3.shader.vs", "resources\\shader\\3.3.shader.fs");
 
 	grid = new Grid(camera);
 
@@ -30,25 +30,19 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	dlight->diffuse = glm::vec3(1.0, 1.0, 1.0);
 	dlight->ambient = glm::vec3(0.5, 0.5, 0.5);
 
-	glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
+	glm::vec4 color = glm::vec4(0.0f, 0.0f, 0.8f, 1.0f);
 	material = new Material(shader, color);
 	material->linkLight(dlight);
 	material->linkCamera(camera);
-
-	cube = new Cube(material, floorTexture);
-	//cube->transform->position(glm::vec3(2, 0.0, 2));
 
 	debugger = new Debugger(camera);
 
 	std::string versionString = std::string((const char*)glGetString(GL_VERSION));
 	debugger->printMsg("OpenGl : " + versionString);
 
-	cylinder = new Cylinder(material, floorTexture);
-	cylinder->transform->position(glm::vec3(0, 1, 0));
-
-	//triangle = new Triangle(material, floorTexture);
-
-	//tube = new Tube(material, NULL);
+	tube = new Tube(material, NULL);
+	tube->transform->scale(glm::vec3(2, 2, 2));
+	tube->transform->rotate(45, glm::vec3(1, 0, 0));
 }
 
 void Scene::Update(float deltaTime)
@@ -57,9 +51,7 @@ void Scene::Update(float deltaTime)
 	projection = camera->GetPerspectiveProjectionMatrix();
 
 	u_time += deltaTime;
-
-	shader->use();
-	shader->setFloat("u_time", u_time);
+	tube->transform->rotate(deltaTime, glm::vec3(1, 0, 0));
 }
 
 void Scene::Render()
@@ -67,15 +59,9 @@ void Scene::Render()
 	glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	
 	debugger->draw();
 
-	cube->render();
-
-	//cylinder->render();
-
 	grid->Render();
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//tube->render();
 
+	tube->render();
 }

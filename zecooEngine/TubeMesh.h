@@ -29,10 +29,13 @@ private:
 
     float height = 2;
 
-    int pointCount = 5;
+    int pointCount = 10;
     int totalVertices = 0;
 
     vector<float> vertices;
+
+    //3 for position, 3 for normals
+    int verticeElements = 6;
     
     vector<float> positions;
     vector<float> normals;
