@@ -48,7 +48,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 
 	//triangle = new Triangle(material, floorTexture);
 
-	tube = new Tube(material, NULL);
+	//tube = new Tube(material, NULL);
 }
 
 void Scene::Update(float deltaTime)
@@ -74,8 +74,8 @@ void Scene::Render()
 
 	//cylinder->render();
 
-	//grid->Render();
+	grid->Render();
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	tube->render();
+	//tube->render();
 
 }

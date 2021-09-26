@@ -37,17 +37,6 @@ TubeMesh::TubeMesh()
         normals.push_back(circleVerticesTop[i+2]);
     }
 
-    /*for (int i = 0; i < circleVerticesTop.size(); i++)
-    {
-        positions.push_back(circleVerticesTop[i]);
-    }
-    for (int i = 0; i < circleVerticesTop.size()/3; i++)
-    {
-        normals.push_back(0);
-        normals.push_back(0);
-        normals.push_back(1);
-    }*/
-
     for (int i = 0; i < circleVerticesBottom.size(); i++)
     {
         positions.push_back(circleVerticesBottom[i]);
