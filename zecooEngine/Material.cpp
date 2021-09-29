@@ -22,6 +22,7 @@ void Material::updateLight(DirectionalLight* light)
 
 	directionalLightId++;
 }
+
 void Material::linkLight(DirectionalLight* light)
 {  
 	updateLight(light);

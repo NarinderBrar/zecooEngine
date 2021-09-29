@@ -40,18 +40,30 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	std::string versionString = std::string((const char*)glGetString(GL_VERSION));
 	debugger->printMsg("OpenGl : " + versionString);
 
-	tube = new Tube(material, NULL);
-	tube->transform->scale(glm::vec3(2, 2, 2));
-	tube->transform->rotate(45, glm::vec3(1, 0, 0));
+	cube = new Cube(material, NULL);
+
+	glm::mat4 pose = glm::mat4(1.0);
+
+	glm::mat4 scale = glm::mat4(
+		1.0, 0.0, 0.0, 0.0,
+		0.0, 2.0, 0.0, 0.0,
+		0.0, 0.0, 1.0, 0.0,
+		0.0, 0.0, 0.0, 1.0);
+
+	glm::mat4 pos = glm::mat4(
+		1.0, 0.0, 0.0, 0.0,
+		0.0, 2.0, 0.0, 0.0,
+		0.0, 0.0, 1.0, 0.0,
+		1.0, 0.0, 0.0, 1.0);
+
+
+	cube->transform->pose = pos*scale*pose;
 }
 
 void Scene::Update(float deltaTime)
 {
 	camera->RotateViewPoint(500, glfwGetTime());
 	projection = camera->GetPerspectiveProjectionMatrix();
-
-	u_time += deltaTime;
-	tube->transform->rotate(deltaTime, glm::vec3(1, 0, 0));
 }
 
 void Scene::Render()
@@ -63,5 +75,5 @@ void Scene::Render()
 
 	grid->Render();
 
-	tube->render();
+	cube->render();
 }
