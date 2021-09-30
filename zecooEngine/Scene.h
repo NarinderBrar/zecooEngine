@@ -45,6 +45,14 @@ public:
 	Camera* camera;
 	glm::mat4 projection;
 
+	glm::mat4 pose;
+
+	double angle = 0;
+
+	glm::mat4 position;
+	glm::mat4 rotation;
+	glm::mat4 I;
+
 	float v = 0.0f;
 	float u_time = 0.0f;
 	Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);
