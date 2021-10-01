@@ -41,15 +41,8 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	debugger->printMsg("OpenGl : " + versionString);
 
 	cube = new Cube(material, NULL);
-	I = glm::mat4(1.0);
 
-	position = glm::mat4(
-		1.0, 0.0, 0.0, 0.0,
-		0.0, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		2.0, 0.0, 0.0, 1.0);
-
-	//I = I * position;
+	cubeB = new Cube(material, NULL);
 }
 
 void Scene::Update(float deltaTime)
@@ -57,25 +50,10 @@ void Scene::Update(float deltaTime)
 	//camera->RotateViewPoint(500, glfwGetTime());
 	//projection = camera->GetPerspectiveProjectionMatrix();
 
-	/*angle = deltaTime * 2;
+	cube->transform->worldRotate(glm::radians(45.0*deltaTime), glm::vec3(0, 1, 0));
 
-	rotation= glm::mat4(
-		cos(angle), -sin(angle), 0.0, 0.0,
-		sin(angle), cos(angle), 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0);
-
-	I = I * rotation;*/
-
-	position = glm::mat4(
-		1.0, 0.0, 0.0, 0.0,
-		0.0, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		2.0*deltaTime, 0.0, 0.0, 1.0);
-
-	I = I * position;
-
-	cube->transform->pose = I;
+	cubeB->transform->setParent(cube->transform);
+	cubeB->transform->translate(glm::vec3(0, 1 * deltaTime, 0));
 }
 
 void Scene::Render()
@@ -88,4 +66,5 @@ void Scene::Render()
 	grid->Render();
 
 	cube->render();
+	cubeB->render();
 }

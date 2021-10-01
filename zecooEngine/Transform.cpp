@@ -16,48 +16,65 @@ void Transform::position(glm::vec3 vec)
 
 void Transform::setParent(Transform* parent)
 {
-	worldMatrix = parent->worldMatrix;
+	parentMatrix = parent->pose;
+	Transformation();
 }
 
 void Transform::translate(glm::vec3 vec)
-{
-	worldMatrix = glm::translate(worldMatrix, vec);
-	Transformation();
-}
-
-void Transform::rotate(float angle, glm::vec3 axis)
-{
-	worldMatrix = glm::rotate(worldMatrix, glm::degrees(angle), axis);
-	Transformation();
-}
-
-void Transform::scale(glm::vec3 vec)
-{
-	worldMatrix = glm::scale(worldMatrix, vec);
-	Transformation();
-}
-
-void Transform::localTranslate(glm::vec3 vec)
 {
 	localTranslationMatrix = glm::translate(localTranslationMatrix, vec);
 	Transformation();
 }
 
-void Transform::localRotate(float angle, glm::vec3 axis)
+void Transform::rotate(float angle, glm::vec3 axis)
 {
 	localRotationMatrix = glm::rotate(localRotationMatrix, glm::degrees(angle), axis);
 	Transformation();
 }
 
-void Transform::localScale(glm::vec3 vec)
+void Transform::scale(glm::vec3 vec)
 {
 	localScaleMatrix = glm::scale(localScaleMatrix, vec);
 	Transformation();
 }
 
+void Transform::worldTranslate(glm::vec3 vec)
+{
+	glm::mat4 I = glm::mat4(1.0);
+
+	I = glm::translate(I, vec);
+	worldMatrix = I * worldMatrix;
+
+	Transformation();
+}
+
+void Transform::worldRotate(float angle, glm::vec3 axis)
+{
+	glm::mat4 I = glm::mat4(1.0);
+
+	I = glm::rotate(I, glm::degrees(angle), axis);
+	worldMatrix = I * worldMatrix;
+
+	Transformation();
+}
+
+void Transform::worldScale(glm::vec3 vec)
+{
+	glm::mat4 I = glm::mat4(1.0);
+
+	I = glm::scale(I, vec);
+	worldMatrix = I * worldMatrix;
+
+	Transformation();
+}
+
 void Transform::Transformation()
 {
-	pose = worldMatrix * localTranslationMatrix * localRotationMatrix  *localScaleMatrix;
+	//world translate ignore local rotation
+	pose = parentMatrix  * worldMatrix * localTranslationMatrix * localRotationMatrix * localScaleMatrix;
+
+	//local forward movement
+	//world rotate and after that local translate
 }
 
 Transform::~Transform()
