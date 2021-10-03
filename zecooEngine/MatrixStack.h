@@ -65,10 +65,14 @@ namespace glutil
 		void SetMatrix(const glm::mat4 &theMatrix); 
 		void SetIdentity(); 
 
+		
+
 	private:
 		std::stack<glm::mat4, std::vector<glm::mat4> > m_stack;
+		
 		glm::mat4 m_currMatrix;
 	}; 
+
 	class PushStack
 	{
 	public: 
@@ -91,4 +95,5 @@ namespace glutil
 		PushStack(const PushStack &);
 		PushStack &operator=(const PushStack&);
 	}; 
+
 }

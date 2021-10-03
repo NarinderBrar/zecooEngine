@@ -22,19 +22,22 @@
 
 #include "PhysicsEngine.h"
 #include "MatrixStack.h"
+#include "Transformations.h"
 
 using namespace glutil;
 
 class Scene
 {
 public:
-	Shader* shader;
+	Shader* shaderG;
+	Shader* shaderB;
 
 	DirectionalLight* dlight;
-	Material* material;
+	Material* materialG;
+	Material* materialB;
 	Texture* floorTexture;
 
-	Cube* cube;
+	Cube* cubeG;
 	Cube* cubeB;
 	Cylinder* cylinder;
 	Triangle* triangle;
@@ -57,8 +60,11 @@ public:
 	glm::mat4 rotation;
 
 	glm::mat4 I = glm::mat4(1.0);
+
 	MatrixStack matrixStack;
-	
+	Transformations* transformations;
+
+	int id = 0;
 	float v = 0.0f;
 	float u_time = 0.0f;
 	Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);

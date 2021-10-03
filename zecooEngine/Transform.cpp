@@ -14,9 +14,9 @@ void Transform::position(glm::vec3 vec)
 		vec.x, vec.y, vec.z, 1.0);
 }
 
-void Transform::setParent(Transform* parent)
+void Transform::setParent(Transform* _parent)
 {
-	parentMatrix = parent->pose;
+	parent = _parent;
 	Transformation();
 }
 
@@ -70,6 +70,9 @@ void Transform::worldScale(glm::vec3 vec)
 
 void Transform::Transformation()
 {
+	if(parent!=NULL)
+		parentMatrix = parent->pose;
+
 	//world translate ignore local rotation
 	pose = parentMatrix  * worldMatrix * localTranslationMatrix * localRotationMatrix * localScaleMatrix;
 

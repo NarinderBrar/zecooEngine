@@ -22,7 +22,8 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	glm::vec3 camUp = glm::vec3(0.0, 1.0, 0.0);
 	camera->Set(camPos, camView, camUp);
 
-	shader = new Shader("resources\\shader\\3.3.shader.vs", "resources\\shader\\3.3.shader.fs");
+	shaderG = new Shader("resources\\shader\\3.3.shader.vs", "resources\\shader\\3.3.shader.fs");
+	shaderB = new Shader( "resources\\shader\\3.3.shader.vs", "resources\\shader\\3.3.shader.fs" );
 
 	grid = new Grid(camera);
 
@@ -30,30 +31,50 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	dlight->diffuse = glm::vec3(1.0, 1.0, 1.0);
 	dlight->ambient = glm::vec3(0.5, 0.5, 0.5);
 
-	glm::vec4 color = glm::vec4(0.0f, 0.0f, 0.8f, 1.0f);
-	material = new Material(shader, color);
-	material->linkLight(dlight);
-	material->linkCamera(camera);
+	glm::vec4 colorG = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+	materialG = new Material(shaderG, colorG);
+	materialG->linkLight(dlight);
+	materialG->linkCamera(camera);
+
+	glm::vec4 colorB = glm::vec4( 1.0f, 0.0f, 0.0f, 1.0f );
+	materialB = new Material( shaderB, colorB );
+	materialB->linkLight( dlight );
+	materialB->linkCamera( camera );
 
 	debugger = new Debugger(camera);
 
 	std::string versionString = std::string((const char*)glGetString(GL_VERSION));
 	debugger->printMsg("OpenGl : " + versionString);
 
-	cube = new Cube(material, NULL);
+	cubeG = new Cube(materialG, NULL);
+	cubeB = new Cube(materialB, NULL);
 
-	cubeB = new Cube(material, NULL);
+	transformations = new Transformations();
+
+	transformations->Scale( glm::vec3( 1, 0.2, 1 ) );
+	id = transformations->Add();
+
+	transformations->Translate(glm::vec3(0,2,0));
+	transformations->Add();
+
+	cubeG->transform->pose = transformations->getPose(2);
+
+	transformations->list[0] = glm::mat4( 1.0 );
+	transformations->list[1] = glm::mat4( 1.0 );
+
+	transformations->Scale( glm::vec3( 0.2, 1, 0.2 ) );
+	transformations->Add();
+
+	transformations->Translate( glm::vec3( 0, 0, 0 ) );
+	transformations->Add();
+
+	cubeB->transform->pose = transformations->getPose( 4 );
 }
 
 void Scene::Update(float deltaTime)
 {
 	//camera->RotateViewPoint(500, glfwGetTime());
 	//projection = camera->GetPerspectiveProjectionMatrix();
-
-	cube->transform->worldRotate(glm::radians(45.0*deltaTime), glm::vec3(0, 1, 0));
-
-	cubeB->transform->setParent(cube->transform);
-	cubeB->transform->translate(glm::vec3(0, 1 * deltaTime, 0));
 }
 
 void Scene::Render()
@@ -65,6 +86,6 @@ void Scene::Render()
 
 	grid->Render();
 
-	cube->render();
+	cubeG->render();
 	cubeB->render();
 }
