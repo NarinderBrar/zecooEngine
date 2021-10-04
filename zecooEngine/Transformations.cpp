@@ -16,6 +16,12 @@ void Transformations::Scale( glm::vec3 scaleVec )
 	matrix = glm::scale( matrix, scaleVec );
 }
 
+void Transformations::Rotate( float angle, glm::vec3 axis )
+{
+	matrix = glm::mat4( 1.0 );
+	matrix = glm::rotate( matrix, glm::radians(angle), axis );
+}
+
 glm::mat4 Transformations::getPose(int level)
 {
 	glm::mat4 I = glm::mat4(1.0);
@@ -23,7 +29,7 @@ glm::mat4 Transformations::getPose(int level)
 	if( level >= list.size() )
 		level = list.size();
 
-	for( int i = 0; i < level; i++ )
+	for( int i = level-1; i >= 0; i-- )
 	{
 		I = I * list[i];
 	}

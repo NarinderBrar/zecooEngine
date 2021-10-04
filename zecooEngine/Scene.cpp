@@ -36,7 +36,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	materialG->linkLight(dlight);
 	materialG->linkCamera(camera);
 
-	glm::vec4 colorB = glm::vec4( 1.0f, 0.0f, 0.0f, 1.0f );
+	glm::vec4 colorB = glm::vec4( 0.0f, 0.0f, 1.0f, 1.0f );
 	materialB = new Material( shaderB, colorB );
 	materialB->linkLight( dlight );
 	materialB->linkCamera( camera );
@@ -49,26 +49,32 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	cubeG = new Cube(materialG, NULL);
 	cubeB = new Cube(materialB, NULL);
 
-	transformations = new Transformations();
+	matrixStack.Push();
 
-	transformations->Scale( glm::vec3( 1, 0.2, 1 ) );
-	id = transformations->Add();
+	//Stack for Cube B
+	matrixStack.Translate( 2, 0, 0 );
+	matrixStack.Push();
 
-	transformations->Translate(glm::vec3(0,2,0));
-	transformations->Add();
+	matrixStack.Rotate(glm::vec3(0,1,0),45.0);
+	matrixStack.Push();
 
-	cubeG->transform->pose = transformations->getPose(2);
+	matrixStack.Scale(1,0.2,1);
+	matrixStack.Push();
 
-	transformations->list[0] = glm::mat4( 1.0 );
-	transformations->list[1] = glm::mat4( 1.0 );
+	cubeB->transform->pose = matrixStack.Top();
 
-	transformations->Scale( glm::vec3( 0.2, 1, 0.2 ) );
-	transformations->Add();
+	matrixStack.Pop();
+	matrixStack.Pop();
+	matrixStack.Pop();
 
-	transformations->Translate( glm::vec3( 0, 0, 0 ) );
-	transformations->Add();
+	//Stack for Cube G
+	matrixStack.Translate( 0, 0.5, 0 );
+	matrixStack.Push();
 
-	cubeB->transform->pose = transformations->getPose( 4 );
+	matrixStack.Scale( 0.2, 1, 0.2 );
+	matrixStack.Push();
+
+	cubeG->transform->pose = matrixStack.Top();
 }
 
 void Scene::Update(float deltaTime)

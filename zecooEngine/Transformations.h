@@ -15,6 +15,7 @@ public:
 
 	void Translate( glm::vec3 offsetVec );
 	void Scale( glm::vec3 scaleVec );
+	void Rotate( float angle, glm::vec3 axis );
 	glm::mat4 getPose( int level );
 
 	int Add();

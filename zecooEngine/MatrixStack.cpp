@@ -29,6 +29,7 @@ namespace glutil
 		theMat[0].z = axis.x * axis.z * (fInvCos) - (axis.y * fSin);
 		theMat[1].z = axis.y * axis.z * (fInvCos) + (axis.x * fSin);
 		theMat[2].z = (axis.z * axis.z) + ((1 - axis.z * axis.z) * fCos);
+
 		m_currMatrix *= theMat;
 	}
 
