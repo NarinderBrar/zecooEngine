@@ -24,6 +24,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 
 	shaderG = new Shader("resources\\shader\\3.3.shader.vs", "resources\\shader\\3.3.shader.fs");
 	shaderB = new Shader( "resources\\shader\\3.3.shader.vs", "resources\\shader\\3.3.shader.fs" );
+	shaderR = new Shader( "resources\\shader\\3.3.shader.vs", "resources\\shader\\3.3.shader.fs" );
 
 	grid = new Grid(camera);
 
@@ -41,46 +42,31 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	materialB->linkLight( dlight );
 	materialB->linkCamera( camera );
 
+	glm::vec4 colorR = glm::vec4( 1.0f, 0.0f, 0.0f, 1.0f );
+	materialR = new Material( shaderR, colorR );
+	materialR->linkLight( dlight );
+	materialR->linkCamera( camera );
+
 	debugger = new Debugger(camera);
 
 	std::string versionString = std::string((const char*)glGetString(GL_VERSION));
 	debugger->printMsg("OpenGl : " + versionString);
 
+	cubeR = new Cube( materialR, NULL );
 	cubeG = new Cube(materialG, NULL);
 	cubeB = new Cube(materialB, NULL);
 
-	matrixStack.Push();
+	transformations = new Transformations();
 
-	//Stack for Cube B
-	matrixStack.Translate( 2, 0, 0 );
-	matrixStack.Push();
-
-	matrixStack.Rotate(glm::vec3(0,1,0),45.0);
-	matrixStack.Push();
-
-	matrixStack.Scale(1,0.2,1);
-	matrixStack.Push();
-
-	cubeB->transform->pose = matrixStack.Top();
-
-	matrixStack.Pop();
-	matrixStack.Pop();
-	matrixStack.Pop();
-
-	//Stack for Cube G
-	matrixStack.Translate( 0, 0.5, 0 );
-	matrixStack.Push();
-
-	matrixStack.Scale( 0.2, 1, 0.2 );
-	matrixStack.Push();
-
-	cubeG->transform->pose = matrixStack.Top();
+	transformations->Translate(glm::vec3(1, 1, 0 ));
+	transformations->Add();
 }
 
 void Scene::Update(float deltaTime)
 {
 	//camera->RotateViewPoint(500, glfwGetTime());
 	//projection = camera->GetPerspectiveProjectionMatrix();
+	cubeR->transform->pose *= transformations->getPose( 1 );
 }
 
 void Scene::Render()
@@ -92,6 +78,7 @@ void Scene::Render()
 
 	grid->Render();
 
-	cubeG->render();
-	cubeB->render();
+	//cubeG->render();
+	//cubeB->render();
+	cubeR->render();
 }

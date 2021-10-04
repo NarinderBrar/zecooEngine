@@ -31,14 +31,17 @@ class Scene
 public:
 	Shader* shaderG;
 	Shader* shaderB;
+	Shader* shaderR;
 
 	DirectionalLight* dlight;
 	Material* materialG;
 	Material* materialB;
+	Material* materialR;
 	Texture* floorTexture;
 
 	Cube* cubeG;
 	Cube* cubeB;
+	Cube* cubeR;
 	Cylinder* cylinder;
 	Triangle* triangle;
 	Plane* plane;
