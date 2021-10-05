@@ -199,7 +199,7 @@
       <Filter>Header Files\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Transformations.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -354,7 +354,7 @@
       <Filter>Source Files\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Transformations.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

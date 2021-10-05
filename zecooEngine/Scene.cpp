@@ -58,15 +58,33 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 
 	transformations = new Transformations();
 
-	transformations->Translate(glm::vec3(1, 1, 0 ));
-	transformations->Add();
+	//cube R
+	transformations->Scale( glm::vec3( 0.2, 0.2, 1 ) );
+	transformations->Add();//matrix added to level 1
+	transformations->Translate( glm::vec3(1,0,0));
+	transformations->Add();//matrix added to level 2
+
+	//cube G
+	transformations->Scale( glm::vec3( 1, 1, 1 ) );
+	transformations->Add();//matrix added to level 3
+	transformations->Translate( glm::vec3( 0, 1, 0 ) );
+	transformations->Add();//matrix added to level 4
 }
 
 void Scene::Update(float deltaTime)
 {
 	//camera->RotateViewPoint(500, glfwGetTime());
 	//projection = camera->GetPerspectiveProjectionMatrix();
-	cubeR->transform->pose *= transformations->getPose( 1 );
+
+	transformations->list[0] = glm::scale( glm::vec3( 0.2, 0.2, 1 ) );
+	transformations->list[1] *= glm::translate( glm::vec3( 1*deltaTime, 0, 0 ) );
+	cubeR->transform->pose = transformations->getPose( 2 );
+
+	transformations->list[0] = glm::mat4( 1.0 );
+
+	transformations->list[2] = glm::scale( glm::vec3( 1, 1, 1 ) );
+	transformations->list[3] = glm::translate( glm::vec3( 0, 1, 0 ) );
+	cubeG->transform->pose = transformations->getPose( 4 );
 }
 
 void Scene::Render()
@@ -78,7 +96,7 @@ void Scene::Render()
 
 	grid->Render();
 
-	//cubeG->render();
-	//cubeB->render();
 	cubeR->render();
+	cubeG->render();
+	//cubeB->render();
 }
