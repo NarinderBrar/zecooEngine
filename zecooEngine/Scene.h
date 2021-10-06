@@ -21,10 +21,10 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "PhysicsEngine.h"
-#include "MatrixStack.h"
+//#include "MatrixStack.h"
 #include "Transformations.h"
 
-using namespace glutil;
+//using namespace glutil;
 
 class Scene
 {
@@ -64,7 +64,7 @@ public:
 
 	glm::mat4 I = glm::mat4(1.0);
 
-	MatrixStack matrixStack;
+	//MatrixStack matrixStack;
 	Transformations* transformations;
 
 	int id = 0;

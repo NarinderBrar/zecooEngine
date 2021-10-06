@@ -59,14 +59,12 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	transformations = new Transformations();
 
 	//cube R
-	transformations->Scale( glm::vec3( 0.2, 0.2, 1 ) );
-	transformations->Add();//matrix added to level 1
+	transformations->Rotate( 45, glm::vec3( 0, 1, 0 ) );
+	transformations->Add();
 	transformations->Translate( glm::vec3(1,0,0));
-	transformations->Add();//matrix added to level 2
+	transformations->Add();//matrix added to level 1
 
 	//cube G
-	transformations->Scale( glm::vec3( 1, 1, 1 ) );
-	transformations->Add();//matrix added to level 3
 	transformations->Translate( glm::vec3( 0, 1, 0 ) );
 	transformations->Add();//matrix added to level 4
 }
@@ -76,15 +74,14 @@ void Scene::Update(float deltaTime)
 	//camera->RotateViewPoint(500, glfwGetTime());
 	//projection = camera->GetPerspectiveProjectionMatrix();
 
-	transformations->list[0] = glm::scale( glm::vec3( 0.2, 0.2, 1 ) );
-	transformations->list[1] *= glm::translate( glm::vec3( 1*deltaTime, 0, 0 ) );
-	cubeR->transform->pose = transformations->getPose( 2 );
+	transformations->list[1] = transformations->Rotate( 45, glm::vec3( 0, 1, 0 ) );
+	transformations->list[0] *= transformations->Translate( glm::vec3( 1*deltaTime, 0, 0 ) );
+	
+    cubeR->transform->pose = transformations->getPose( 2 );
+	cubeR->transform->pose *= transformations->Scale( glm::vec3(1.0,0.2,1.0));
 
-	transformations->list[0] = glm::mat4( 1.0 );
-
-	transformations->list[2] = glm::scale( glm::vec3( 1, 1, 1 ) );
-	transformations->list[3] = glm::translate( glm::vec3( 0, 1, 0 ) );
-	cubeG->transform->pose = transformations->getPose( 4 );
+	transformations->list[2] = glm::translate( glm::vec3( 0, 1, 0 ) );
+	cubeG->transform->pose = transformations->getPose( 3 );
 }
 
 void Scene::Render()

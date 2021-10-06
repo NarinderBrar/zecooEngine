@@ -5,21 +5,24 @@ Transformations::Transformations()
 	matrix = glm::mat4( 1.0 );
 }
 
-void Transformations::Translate( glm::vec3 offsetVec )
+glm::mat4 Transformations::Translate( glm::vec3 offsetVec )
 {
 	matrix = glm::mat4( 1.0 );
 	matrix = glm::translate( matrix, offsetVec );
+	return matrix;
 }
-void Transformations::Scale( glm::vec3 scaleVec )
+glm::mat4 Transformations::Scale( glm::vec3 scaleVec )
 {
 	matrix = glm::mat4( 1.0 );
 	matrix = glm::scale( matrix, scaleVec );
+	return matrix;
 }
 
-void Transformations::Rotate( float angle, glm::vec3 axis )
+glm::mat4 Transformations::Rotate( float angle, glm::vec3 axis )
 {
 	matrix = glm::mat4( 1.0 );
-	matrix = glm::rotate( matrix, glm::radians(angle), axis );
+	matrix = glm::rotate( matrix, glm::degrees(angle), axis );
+	return matrix;
 }
 
 glm::mat4 Transformations::getPose(int level)

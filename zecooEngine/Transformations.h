@@ -13,9 +13,9 @@ public:
 	
 	Transformations();
 
-	void Translate( glm::vec3 offsetVec );
-	void Scale( glm::vec3 scaleVec );
-	void Rotate( float angle, glm::vec3 axis );
+	glm::mat4 Translate( glm::vec3 offsetVec );
+	glm::mat4 Scale( glm::vec3 scaleVec );
+	glm::mat4 Rotate( float angle, glm::vec3 axis );
 	glm::mat4 getPose( int level );
 
 	int Add();
