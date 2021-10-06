@@ -18,7 +18,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	camera = new Camera(SCR_WIDTH, SCR_HEIGHT);
 	camera->SetPerspectiveProjectionMatrix(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1.0f, 5000.0f);
 	glm::vec3 camPos = glm::vec3(300.0, 300.0, 500.0);
-	glm::vec3 camView = glm::vec3(0.0, 0.0, 0.0);
+	glm::vec3 camView = glm::vec3(0.0, 2.0, 0.0);
 	glm::vec3 camUp = glm::vec3(0.0, 1.0, 0.0);
 	camera->Set(camPos, camView, camUp);
 
@@ -52,39 +52,24 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	std::string versionString = std::string((const char*)glGetString(GL_VERSION));
 	debugger->printMsg("OpenGl : " + versionString);
 
-	cubeR = new Cube( materialR, NULL );
+	cubeR = new Cube(materialR, NULL);
 	cubeG = new Cube(materialG, NULL);
 	cubeB = new Cube(materialB, NULL);
 
-	transformations = new Transformations();
-
-	//cube R
-	transformations->Scale( glm::vec3( 0.2, 0.2, 1 ) );
-	transformations->Add();//matrix added to level 1
-	transformations->Translate( glm::vec3(1,0,0));
-	transformations->Add();//matrix added to level 2
-
-	//cube G
-	transformations->Scale( glm::vec3( 1, 1, 1 ) );
-	transformations->Add();//matrix added to level 3
-	transformations->Translate( glm::vec3( 0, 1, 0 ) );
-	transformations->Add();//matrix added to level 4
+	cubeR->transform->translate( glm::vec3(0,2,0));
+	cubeR->transform->rotate(0, glm::vec3( 0, 1, 0 ) );
 }
 
 void Scene::Update(float deltaTime)
 {
 	//camera->RotateViewPoint(500, glfwGetTime());
-	//projection = camera->GetPerspectiveProjectionMatrix();
 
-	transformations->list[0] = glm::scale( glm::vec3( 0.2, 0.2, 1 ) );
-	transformations->list[1] *= glm::translate( glm::vec3( 1*deltaTime, 0, 0 ) );
-	cubeR->transform->pose = transformations->getPose( 2 );
+	cameraMove += deltaTime * 100;
 
-	transformations->list[0] = glm::mat4( 1.0 );
+	//cubeR->transform->translate( glm::vec3(0,2*deltaTime,0) );
+	glm::vec3 cubPos = cubeR->transform->getPosition();
 
-	transformations->list[2] = glm::scale( glm::vec3( 1, 1, 1 ) );
-	transformations->list[3] = glm::translate( glm::vec3( 0, 1, 0 ) );
-	cubeG->transform->pose = transformations->getPose( 4 );
+	camera->Update( deltaTime );
 }
 
 void Scene::Render()
@@ -97,6 +82,6 @@ void Scene::Render()
 	grid->Render();
 
 	cubeR->render();
-	cubeG->render();
+	//cubeG->render();
 	//cubeB->render();
 }

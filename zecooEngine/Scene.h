@@ -67,9 +67,7 @@ public:
 	MatrixStack matrixStack;
 	Transformations* transformations;
 
-	int id = 0;
-	float v = 0.0f;
-	float u_time = 0.0f;
+	float cameraMove = 0.0;
 	Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);
 
 	void Update(float deltaTime);
