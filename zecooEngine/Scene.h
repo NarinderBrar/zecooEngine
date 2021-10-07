@@ -64,6 +64,8 @@ public:
 
 	glm::mat4 I = glm::mat4(1.0);
 
+	glm::vec3 lookAt = glm::vec3(-3,0,0);
+
 	MatrixStack matrixStack;
 	Transformations* transformations;
 

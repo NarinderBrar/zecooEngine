@@ -18,6 +18,8 @@ class Transform
 		glm::mat4 localRotationMatrix = glm::mat4( 1.0f );
 		glm::mat4 localScaleMatrix = glm::mat4( 1.0f );
 
+		glm::mat4 worldScaleMatrix = glm::mat4( 1.0f );
+
 		Transform* parent;
 
 		Transform();
@@ -37,7 +39,7 @@ class Transform
 		void worldRotate(float angle, glm::vec3 axis);
 
 		void worldScale(glm::vec3 vec);
-
+		void resetParentScale( glm::vec3 vec );
 		void Update();
 
 		~Transform();

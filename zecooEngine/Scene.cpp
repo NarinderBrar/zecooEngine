@@ -53,23 +53,20 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	debugger->printMsg("OpenGl : " + versionString);
 
 	cubeR = new Cube(materialR, NULL);
-	cubeG = new Cube(materialG, NULL);
-	cubeB = new Cube(materialB, NULL);
+	cubeR->transform->rotate( glm::radians( -45.0 ), glm::vec3(0,1,0));
+	//cubeG = new Cube(materialG, NULL);
+	//cubeB = new Cube(materialB, NULL);
 
-	cubeR->transform->translate( glm::vec3(0,2,0));
-	cubeR->transform->rotate(0, glm::vec3( 0, 1, 0 ) );
+	glm::vec4 clr = glm::vec4(0,1,0,1);
+	glm::vec3 forward = glm::vec3(cubeR->transform->pose[2][0], cubeR->transform->pose[2][1], cubeR->transform->pose[2][2] );
+	debugger->addRay(cubeR->transform->getPosition(), -forward, clr);
 }
 
 void Scene::Update(float deltaTime)
 {
-	//camera->RotateViewPoint(500, glfwGetTime());
+	cubeR->transform->translate(glm::vec3( 0,0, deltaTime ));
 
-	cameraMove += deltaTime * 100;
-
-	//cubeR->transform->translate( glm::vec3(0,2*deltaTime,0) );
-	glm::vec3 cubPos = cubeR->transform->getPosition();
-
-	camera->Update( deltaTime );
+	camera->RotateViewPoint(500, glfwGetTime());
 }
 
 void Scene::Render()
