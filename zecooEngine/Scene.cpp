@@ -25,6 +25,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	shaderG = new Shader("resources\\shader\\3.3.shader.vs", "resources\\shader\\3.3.shader.fs");
 	shaderB = new Shader( "resources\\shader\\3.3.shader.vs", "resources\\shader\\3.3.shader.fs" );
 	shaderR = new Shader( "resources\\shader\\3.3.shader.vs", "resources\\shader\\3.3.shader.fs" );
+	shaderW = new Shader( "resources\\shader\\3.3.shader.vs", "resources\\shader\\3.3.shader.fs" );
 
 	grid = new Grid(camera);
 
@@ -47,26 +48,90 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	materialR->linkLight( dlight );
 	materialR->linkCamera( camera );
 
+	glm::vec4 colorW = glm::vec4( 1.0f, 1.0f, 1.0f, 1.0f );
+	materialW = new Material( shaderW, colorW );
+	materialW->linkLight( dlight );
+	materialW->linkCamera( camera );
+
 	debugger = new Debugger(camera);
 
 	std::string versionString = std::string((const char*)glGetString(GL_VERSION));
 	debugger->printMsg("OpenGl : " + versionString);
 
 	cubeR = new Cube(materialR, NULL);
-	cubeR->transform->rotate( glm::radians( -45.0 ), glm::vec3(0,1,0));
-	//cubeG = new Cube(materialG, NULL);
-	//cubeB = new Cube(materialB, NULL);
+	cubeG = new Cube(materialG, NULL);
+	cubeB = new Cube(materialB, NULL);
+	cubeW = new Cube( materialW, NULL );
 
-	glm::vec4 clr = glm::vec4(0,1,0,1);
-	glm::vec3 forward = glm::vec3(cubeR->transform->pose[2][0], cubeR->transform->pose[2][1], cubeR->transform->pose[2][2] );
-	debugger->addRay(cubeR->transform->getPosition(), -forward, clr);
+	//cubeR
+	//cubeR->transform->rotate( glm::radians( 45.0 ), glm::vec3( 0, 1, 0 ) );
+
+	//cubeG
+	cubeG->transform->parent = cubeR->transform;
+	cubeG->transform->rotate( glm::radians( -45.0 ), glm::vec3( 1, 0, 0 ) );
+	cubeG->transform->translate( glm::vec3( 0, 0.2, 0 ) );
+
+	//cubeB
+	cubeB->transform->parent = cubeG->transform;
+	cubeB->transform->translate( glm::vec3( 0, 0.5, 0 ) );
+
+	//cubeW
+	cubeW->transform->parent = cubeB->transform;
+	cubeW->transform->translate( glm::vec3( 0.2, 0.6, 0 ) );
+
+	//glm::vec4 clr = glm::vec4(0,1,0,1);
+	//glm::vec3 forward = glm::vec3(cubeR->transform->pose[2][0], cubeR->transform->pose[2][1], cubeR->transform->pose[2][2] );
+	//debugger->addRay(cubeR->transform->getPosition(), -forward, clr);
 }
 
 void Scene::Update(float deltaTime)
 {
-	cubeR->transform->translate(glm::vec3( 0,0, deltaTime ));
+	cubeR->transform->Update();
+	cubeR->transform->rotate( glm::radians( 50* deltaTime ), glm::vec3( 0, 1, 0 ) );
+	cubeR->transform->translate( glm::vec3(0, 0, deltaTime ) );
 
-	camera->RotateViewPoint(500, glfwGetTime());
+	I = glm::mat4( 1.0 );
+	I = glm::scale( I, glm::vec3( 1.0, 0.2, 1.0 ) );
+	cubeR->transform->pose = cubeR->transform->pose * I;
+
+	//cubeG
+	cubeG->transform->resetParentScale( glm::vec3( 1, 0.2, 1 ) );
+	cubeG->transform->Update();
+
+	angle += deltaTime * 1.0;
+	cubeG->transform->rotate( glm::radians( glm::sin( angle ) ), glm::vec3( 1, 0, 0 ) );
+
+	I = glm::mat4( 1.0 );
+	I = glm::translate( I, glm::vec3( 0, 0.5, 0 ) );
+	cubeG->transform->pose = cubeG->transform->pose * I;
+
+	I = glm::mat4( 1.0 );
+	I = glm::scale( I, glm::vec3( 0.2, 1, 0.2 ) );
+	cubeG->transform->pose = cubeG->transform->pose * I;
+
+	//cubeB
+	cubeB->transform->resetParentScale( glm::vec3( 0.2, 1, 0.2 ) );
+	cubeB->transform->Update();
+
+	cubeB->transform->rotate( glm::radians( deltaTime * 300), glm::vec3( 0, 1, 0 ) );
+
+	I = glm::mat4( 1.0 );
+	I = glm::translate( I, glm::vec3( 0, 0.5, 0 ) );
+	cubeB->transform->pose = cubeB->transform->pose * I;
+
+	I = glm::mat4( 1.0 );
+	I = glm::scale( I, glm::vec3( 0.2, 1, 0.2 ) );
+	cubeB->transform->pose = cubeB->transform->pose * I;
+
+	//cubeW
+	cubeW->transform->resetParentScale( glm::vec3( 0.2, 1, 0.2 ) );
+	cubeW->transform->Update();
+
+	I = glm::mat4( 1.0 );
+	I = glm::scale( I, glm::vec3( 0.6, 0.2, 0.3 ) );
+	cubeW->transform->pose = cubeW->transform->pose * I;
+
+	//camera->RotateViewPoint( 500, glfwGetTime() );
 }
 
 void Scene::Render()
@@ -79,6 +144,7 @@ void Scene::Render()
 	grid->Render();
 
 	cubeR->render();
-	//cubeG->render();
-	//cubeB->render();
+	cubeG->render();
+	cubeB->render();
+	cubeW->render();
 }

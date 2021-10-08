@@ -32,16 +32,22 @@ public:
 	Shader* shaderG;
 	Shader* shaderB;
 	Shader* shaderR;
+	Shader* shaderW;
 
 	DirectionalLight* dlight;
+
 	Material* materialG;
 	Material* materialB;
 	Material* materialR;
+	Material* materialW;
+
 	Texture* floorTexture;
 
 	Cube* cubeG;
 	Cube* cubeB;
 	Cube* cubeR;
+	Cube* cubeW;
+
 	Cylinder* cylinder;
 	Triangle* triangle;
 	Plane* plane;
