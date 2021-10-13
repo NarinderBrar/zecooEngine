@@ -10,7 +10,7 @@ Camera::Camera(int _SCR_WIDTH, int _SCR_HEIGHT)
 	m_view = glm::vec3(0.0f, 0.0f, 0.0f);
 	m_upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 
-	m_speed = 0.025f;
+	m_speed = 5.025f;
 }
 Camera::~Camera()
 {}
@@ -49,21 +49,30 @@ void Camera::SetViewByMouse()
 
 	float maxAngle = 1.56f; // Just a little bit below PI / 2
 
-	if (rotation_x > maxAngle) {
+	if (rotation_x > maxAngle) 
+	{
 		rotation_x = maxAngle;
 	}
-	else if (rotation_x < -maxAngle) {
+	else if (rotation_x < -maxAngle)
+	{
 		rotation_x = -maxAngle;
 	}
-	else {
+	else 
+	{
 		glm::vec3 cross = glm::cross(m_view - m_position, m_upVector);
 		glm::vec3 axis = glm::normalize(cross);
 
-		//RotateViewPoint(angle_z, axis);
+		//RotateViewPointMouse(angle_z, axis);
 	}
 
 	glm::vec3 y = glm::vec3(0, 1, 0);
-	//RotateViewPoint(angle_y, y);
+	//RotateViewPointMouse(angle_y, y);
+}
+
+// Rotate the camera view point -- this effectively rotates the camera since it is looking at the view point
+void Camera::RotateViewPointMouse( float radius, float angle )
+{
+	Set( m_position, m_view, m_upVector );
 }
 
 // Rotate the camera view point -- this effectively rotates the camera since it is looking at the view point
@@ -92,12 +101,12 @@ void Camera::Strafe(double direction)
 // Advance the camera (forward / backward motion)
 void Camera::Advance(double direction)
 {
-	float speed = (float)(m_speed * direction);
+	float speed = (float)(m_speed * direction)*10;
 
 	glm::vec3 view = glm::normalize(m_view - m_position);
+
 	m_position = m_position + view * speed;
 	m_view = m_view + view * speed;
-
 }
 
 // Update the camera to respond to mouse motion for rotations and keyboard for translation
@@ -106,7 +115,7 @@ void Camera::Update(double dt)
 	glm::vec3 vector = glm::cross(m_view - m_position, m_upVector);
 	m_strafeVector = glm::normalize(vector);
 
-	SetViewByMouse();
+	//SetViewByMouse();
 	TranslateByKeyboard(dt);
 }
 
@@ -114,21 +123,22 @@ void Camera::Update(double dt)
 void Camera::TranslateByKeyboard(double dt)
 {
 	if (GetKeyState(VK_UP) & 0x80 || GetKeyState('W') & 0x80) {
-		Advance(1.0 * dt);
+		Advance(5.0 * dt);
 	}
 
 	if (GetKeyState(VK_DOWN) & 0x80 || GetKeyState('S') & 0x80) {
-		Advance(-1.0 * dt);
+		Advance(-5.0 * dt);
 	}
 
 	if (GetKeyState(VK_LEFT) & 0x80 || GetKeyState('A') & 0x80) {
-		Strafe(-1.0 * dt);
+		Strafe(-5.0 * dt);
 	}
 
 	if (GetKeyState(VK_RIGHT) & 0x80 || GetKeyState('D') & 0x80) {
-		Strafe(1.0 * dt);
+		Strafe(5.0 * dt);
 	}
 }
+
 // Return the camera position
 glm::vec3 Camera::GetPosition() const
 {
@@ -189,4 +199,3 @@ glm::mat3 Camera::ComputeNormalMatrix(const glm::mat4& modelViewMatrix)
 {
 	return glm::transpose(glm::inverse(glm::mat3(modelViewMatrix)));
 }
-

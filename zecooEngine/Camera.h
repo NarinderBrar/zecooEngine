@@ -29,6 +29,8 @@ public:
 	// Rotate the camera viewpoint -- this effectively rotates the camera
 	void RotateViewPoint(float radius, float angle);
 
+	void RotateViewPointMouse( float radius, float angle );
+
 	// Respond to mouse movement to rotate the camera
 	void SetViewByMouse();
 

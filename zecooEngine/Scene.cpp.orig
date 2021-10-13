@@ -75,6 +75,17 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	cubeB->transform->parent = cubeG->transform;
 	cubeB->transform->translate( glm::vec3( 0, 0.5, 0 ) );
 
+<<<<<<< HEAD
+	//cube R
+	transformations->Rotate( 45, glm::vec3( 0, 1, 0 ) );
+	transformations->Add();
+	transformations->Translate( glm::vec3(1,0,0));
+	transformations->Add();//matrix added to level 1
+
+	//cube G
+	transformations->Translate( glm::vec3( 0, 1, 0 ) );
+	transformations->Add();//matrix added to level 4
+=======
 	//cubeW
 	cubeW->transform->parent = cubeB->transform;
 	cubeW->transform->translate( glm::vec3( 0.2, 0.6, 0 ) );
@@ -82,6 +93,7 @@ Scene::Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	//glm::vec4 clr = glm::vec4(0,1,0,1);
 	//glm::vec3 forward = glm::vec3(cubeR->transform->pose[2][0], cubeR->transform->pose[2][1], cubeR->transform->pose[2][2] );
 	//debugger->addRay(cubeR->transform->getPosition(), -forward, clr);
+>>>>>>> origin/master
 }
 
 void Scene::Update(float deltaTime)
@@ -123,6 +135,16 @@ void Scene::Update(float deltaTime)
 	I = glm::scale( I, glm::vec3( 0.2, 1, 0.2 ) );
 	cubeB->transform->pose = cubeB->transform->pose * I;
 
+<<<<<<< HEAD
+	transformations->list[1] = transformations->Rotate( 45, glm::vec3( 0, 1, 0 ) );
+	transformations->list[0] *= transformations->Translate( glm::vec3( 1*deltaTime, 0, 0 ) );
+	
+    cubeR->transform->pose = transformations->getPose( 2 );
+	cubeR->transform->pose *= transformations->Scale( glm::vec3(1.0,0.2,1.0));
+
+	transformations->list[2] = glm::translate( glm::vec3( 0, 1, 0 ) );
+	cubeG->transform->pose = transformations->getPose( 3 );
+=======
 	//cubeW
 	cubeW->transform->resetParentScale( glm::vec3( 0.2, 1, 0.2 ) );
 	cubeW->transform->Update();
@@ -132,6 +154,7 @@ void Scene::Update(float deltaTime)
 	cubeW->transform->pose = cubeW->transform->pose * I;
 
 	//camera->RotateViewPoint( 500, glfwGetTime() );
+>>>>>>> origin/master
 }
 
 void Scene::Render()

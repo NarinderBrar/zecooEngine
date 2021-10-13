@@ -7,20 +7,27 @@
 class Transform
 {
 	private:
+
+	public:
 		glm::mat4 worldMatrix = glm::mat4( 1.0f );
 		glm::mat4 parentMatrix = glm::mat4( 1.0f );
 
+		glm::mat4 pose = glm::mat4(1.0f);
+		glm::vec3 cubPos = glm::vec3( 0, 0, 0 );
 		glm::mat4 localTranslationMatrix = glm::mat4( 1.0f );
 		glm::mat4 localRotationMatrix = glm::mat4( 1.0f );
 		glm::mat4 localScaleMatrix = glm::mat4( 1.0f );
-	public:
-		glm::mat4 pose = glm::mat4(1.0f);
+
+		glm::mat4 worldScaleMatrix = glm::mat4( 1.0f );
 
 		Transform* parent;
 
 		Transform();
 
 		void position(glm::vec3 vec);
+
+		glm::vec3 getPosition();
+
 		void setParent(Transform* _parent);
 
 		void translate(glm::vec3 vec);
@@ -32,8 +39,8 @@ class Transform
 		void worldRotate(float angle, glm::vec3 axis);
 
 		void worldScale(glm::vec3 vec);
-
-		void Transformation();
+		void resetParentScale( glm::vec3 vec );
+		void Update();
 
 		~Transform();
 };

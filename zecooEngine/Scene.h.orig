@@ -21,10 +21,10 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "PhysicsEngine.h"
-#include "MatrixStack.h"
+//#include "MatrixStack.h"
 #include "Transformations.h"
 
-using namespace glutil;
+//using namespace glutil;
 
 class Scene
 {
@@ -70,9 +70,13 @@ public:
 
 	glm::mat4 I = glm::mat4(1.0);
 
+<<<<<<< HEAD
+	//MatrixStack matrixStack;
+=======
 	glm::vec3 lookAt = glm::vec3(-3,0,0);
 
 	MatrixStack matrixStack;
+>>>>>>> origin/master
 	Transformations* transformations;
 
 	float cameraMove = 0.0;

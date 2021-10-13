@@ -3,39 +3,48 @@
 Transform::Transform()
 {
 	worldMatrix = glm::mat4(1.0f);
+// 00 01 02 03
+// 10 11 12 13
+// 20 21 22 23
+// 30 31 32 33
 }
 
 void Transform::position(glm::vec3 vec)
 {
-	worldMatrix = glm::mat4(
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		vec.x, vec.y, vec.z, 1.0);
+	worldMatrix[3][0] = vec.x;
+	worldMatrix[3][1] = vec.y;
+	worldMatrix[3][2] = vec.z;
+}
+
+glm::vec3 Transform::getPosition()
+{
+	cubPos = glm::vec3( pose[3][0], pose[3][1], pose[3][2] );
+	return cubPos;
 }
 
 void Transform::setParent(Transform* _parent)
 {
 	parent = _parent;
-	Transformation();
+	Update();
 }
 
 void Transform::translate(glm::vec3 vec)
 {
-	localTranslationMatrix = glm::translate(localTranslationMatrix, vec);
-	Transformation();
+	worldMatrix = glm::translate( worldMatrix, vec);
+	Update();
 }
 
 void Transform::rotate(float angle, glm::vec3 axis)
 {
-	localRotationMatrix = glm::rotate(localRotationMatrix, glm::degrees(angle), axis);
-	Transformation();
+	worldMatrix = glm::rotate( worldMatrix, glm::degrees(angle), axis);
+	Update();
 }
 
 void Transform::scale(glm::vec3 vec)
 {
-	localScaleMatrix = glm::scale(localScaleMatrix, vec);
-	Transformation();
+	worldMatrix = glm::scale( worldMatrix, vec);
+	localScaleMatrix = glm::scale( localScaleMatrix, vec );
+	Update();
 }
 
 void Transform::worldTranslate(glm::vec3 vec)
@@ -45,7 +54,7 @@ void Transform::worldTranslate(glm::vec3 vec)
 	I = glm::translate(I, vec);
 	worldMatrix = I * worldMatrix;
 
-	Transformation();
+	Update();
 }
 
 void Transform::worldRotate(float angle, glm::vec3 axis)
@@ -55,7 +64,7 @@ void Transform::worldRotate(float angle, glm::vec3 axis)
 	I = glm::rotate(I, glm::degrees(angle), axis);
 	worldMatrix = I * worldMatrix;
 
-	Transformation();
+	Update();
 }
 
 void Transform::worldScale(glm::vec3 vec)
@@ -65,19 +74,20 @@ void Transform::worldScale(glm::vec3 vec)
 	I = glm::scale(I, vec);
 	worldMatrix = I * worldMatrix;
 
-	Transformation();
+	Update();
 }
-
-void Transform::Transformation()
+void Transform::resetParentScale( glm::vec3 vec )
 {
-	if(parent!=NULL)
-		parentMatrix = parent->pose;
+	glm::mat4 I = glm::mat4( 1.0 );
 
-	//world translate ignore local rotation
-	pose = parentMatrix  * worldMatrix * localTranslationMatrix * localRotationMatrix * localScaleMatrix;
+	I = glm::scale( I, vec );
 
-	//local forward movement
-	//world rotate and after that local translate
+	if( parent != NULL )
+			parentMatrix = ( parent->pose ) / I;
+}
+void Transform::Update()
+{
+	pose =  parentMatrix  * worldMatrix;
 }
 
 Transform::~Transform()
