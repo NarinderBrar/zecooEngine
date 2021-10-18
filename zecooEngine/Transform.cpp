@@ -85,6 +85,26 @@ void Transform::resetParentScale( glm::vec3 vec )
 	if( parent != NULL )
 			parentMatrix = ( parent->pose ) / I;
 }
+
+void Transform::MoveTowards( float dt, Transform* target, float speed, float offset )
+{
+	glm::vec3 pos = getPosition();
+	glm::vec3 tPos = target->getPosition();
+
+	//check distance between CubeHPos and newPos
+	float a = glm::distance( tPos, getPosition() );
+
+	//if distance is more than 1.0, move toward cube
+	if( a > offset )
+	{
+		//calculate move direction, that will be normalized CubeHPos - newPos
+		glm::vec3 dir = glm::normalize( tPos - pos );
+
+		//simply translate cubeR with this direction, multiply dt and any other value for speed
+		translate( dir * dt * speed );
+	}
+}
+
 void Transform::Update()
 {
 	pose =  parentMatrix  * worldMatrix;

@@ -42,6 +42,8 @@ class Transform
 		void resetParentScale( glm::vec3 vec );
 		void Update();
 
+		void MoveTowards( float dt, Transform* target, float speed, float offset );
+		
 		~Transform();
 };
 

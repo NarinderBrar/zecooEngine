@@ -2,6 +2,8 @@
 
 #include "SceneA.h"
 
+#include "SceneExperiment.h"
+
 #include <iostream>
 
 #include "Input.h"
@@ -17,7 +19,9 @@ class Game
 public:
 	Input* input;
 
-	SceneA* sceneA;
+	//SceneA* sceneA;
+
+	SceneExperiment* sceneExperiment;
 
 	PhysicsEngine* phyEng;
 

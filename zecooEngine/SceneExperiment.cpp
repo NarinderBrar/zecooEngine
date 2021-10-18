@@ -50,7 +50,11 @@ void SceneExperiment::Update(float deltaTime)
 	//camSet2();
 	camera->Set(cameraPos, looookat, cameraUp);
 	
-	MoveTowards(deltaTime);
+	cubeH->transform->translate( glm::vec3( 0, 3* deltaTime, 0 ) );
+
+	//cubeR->transform->MoveTowards( deltaTime, cubeH->transform, 5.0, 1.0 );
+
+	//MoveTowards(deltaTime);
 }
 
 void SceneExperiment::MoveTowards(float dt)
@@ -60,16 +64,18 @@ void SceneExperiment::MoveTowards(float dt)
 
 	//check distance between CubeHPos and newPos
 	float a = glm::distance(CubeHPos, newPos);
+
+	
 	cout << a << endl;
 
 	//if distance is more than 1.0, move toward cube
-	if (a > 1.0)
+	if (a > 0.001)
 	{
 		//calculate move direction, that will be normalized CubeHPos - newPos
 		glm::vec3 dir = glm::normalize( CubeHPos - newPos) ;
 
 		//simply translate cubeR with this direction, multiply dt and any other value for speed
-		cubeR->transform->translate( dir * dt );
+		cubeR->transform->translate( dir * dt * speed);
 	}
 }
 

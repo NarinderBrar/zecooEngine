@@ -41,6 +41,8 @@ public:
 	double angle = 0;
 	float dt = 0.0;
 	float lf = 0.0;
+	float speed = 10.0;
+
 	glm::vec3 looookat = glm::vec3(-0.0, 10.0, 00.0);
 	glm::vec3 offsett = glm::vec3(0, 100.0, -100.0);
 	glm::vec3 cameraPos = glm::vec3(300.0, 100.0, 0.0);
