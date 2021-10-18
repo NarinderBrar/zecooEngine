@@ -17,39 +17,12 @@ PhysicsEngine::PhysicsEngine()
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
 
-	CreateGround();
-}
-
-void PhysicsEngine::CreateGround()
-{
-	///create a few basic rigid bodies
-	btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(0.5), btScalar(0.5), btScalar(0.5)));
-	collisionShapes.push_back(groundShape);
-
-	btTransform groundTransform;
-	groundTransform.setIdentity();
-	groundTransform.setOrigin(btVector3(0, -1.0f, 0));
-
-	btScalar mass(0.);
-
-	//rigidbody is dynamic if and only if mass is non zero, otherwise static
-	bool isDynamic = (mass != 0.f);
-
-	btVector3 localInertia(0, 0, 0);
-	if (isDynamic)
-		groundShape->calculateLocalInertia(mass, localInertia);
-
-	//using motionstate is optional, it provides interpolation capabilities, and only synchronizes 'active' objects
-	btDefaultMotionState* myMotionState = new btDefaultMotionState(groundTransform);
-	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, groundShape, localInertia);
-	btRigidBody* body = new btRigidBody(rbInfo);
-
-	//add the body to the dynamics world
-	dynamicsWorld->addRigidBody(body);
+	//dynamicsWorld->getDebugDrawer()->setDebugMode( btIDebugDraw::DBG_DrawWireframe );
 }
 
 void PhysicsEngine::Solve(float deltaTime)
 {
+	//dynamicsWorld->debugDrawWorld();
 	dynamicsWorld->stepSimulation(deltaTime);
 }
 

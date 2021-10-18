@@ -1,6 +1,6 @@
 #include "SceneC.h"
 
-SceneC::SceneC(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
+SceneC::SceneC(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input )
 {
 	phyEng = physicsEngine;
 

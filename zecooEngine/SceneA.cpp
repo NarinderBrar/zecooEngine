@@ -1,11 +1,15 @@
 #include "SceneA.h"
 
-SceneA::SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
+SceneA::SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input )
 {
-	phyEng = physicsEngine;
-
 	// configure global opengl state
 	glEnable(GL_DEPTH_TEST);
+
+	phyEng = physicsEngine;
+
+	input = _input;
+
+	ui = new UI();
 
 	floorTexture = new Texture();
 	floorTexture->Load("resources\\textures\\brickwall.jpg");
@@ -44,19 +48,39 @@ SceneA::SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
 	cubeMaterial->linkCamera(camera);
 
 	plane = new Plane(floorMaterial, floorTexture);
+	plane->transform->translate( glm::vec3( 5.0f, 0.0f, 0.0f ) );
 	plane->transform->scale(glm::vec3(5.0f, 5.0f, 5.0f));
 
-	for (size_t i = 0; i < 10; i++)
-	{
-		cube = new Cube(cubeMaterial, cubeTexture);
-		cube->transform->translate(glm::vec3(0.0f, 0.5f + i, 0.0f));
-		cubes[i] = cube;
-	}
+    cube = new Cube(cubeMaterial, cubeTexture);
+    cube->transform->translate(glm::vec3(5.0f, 0.0f, 0.0f));
+
+	planePhy = new Plane( floorMaterial, floorTexture );
+	planePhy->transform->translate( glm::vec3( 1.0f, 0.0f, 0.0f ) );
+	planePhy->transform->scale( glm::vec3( 1.0f, 1.0f, 1.0f ) );
+
+	cubePhy = new Cube( cubeMaterial, cubeTexture );
+	cubePhy->transform->translate( glm::vec3( 0.0f, 4.0f, 0.0f ) );
+
+	cubePhy->mass = 1.0;
+	cubePhy->SetRigidbody( phyEng );
+	
+	planePhy->mass = 0.0;
+	planePhy->SetRigidbody( phyEng );
+	
 }
 
 void SceneA::Update(float deltaTime)
 {
-	camera->RotateViewPoint(800, glfwGetTime());
+	if( input->getPressedKey() == "Up" )
+		std::cout << "up key" << std::endl;
+
+	cubePhy->solve( phyEng );
+	planePhy->solve( phyEng );
+
+    cube->transform->position( glm::vec3( 5.0f, 0.0 + ui->translation, 0.0f ) );
+	cube->transform->Update();
+
+	camera->RotateViewPoint( 800, glfwGetTime() );
 	projection = camera->GetPerspectiveProjectionMatrix();
 }
 
@@ -67,8 +91,11 @@ void SceneA::Render()
 
 	plane->render();
 	
-	for (size_t i = 0; i < 10; i++)
-	{
-		cubes[i]->render();
-	}
+    cube->render();
+
+	planePhy->render();
+
+	cubePhy->render();
+	
+	ui->Render();
 }

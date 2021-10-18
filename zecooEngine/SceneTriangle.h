@@ -16,6 +16,8 @@
 
 #include "PhysicsEngine.h"
 
+#include "Input.h"
+
 class SceneTriangle
 {
 public:
@@ -28,7 +30,7 @@ public:
 
 	PhysicsEngine* phyEng;
 
-	SceneTriangle(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);
+	SceneTriangle(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
 
 	void Update(float deltaTime);
 	void Render();

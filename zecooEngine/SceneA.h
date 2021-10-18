@@ -16,6 +16,10 @@
 
 #include "PhysicsEngine.h"
 
+#include "Input.h"
+
+#include "UI.h"
+
 class SceneA
 {
 public:
@@ -40,16 +44,20 @@ public:
 	Plane* plane;
 	Cube* cube;
 
+	Plane* planePhy;
+	Cube* cubePhy;
+
 	PhysicsEngine* phyEng;
+
+	Input* input;
 
 	Camera* camera;
 
 	glm::mat4 projection;
 
-	Cube* cubes[10];
+	UI* ui;
 
-
-	SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);
+	SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
 
 	void Update(float deltaTime);
 

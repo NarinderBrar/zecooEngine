@@ -9,6 +9,8 @@
 
 #include "PhysicsEngine.h"
 
+#include "Input.h"
+
 class SceneBasic
 {
 	Shader* shader;
@@ -19,7 +21,7 @@ class SceneBasic
 	Triangle* triangle;
 
 public:
-	SceneBasic(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);
+	SceneBasic(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
 	void Update(float deltaTime);
 
 	void Render();

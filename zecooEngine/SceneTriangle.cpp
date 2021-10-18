@@ -1,6 +1,6 @@
 #include "SceneTriangle.h"
 
-SceneTriangle::SceneTriangle(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine)
+SceneTriangle::SceneTriangle(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input )
 {
 	phyEng = physicsEngine;
 

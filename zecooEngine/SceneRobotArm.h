@@ -24,9 +24,11 @@
 #include "MatrixStack.h"
 #include "Transformations.h"
 
+#include "Input.h"
+
 using namespace glutil;
 
-class Scene
+class SceneRobotArm
 {
 public:
 	Shader* shaderG;
@@ -68,17 +70,17 @@ public:
 	glm::mat4 position;
 	glm::mat4 rotation;
 
-	glm::mat4 I = glm::mat4(1.0);
+	glm::mat4 I = glm::mat4( 1.0 );
 
-	glm::vec3 lookAt = glm::vec3(-3,0,0);
+	glm::vec3 lookAt = glm::vec3( -3, 0, 0 );
 
 	MatrixStack matrixStack;
 	Transformations* transformations;
 
 	float cameraMove = 0.0;
-	Scene(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);
+	SceneRobotArm( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
 
-	void Update(float deltaTime);
+	void Update( float deltaTime );
 
 	void Render();
 };

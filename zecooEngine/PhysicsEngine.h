@@ -19,8 +19,7 @@ public:
 	btDiscreteDynamicsWorld* dynamicsWorld;
 
 	PhysicsEngine();
-	void CreateGround();
-	void AddRigidBody(btCollisionShape* colShape);
+
 	void Solve(float deltaTime);
 	void Destroy();
 

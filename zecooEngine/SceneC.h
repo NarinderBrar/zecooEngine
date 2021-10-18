@@ -18,6 +18,8 @@
 
 #include "PhysicsEngine.h"
 
+#include "Input.h"
+
 class SceneC
 {
 public:
@@ -64,7 +66,7 @@ public:
 
 	glm::mat4 projection;
 
-	SceneC(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine);
+	SceneC(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
 
 	void Update(float deltaTime);
 

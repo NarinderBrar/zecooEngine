@@ -14,6 +14,7 @@ private:
 	CubeMesh* cubeMesh;
 public:
 	bool isRigidBody = false;
+	btScalar mass;
 
 	btTransform btTrans;
 	btCollisionShape* btColShape;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Scene.h"
+#include "SceneA.h"
 
 #include <iostream>
 
@@ -11,12 +11,13 @@
 
 #include "btBulletDynamicsCommon.h"
 
+
 class Game
 {
 public:
 	Input* input;
 
-	Scene* scene;
+	SceneA* sceneA;
 
 	PhysicsEngine* phyEng;
 
