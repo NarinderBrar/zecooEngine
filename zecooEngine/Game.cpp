@@ -6,17 +6,17 @@ Game::Game(Input* _input)
 
 	phyEng = new PhysicsEngine();
 
-	sceneExperiment = new SceneExperiment(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, phyEng, input );
+	sceneRobotArm = new SceneRobotArm(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, phyEng, input );
 }
 
 void Game::Update(float deltaTime)
 {
 	phyEng->Solve(deltaTime);
 	
-	sceneExperiment->Update(deltaTime);
+	sceneRobotArm->Update(deltaTime);
 }
 
 void Game::Render(float deltaTime)
 {
-	sceneExperiment->Render();
+	sceneRobotArm->Render();
 }
