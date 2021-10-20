@@ -54,8 +54,8 @@ public:
 	//glm::vec3 camPos2 = cameraPos + cameraFront;
 
 	//-------------------------------------------------//
-	glm::vec3 CubeRPos = glm::vec3(0, 0, 0);
-	glm::vec3 CubeHPos = glm::vec3(0, 10, 10);
+	glm::vec3 CubeRPos = glm::vec3(10, 0, 0);
+	glm::vec3 CubeHPos = glm::vec3(0, 0, 10);
 	glm::vec3 newPos = glm::vec3(0, 0, 0);
 	//-------------------------------------------------//
 

@@ -27,6 +27,7 @@ class Transform
 		void position(glm::vec3 vec);
 
 		glm::vec3 getPosition();
+		glm::vec3 getlocalZDir();
 
 		void setParent(Transform* _parent);
 

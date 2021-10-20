@@ -22,6 +22,11 @@ glm::vec3 Transform::getPosition()
 	return cubPos;
 }
 
+glm::vec3 Transform::getlocalZDir()
+{
+	return glm::vec3( pose[2][0], pose[2][1], pose[2][2] );
+}
+
 void Transform::setParent(Transform* _parent)
 {
 	parent = _parent;

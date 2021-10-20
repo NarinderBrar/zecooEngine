@@ -39,7 +39,6 @@ SceneExperiment::SceneExperiment(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* p
 
 	cubeR = new Cube(materialG, NULL);
 	
-
 	cubeH = new Cube(materialG, NULL);
 	cubeH->transform->translate(CubeHPos);
 }
@@ -48,9 +47,21 @@ void SceneExperiment::Update(float deltaTime)
 {
 	CameraSettings();
 	//camSet2();
-	camera->Set(cameraPos, looookat, cameraUp);
-	
+
 	cubeH->transform->translate( glm::vec3( 0, 3* deltaTime, 0 ) );
+	///cubeH->transform->rotate( 10 * deltaTime , glm::vec3( 0, 1, 0 ) );
+
+	glm::vec3 dir = glm::normalize(cubeH->transform->getlocalZDir());
+	glm::vec3 point = (cubeH->transform->getPosition() + dir * 100.0f);
+
+	//cubeR->transform->position(point);
+	//cubeR->transform->Update();
+
+
+	cameraPos = point + glm::vec3(0,40,0);
+	looookat = cubeH->transform->getPosition();
+
+	camera->Set( cameraPos, looookat, cameraUp );
 
 	//cubeR->transform->MoveTowards( deltaTime, cubeH->transform, 5.0, 1.0 );
 
