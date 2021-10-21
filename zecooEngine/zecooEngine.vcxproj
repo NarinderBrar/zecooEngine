@@ -156,6 +156,7 @@
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="CylinderMesh.h" />
     <ClInclude Include="Debugger.h" />
+    <ClInclude Include="EmptyObject.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Input.h" />
@@ -219,6 +220,7 @@
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="CylinderMesh.cpp" />
     <ClCompile Include="Debugger.cpp" />
+    <ClCompile Include="EmptyObject.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Grid.cpp" />

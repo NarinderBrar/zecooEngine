@@ -82,6 +82,10 @@ SceneRobotArm::SceneRobotArm( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* phys
 	//glm::vec4 clr = glm::vec4(0,1,0,1);
 	//glm::vec3 forward = glm::vec3(cubeR->transform->pose[2][0], cubeR->transform->pose[2][1], cubeR->transform->pose[2][2] );
 	//debugger->addRay(cubeR->transform->getPosition(), -forward, clr);
+
+	emptyObject = new EmptyObject();
+
+	emptyObject->transform->position(glm::vec3(0.0,0.0,0.0));
 }
 
 void SceneRobotArm::Update( float deltaTime )

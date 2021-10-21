@@ -25,6 +25,7 @@
 #include "Transformations.h"
 
 #include "Input.h"
+#include "EmptyObject.h"
 
 using namespace glutil;
 
@@ -54,6 +55,8 @@ public:
 	Triangle* triangle;
 	Plane* plane;
 	Tube* tube;
+
+	EmptyObject* emptyObject;
 
 	Grid* grid;
 	Debugger* debugger;

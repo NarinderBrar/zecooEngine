@@ -237,6 +237,9 @@
     <ClInclude Include="UI.h">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
+    <ClInclude Include="EmptyObject.h">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -415,6 +418,9 @@
     </ClCompile>
     <ClCompile Include="UI.cpp">
       <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="EmptyObject.cpp">
+      <Filter>Source Files\Model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
