@@ -26,4 +26,5 @@ void Model::render()
 
 Model::~Model()
 {
+
 }

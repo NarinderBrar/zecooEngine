@@ -116,7 +116,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)\zecooEngine\Vendor;$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\include\GLFW;$(SolutionDir)\zecooEngine\\assimp;$(SolutionDir)\zecooEngine\Vendor\glad\include;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\src;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\JsonStthm\Src;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)\zecooEngine\Vendor;$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\include\GLFW;$(SolutionDir)\zecooEngine\\assimp;$(SolutionDir)\zecooEngine\Vendor\glad\include;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\src;$(SolutionDir)\zecooEngine\Vendor\JsonStthm\Src;$(SolutionDir)\zecooEngine\Vendor\imgui;$(SolutionDir)\zecooEngine\Vendor\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -165,7 +165,9 @@
     <ClInclude Include="LineMesh.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MatrixStack.h" />
+    <ClInclude Include="MeshExternal.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="ModelExternal.h" />
     <ClInclude Include="PhysicsEngine.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="PlaneMesh.h" />
@@ -176,14 +178,17 @@
     <ClInclude Include="Ray.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SceneExperiment.h" />
+    <ClInclude Include="SceneModelLoad.h" />
     <ClInclude Include="SceneRobotArm.h" />
     <ClInclude Include="SceneA.h" />
     <ClInclude Include="SceneB.h" />
     <ClInclude Include="SceneBasic.h" />
     <ClInclude Include="SceneC.h" />
     <ClInclude Include="SceneTriangle.h" />
+    <ClInclude Include="SceneUI.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShaderExternal.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="TestMesh.h" />
     <ClInclude Include="TestModel.h" />
@@ -241,12 +246,14 @@
     <ClCompile Include="PyramidMesh.cpp" />
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="SceneExperiment.cpp" />
+    <ClCompile Include="SceneModelLoad.cpp" />
     <ClCompile Include="SceneRobotArm.cpp" />
     <ClCompile Include="SceneA.cpp" />
     <ClCompile Include="SceneB.cpp" />
     <ClCompile Include="SceneBasic.cpp" />
     <ClCompile Include="SceneC.cpp" />
     <ClCompile Include="SceneTriangle.cpp" />
+    <ClCompile Include="SceneUI.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="TestMesh.cpp" />

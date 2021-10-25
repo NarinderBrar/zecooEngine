@@ -11,12 +11,16 @@ void UI::Update()
 
 void UI::Render()
 {
-    ImGui::Begin( "Triangle Position/Color" );
-    ImGui::SliderFloat( "rotation", &rotation, 0, 2 * 3.14f );
-    ImGui::SliderFloat( "position", &translation, -10.0, 10.0 );
-    ImGui::ColorEdit3( "color", color );
-    ImGui::Button( "Hello!" );
-    ImGui::End();
+	ImGui::Begin( "Hello, world!" );
+	ImGui::Text("Hi");
+
+	if( ImGui::Button( "Button" ) )
+	{
+		v = true;
+	}
+	ImGui::ColorEdit3( "color", clr);
+	ImGui::SliderFloat( "Y", &angle, 0.0, 5.0 );
+	ImGui::End();
 }
 
 UI::~UI()

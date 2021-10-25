@@ -77,7 +77,7 @@ void SceneA::Update(float deltaTime)
 	cubePhy->solve( phyEng );
 	planePhy->solve( phyEng );
 
-    cube->transform->position( glm::vec3( 5.0f, 0.0 + ui->translation, 0.0f ) );
+    //cube->transform->position( glm::vec3( 5.0f, 0.0 + ui->translation, 0.0f ) );
 	cube->transform->Update();
 
 	camera->RotateViewPoint( 800, glfwGetTime() );

@@ -25,22 +25,22 @@ struct Vertex {
     glm::vec3 Bitangent;
 };
 
-struct Texture {
+struct TextureExternal {
     unsigned int id;
     string type;
     string path;
 };
 
-class Mesh {
+class MeshExternal {
 public:
     // mesh Data
     vector<Vertex>       vertices;
     vector<unsigned int> indices;
-    vector<Texture>      textures;
+    vector<TextureExternal>      textures;
     unsigned int VAO;
 
     // constructor
-    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures)
+    MeshExternal(vector<Vertex> vertices, vector<unsigned int> indices, vector<TextureExternal> textures)
     {
         this->vertices = vertices;
         this->indices = indices;
