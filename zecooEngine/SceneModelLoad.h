@@ -18,8 +18,6 @@
 
 #include "Input.h"
 
-//#include "ModelExternal.h"
-
 class SceneModelLoad
 {
 public:

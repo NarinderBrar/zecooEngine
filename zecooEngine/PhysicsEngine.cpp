@@ -38,7 +38,7 @@ PhysicsEngine::PhysicsEngine()
 
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
-	//dynamicsWorld->setInternalTickCallback( myTickCallback );
+	///dynamicsWorld->setInternalTickCallback( myTickCallback );
 
 	//dynamicsWorld->getDebugDrawer()->setDebugMode( btIDebugDraw::DBG_DrawWireframe );
 }

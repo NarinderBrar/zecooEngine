@@ -31,12 +31,12 @@ SceneUI::SceneUI( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, I
 
 void SceneUI::Update( float deltaTime )
 {
-	if( ui->v )
+	if( ui->b )
 	{
-		cout << ui->angle << endl;
+		cout << ui->show_app_main_menu_bar << endl;
 	}
 
-	plane->transform->position(glm::vec3( 0.0, ui->angle , 0.0));
+	plane->transform->position(glm::vec3( 0.0, ui->f , 0.0));
 	plane->transform->Update();
 }
 

@@ -13,9 +13,6 @@ SceneModelLoad::SceneModelLoad( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* ph
 	material = new Material( shader, color );
 
 	plane = new Plane( material, NULL );
-
-	//modelExternal = new ModelExternal("resources\\objects\\model\cube.fbx");
-
 }
 
 void SceneModelLoad::Update( float deltaTime )

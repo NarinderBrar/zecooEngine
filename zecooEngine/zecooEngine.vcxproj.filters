@@ -49,9 +49,6 @@
     <Filter Include="Source Files\imgui">
       <UniqueIdentifier>{8379eeef-3042-4b43-baff-aa31b7a39fa5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\ModelLoading">
-      <UniqueIdentifier>{dfae0fcc-34a6-4bc6-9746-e23a6d8f025c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\UI">
       <UniqueIdentifier>{f580c0bd-2e7c-4cc2-8f07-fa705cad945d}</UniqueIdentifier>
     </Filter>
@@ -249,20 +246,14 @@
     <ClInclude Include="SceneModelLoad.h">
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="ModelExternal.h">
-      <Filter>Header Files\ModelLoading</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshExternal.h">
-      <Filter>Header Files\ModelLoading</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderExternal.h">
-      <Filter>Header Files\ModelLoading</Filter>
-    </ClInclude>
     <ClInclude Include="SceneUI.h">
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
     <ClInclude Include="UI.h">
       <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshExternal.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -451,6 +442,9 @@
     </ClCompile>
     <ClCompile Include="UI.cpp">
       <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshExternal.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

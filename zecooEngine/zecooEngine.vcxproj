@@ -167,7 +167,6 @@
     <ClInclude Include="MatrixStack.h" />
     <ClInclude Include="MeshExternal.h" />
     <ClInclude Include="Model.h" />
-    <ClInclude Include="ModelExternal.h" />
     <ClInclude Include="PhysicsEngine.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="PlaneMesh.h" />
@@ -188,7 +187,6 @@
     <ClInclude Include="SceneUI.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="ShaderExternal.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="TestMesh.h" />
     <ClInclude Include="TestModel.h" />
@@ -236,6 +234,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MatrixStack.cpp" />
+    <ClCompile Include="MeshExternal.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="PhysicsEngine.cpp" />
     <ClCompile Include="Plane.cpp" />

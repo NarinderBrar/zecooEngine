@@ -10,10 +10,18 @@ using namespace std;
 class UI
 {
 public:
-	bool v = false;
-	float angle = 0.0;
-	float clr[3] = { 0.0,0.0,0.0 };
+	bool show_app_main_menu_bar = false;
+	bool show_app_console = false;
+	bool show_app_log = false;
+	bool show_app_layout = false;
+
+	float f = 0.0;
+	bool b = false;
+	int k = 0;
+
 	UI();
+
+	void ShowUserGuide();
 	void Update();
 	void Render();
 	~UI();

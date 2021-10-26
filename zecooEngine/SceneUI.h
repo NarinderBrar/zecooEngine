@@ -18,8 +18,6 @@
 
 #include "Input.h"
 
-#include "ModelExternal.h"
-
 #include "UI.h"
 
 class SceneUI
@@ -31,7 +29,6 @@ public:
 	Material* material;
 	Camera* camera;
 
-	ModelExternal* modelExternal;
 	Plane* plane;
 
 	PhysicsEngine* phyEng;
