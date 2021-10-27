@@ -90,7 +90,7 @@
     <ClInclude Include="TestModel.h">
       <Filter>Header Files\Model</Filter>
     </ClInclude>
-    <ClInclude Include="SceneA.h">
+    <ClInclude Include="SceneBulletPhysics.h">
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
     <ClInclude Include="SceneB.h">
@@ -255,6 +255,9 @@
     <ClInclude Include="MeshExternal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ModelExternal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -311,7 +314,7 @@
     <ClCompile Include="PyramidMesh.cpp">
       <Filter>Source Files\Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="SceneA.cpp">
+    <ClCompile Include="SceneBulletPhysics.cpp">
       <Filter>Source Files\Scene</Filter>
     </ClCompile>
     <ClCompile Include="SceneB.cpp">
@@ -444,6 +447,9 @@
       <Filter>Source Files\UI</Filter>
     </ClCompile>
     <ClCompile Include="MeshExternal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelExternal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

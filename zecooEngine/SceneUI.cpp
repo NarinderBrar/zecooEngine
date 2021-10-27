@@ -26,6 +26,7 @@ SceneUI::SceneUI( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, I
 	material->linkCamera( camera );
 
 	plane = new Plane( material, NULL );
+
 	ui = new UI();
 }
 

@@ -20,7 +20,7 @@
 
 #include "UI.h"
 
-class SceneA
+class SceneBulletPhysics
 {
 public:
 	Texture* floorTexture;
@@ -57,7 +57,7 @@ public:
 
 	UI* ui;
 
-	SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
+	SceneBulletPhysics(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
 
 	void Update(float deltaTime);
 

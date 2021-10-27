@@ -4,7 +4,7 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Material.h"
-
+#include "Triangle.h"
 #include "Grid.h"
 #include "Debugger.h"
 
@@ -13,6 +13,7 @@
 #include "Triangle.h"
 #include "Plane.h"
 #include "Tube.h"
+#include "oscillator.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -25,38 +26,40 @@
 #include "Transformations.h"
 
 #include "Input.h"
-#include "EmptyObject.h"
 
 using namespace glutil;
 
-class SceneRobotArm
+class SceneRobot
 {
+
+
 public:
+	SceneRobot(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input);
 	Shader* shaderG;
 	Shader* shaderB;
 	Shader* shaderR;
 	Shader* shaderW;
-
+	Shader* shaderZ;
 	DirectionalLight* dlight;
-
+	oscillator* os;
 	Material* materialG;
 	Material* materialB;
 	Material* materialR;
 	Material* materialW;
-
+	Material* materialZ;
 	Texture* floorTexture;
+	int flag = 0;
 
-	Cube* cubeG;
-	Cube* cubeB;
-	Cube* cubeR;
+	Cube* cubeG, * cubeG1, * cubeG2;
+	Cube* cubeB, * cubeB1, * cubeB2;
+	Cube* cubeR, * cubeR1, * cubeR2;
 	Cube* cubeW;
+	Cube* cubeZ;
 
 	Cylinder* cylinder;
 	Triangle* triangle;
 	Plane* plane;
 	Tube* tube;
-
-	EmptyObject* emptyObject;
 
 	Grid* grid;
 	Debugger* debugger;
@@ -68,24 +71,22 @@ public:
 
 	glm::mat4 pose;
 
-    float m;
-
 	double angle = 0;
 
 	glm::mat4 position;
 	glm::mat4 rotation;
 
-	glm::mat4 I = glm::mat4( 1.0 );
+	glm::mat4 I = glm::mat4(1.0);
 
-	glm::vec3 lookAt = glm::vec3( -3, 0, 0 );
+	glm::vec3 lookAt = glm::vec3(-3, 0, 0);
 
 	MatrixStack matrixStack;
 	Transformations* transformations;
 
 	float cameraMove = 0.0;
-	SceneRobotArm( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
 
-	void Update( float deltaTime );
+	void Update(float deltaTime);
 
 	void Render();
 };
+

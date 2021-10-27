@@ -40,6 +40,8 @@ class Transform
 
 		void worldScale(glm::vec3 vec);
 		void resetParentScale( glm::vec3 vec );
+		void lookAt( glm::vec3 eye, glm::vec3 at, glm::vec3 up );
+		
 		void Update();
 
 		void MoveTowards( float dt, Transform* target, float speed, float offset );

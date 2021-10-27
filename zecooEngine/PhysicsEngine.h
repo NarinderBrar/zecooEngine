@@ -17,9 +17,6 @@ private:
 	btCollisionDispatcher* dispatcher;
 
 public:
-	btTransform trans;
-	btTransform boxTransform;
-
 	std::map<const btCollisionObject*, std::vector<btManifoldPoint*>> objectsCollisions;
 
 	//keep track of the shapes, we release memory at exit.
@@ -30,7 +27,7 @@ public:
 	PhysicsEngine();
 
 	void Solve(float deltaTime);
-    void myTickCallback( btDynamicsWorld* dynamicsWorld, btScalar timeStep );
+    //void myTickCallback( btDynamicsWorld* dynamicsWorld, btScalar timeStep );
 	void Destroy();
 
 };

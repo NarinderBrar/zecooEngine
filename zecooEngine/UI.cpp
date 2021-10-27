@@ -33,7 +33,6 @@ void UI::ShowUserGuide()
                            "and Metrics/Debugger (general purpose Dear ImGui debugging tool)." );
 
         ImGui::Separator();
-        
 
         ImGui::Text( "PROGRAMMER GUIDE:" );
         ImGui::BulletText( "See the ShowDemoWindow() code in imgui_demo.cpp. <- you are here!" );

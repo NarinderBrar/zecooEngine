@@ -1,6 +1,6 @@
 #include "PhysicsEngine.h"
 
-void PhysicsEngine::myTickCallback( btDynamicsWorld* dynamicsWorld, btScalar timeStep )
+/*void PhysicsEngine::myTickCallback( btDynamicsWorld* dynamicsWorld, btScalar timeStep )
 {
 	objectsCollisions.clear();
 
@@ -20,7 +20,7 @@ void PhysicsEngine::myTickCallback( btDynamicsWorld* dynamicsWorld, btScalar tim
 			collisionsB.push_back( &pt );
 		}
 	}
-}
+}*/
 
 PhysicsEngine::PhysicsEngine()
 {
@@ -48,8 +48,6 @@ void PhysicsEngine::Solve(float deltaTime)
 	//dynamicsWorld->debugDrawWorld();
 	dynamicsWorld->stepSimulation(deltaTime);
 }
-
-
 
 void PhysicsEngine::Destroy()
 {

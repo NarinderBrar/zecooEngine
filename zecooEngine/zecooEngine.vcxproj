@@ -116,14 +116,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)\zecooEngine\Vendor;$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\include\GLFW;$(SolutionDir)\zecooEngine\\assimp;$(SolutionDir)\zecooEngine\Vendor\glad\include;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\src;$(SolutionDir)\zecooEngine\Vendor\JsonStthm\Src;$(SolutionDir)\zecooEngine\Vendor\imgui;$(SolutionDir)\zecooEngine\Vendor\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)\zecooEngine\Vendor;$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\include\GLFW;$(SolutionDir)\zecooEngine\Vendor\glad\include;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\src;$(SolutionDir)\zecooEngine\Vendor\JsonStthm\Src;$(SolutionDir)\zecooEngine\Vendor\imgui;$(SolutionDir)\zecooEngine\Vendor\stb_image;$(SolutionDir)\zecooEngine\Vendor\assimp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\build\src\Debug;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;FreeImage.lib;BulletDynamics_Debug.lib;BulletCollision_Debug.lib;LinearMath_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\build\src\Debug;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\build\lib\Debug;$(SolutionDir)\zecooEngine\Vendor\assimp\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;FreeImage.lib;BulletDynamics_Debug.lib;BulletCollision_Debug.lib;LinearMath_Debug.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -167,6 +167,7 @@
     <ClInclude Include="MatrixStack.h" />
     <ClInclude Include="MeshExternal.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="ModelExternal.h" />
     <ClInclude Include="PhysicsEngine.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="PlaneMesh.h" />
@@ -179,7 +180,7 @@
     <ClInclude Include="SceneExperiment.h" />
     <ClInclude Include="SceneModelLoad.h" />
     <ClInclude Include="SceneRobotArm.h" />
-    <ClInclude Include="SceneA.h" />
+    <ClInclude Include="SceneBulletPhysics.h" />
     <ClInclude Include="SceneB.h" />
     <ClInclude Include="SceneBasic.h" />
     <ClInclude Include="SceneC.h" />
@@ -236,6 +237,7 @@
     <ClCompile Include="MatrixStack.cpp" />
     <ClCompile Include="MeshExternal.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="ModelExternal.cpp" />
     <ClCompile Include="PhysicsEngine.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="PlaneMesh.cpp" />
@@ -247,7 +249,7 @@
     <ClCompile Include="SceneExperiment.cpp" />
     <ClCompile Include="SceneModelLoad.cpp" />
     <ClCompile Include="SceneRobotArm.cpp" />
-    <ClCompile Include="SceneA.cpp" />
+    <ClCompile Include="SceneBulletPhysics.cpp" />
     <ClCompile Include="SceneB.cpp" />
     <ClCompile Include="SceneBasic.cpp" />
     <ClCompile Include="SceneC.cpp" />

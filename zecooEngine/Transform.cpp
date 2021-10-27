@@ -105,6 +105,25 @@ void Transform::MoveTowards( float dt, Transform* target, float speed, float off
 	}
 }
 
+void Transform::lookAt( glm::vec3 eye, glm::vec3 at, glm::vec3 up )
+{
+	glm::vec3 zaxis = glm::normalize( at - eye );
+	glm::vec3 xaxis = glm::normalize( glm::cross( zaxis, up ) );
+	glm::vec3 yaxis = glm::cross( xaxis, zaxis );
+
+	//negate( zaxis );
+
+	glm::mat4 viewMatrix = glm::mat4{
+	  xaxis.x, xaxis.y, xaxis.z, -glm::dot( xaxis, eye ) ,
+	  yaxis.x, yaxis.y, yaxis.z, -glm::dot( yaxis, eye ) ,
+	  zaxis.x, zaxis.y, zaxis.z, -glm::dot( zaxis, eye ) ,
+	  0, 0, 0, 1
+	};
+
+	worldMatrix = viewMatrix;
+
+}
+
 void Transform::Update()
 {
 	pose =  parentMatrix  * worldMatrix;

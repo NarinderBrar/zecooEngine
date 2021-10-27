@@ -6,17 +6,17 @@ Game::Game(Input* _input)
 
 	phyEng = new PhysicsEngine();
 
-	sceneUI = new SceneUI(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, phyEng, input );
+	scene = new SceneBulletPhysics(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, phyEng, input );
 }
 
 void Game::Update(float deltaTime)
 {
 	phyEng->Solve(deltaTime);
 	
-	sceneUI->Update(deltaTime);
+	scene->Update(deltaTime);
 }
 
 void Game::Render(float deltaTime)
 {
-	sceneUI->Render();
+	scene->Render();
 }

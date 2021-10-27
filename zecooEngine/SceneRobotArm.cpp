@@ -91,6 +91,7 @@ SceneRobotArm::SceneRobotArm( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* phys
 void SceneRobotArm::Update( float deltaTime )
 {
 	cubeR->transform->Update();
+
 	//cubeR->transform->rotate( glm::radians( 50 * deltaTime ), glm::vec3( 0, 1, 0 ) );
 	//cubeR->transform->translate( glm::vec3( 0, 0, deltaTime ) );
 

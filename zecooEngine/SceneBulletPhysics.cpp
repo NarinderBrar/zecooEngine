@@ -1,6 +1,6 @@
-#include "SceneA.h"
+#include "SceneBulletPhysics.h"
 
-SceneA::SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input )
+SceneBulletPhysics::SceneBulletPhysics(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input )
 {
 	// configure global opengl state
 	glEnable(GL_DEPTH_TEST);
@@ -69,7 +69,7 @@ SceneA::SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Inpu
 	
 }
 
-void SceneA::Update(float deltaTime)
+void SceneBulletPhysics::Update(float deltaTime)
 {
 	if( input->getPressedKey() == "Up" )
 		std::cout << "up key" << std::endl;
@@ -84,7 +84,7 @@ void SceneA::Update(float deltaTime)
 	projection = camera->GetPerspectiveProjectionMatrix();
 }
 
-void SceneA::Render()
+void SceneBulletPhysics::Render()
 {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
