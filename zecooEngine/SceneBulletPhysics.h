@@ -7,6 +7,7 @@
 
 #include "Plane.h"
 #include "Cube.h"
+#include "CustomModel.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -41,11 +42,11 @@ public:
 	Material* floorMaterial;
 	Material* cubeMaterial;
 
-	Plane* plane;
 	Cube* cube;
 
 	Plane* planePhy;
 	Cube* cubePhy;
+	CustomModel* customModel;
 
 	PhysicsEngine* phyEng;
 
@@ -55,9 +56,8 @@ public:
 
 	glm::mat4 projection;
 
-	UI* ui;
-
 	SceneBulletPhysics(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
+
 
 	void Update(float deltaTime);
 

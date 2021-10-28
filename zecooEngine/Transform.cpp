@@ -7,6 +7,7 @@ Transform::Transform()
 // 10 11 12 13
 // 20 21 22 23
 // 30 31 32 33
+	Update();
 }
 
 void Transform::position(glm::vec3 vec)
@@ -14,6 +15,7 @@ void Transform::position(glm::vec3 vec)
 	worldMatrix[3][0] = vec.x;
 	worldMatrix[3][1] = vec.y;
 	worldMatrix[3][2] = vec.z;
+	Update();
 }
 
 glm::vec3 Transform::getPosition()
