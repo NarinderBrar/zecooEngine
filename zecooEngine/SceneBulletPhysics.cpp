@@ -7,6 +7,7 @@ SceneBulletPhysics::SceneBulletPhysics(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEng
 
 	phyEng = physicsEngine;
 
+
 	input = _input;
 
 	floorTexture = new Texture();
@@ -62,9 +63,14 @@ SceneBulletPhysics::SceneBulletPhysics(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEng
 	customModel->SetRigidbody( phyEng );
 
 	planePhy = new Plane( floorMaterial, floorTexture );
-	planePhy->transform->scale( glm::vec3( 10.0f, 1.0f, 10.0f ) );
+	
+	planePhy->transform->scale( glm::vec3( 1.0f, 1.0f, 1.0f ) );
+	planePhy->transform->rotate( 0.0, glm::vec3( 0.0f, 0.0f, 1.0f ) );
 	planePhy->mass = 0.0;
 	planePhy->SetRigidbody( phyEng );
+
+	debugDraw = new GLDebugDrawer(camera);
+	phyEng->dynamicsWorld->setDebugDrawer( debugDraw );
 }
 
 void SceneBulletPhysics::Update(float deltaTime)
@@ -93,4 +99,10 @@ void SceneBulletPhysics::Render()
 	planePhy->render();
 	cubePhy->render();
 	customModel->render();
+
+	phyEng->dynamicsWorld->debugDrawWorld();
+
+	phyEng->dynamicsWorld->getDebugDrawer()->setDebugMode( btIDebugDraw::DebugDrawModes::DBG_DrawWireframe );
+
+	phyEng->dynamicsWorld->debugDrawWorld();
 }

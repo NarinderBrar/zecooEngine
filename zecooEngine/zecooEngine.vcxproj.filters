@@ -258,6 +258,12 @@
     <ClInclude Include="ModelExternal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GLDebugDrawer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SingleLine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -450,6 +456,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ModelExternal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GLDebugDrawer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SingleLine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

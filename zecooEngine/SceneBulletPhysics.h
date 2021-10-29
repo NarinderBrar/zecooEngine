@@ -16,6 +16,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "PhysicsEngine.h"
+#include "GLDebugDrawer.h"
 
 #include "Input.h"
 
@@ -49,12 +50,15 @@ public:
 	CustomModel* customModel;
 
 	PhysicsEngine* phyEng;
+	GLDebugDrawer* debugDraw;
 
 	Input* input;
 
 	Camera* camera;
 
 	glm::mat4 projection;
+
+	
 
 	SceneBulletPhysics(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
 

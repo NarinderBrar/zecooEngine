@@ -7,9 +7,11 @@
 
 #include <btBulletDynamicsCommon.h>
 
+
 class PhysicsEngine
 {
 private:
+	
 	btDefaultCollisionConfiguration* collisionConfiguration;
 
 	btSequentialImpulseConstraintSolver* solver;

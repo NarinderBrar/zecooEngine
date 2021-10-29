@@ -158,6 +158,7 @@
     <ClInclude Include="Debugger.h" />
     <ClInclude Include="EmptyObject.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GLDebugDrawer.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Light.h" />
@@ -188,6 +189,7 @@
     <ClInclude Include="SceneUI.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="SingleLine.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="TestMesh.h" />
     <ClInclude Include="TestModel.h" />
@@ -227,6 +229,7 @@
     <ClCompile Include="EmptyObject.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="GLDebugDrawer.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Light.cpp" />
@@ -257,6 +260,7 @@
     <ClCompile Include="SceneUI.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="SingleLine.cpp" />
     <ClCompile Include="TestMesh.cpp" />
     <ClCompile Include="TestModel.cpp" />
     <ClCompile Include="Texture.cpp" />
