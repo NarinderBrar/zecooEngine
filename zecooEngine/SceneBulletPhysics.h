@@ -7,6 +7,7 @@
 
 #include "Plane.h"
 #include "Cube.h"
+#include "CustomModel.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -15,12 +16,13 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "PhysicsEngine.h"
+#include "GLDebugDrawer.h"
 
 #include "Input.h"
 
 #include "UI.h"
 
-class SceneA
+class SceneBulletPhysics
 {
 public:
 	Texture* floorTexture;
@@ -41,13 +43,14 @@ public:
 	Material* floorMaterial;
 	Material* cubeMaterial;
 
-	Plane* plane;
 	Cube* cube;
 
 	Plane* planePhy;
 	Cube* cubePhy;
+	CustomModel* customModel;
 
 	PhysicsEngine* phyEng;
+	GLDebugDrawer* debugDraw;
 
 	Input* input;
 
@@ -55,9 +58,10 @@ public:
 
 	glm::mat4 projection;
 
-	UI* ui;
+	
 
-	SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
+	SceneBulletPhysics(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
+
 
 	void Update(float deltaTime);
 

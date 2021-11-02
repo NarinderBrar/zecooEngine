@@ -1,5 +1,27 @@
 #include "PhysicsEngine.h"
 
+/*void PhysicsEngine::myTickCallback( btDynamicsWorld* dynamicsWorld, btScalar timeStep )
+{
+	objectsCollisions.clear();
+
+	int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
+	for( int i = 0; i < numManifolds; i++ )
+	{
+		btPersistentManifold* contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal( i );
+		auto* objA = contactManifold->getBody0();
+		auto* objB = contactManifold->getBody1();
+		auto& collisionsA = objectsCollisions[objA];
+		auto& collisionsB = objectsCollisions[objB];
+		int numContacts = contactManifold->getNumContacts();
+		for( int j = 0; j < numContacts; j++ )
+		{
+			btManifoldPoint& pt = contactManifold->getContactPoint( j );
+			collisionsA.push_back( &pt );
+			collisionsB.push_back( &pt );
+		}
+	}
+}*/
+
 PhysicsEngine::PhysicsEngine()
 {
 	///collision configuration contains default setup for memory, collision setup. Advanced users can create their own configuration.
@@ -16,8 +38,8 @@ PhysicsEngine::PhysicsEngine()
 
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
+	
 
-	//dynamicsWorld->getDebugDrawer()->setDebugMode( btIDebugDraw::DBG_DrawWireframe );
 }
 
 void PhysicsEngine::Solve(float deltaTime)

@@ -25,6 +25,7 @@
 #include "Transformations.h"
 
 #include "Input.h"
+#include "EmptyObject.h"
 
 using namespace glutil;
 
@@ -55,6 +56,8 @@ public:
 	Plane* plane;
 	Tube* tube;
 
+	EmptyObject* emptyObject;
+
 	Grid* grid;
 	Debugger* debugger;
 
@@ -64,6 +67,8 @@ public:
 	glm::mat4 projection;
 
 	glm::mat4 pose;
+
+    float m;
 
 	double angle = 0;
 

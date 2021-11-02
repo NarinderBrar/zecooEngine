@@ -1,10 +1,8 @@
 #pragma once
 
-#include "SceneA.h"
-
-#include "SceneExperiment.h"
-
 #include <iostream>
+
+#include "SceneBulletPhysics.h"
 
 #include "Input.h"
 #include "Settings.h"
@@ -19,10 +17,7 @@ class Game
 public:
 	Input* input;
 
-	//SceneA* sceneA;
-
-	SceneExperiment* sceneExperiment;
-
+	SceneBulletPhysics* scene;
 	PhysicsEngine* phyEng;
 
 	Game(Input* _input);

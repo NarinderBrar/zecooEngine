@@ -64,7 +64,7 @@ int main()
 	ImGui_ImplOpenGL3_Init( glsl_version );
 
 	//Setup Dear ImGui style
-	ImGui::StyleColorsDark();
+	ImGui::StyleColorsDark;
 
 	while (window->isActive())
 	{

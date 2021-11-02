@@ -49,6 +49,12 @@
     <Filter Include="Source Files\imgui">
       <UniqueIdentifier>{8379eeef-3042-4b43-baff-aa31b7a39fa5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\UI">
+      <UniqueIdentifier>{f580c0bd-2e7c-4cc2-8f07-fa705cad945d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\UI">
+      <UniqueIdentifier>{b9d0bef8-e33f-42b9-8d34-7cbc6aa6240e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CubeMesh.h">
@@ -84,7 +90,7 @@
     <ClInclude Include="TestModel.h">
       <Filter>Header Files\Model</Filter>
     </ClInclude>
-    <ClInclude Include="SceneA.h">
+    <ClInclude Include="SceneBulletPhysics.h">
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
     <ClInclude Include="SceneB.h">
@@ -234,8 +240,29 @@
     <ClInclude Include="Vendor\imgui\imstb_truetype.h">
       <Filter>Header Files\imgui</Filter>
     </ClInclude>
+    <ClInclude Include="EmptyObject.h">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneModelLoad.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneUI.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
     <ClInclude Include="UI.h">
-      <Filter>Header Files\Core</Filter>
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshExternal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelExternal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GLDebugDrawer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SingleLine.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -293,7 +320,7 @@
     <ClCompile Include="PyramidMesh.cpp">
       <Filter>Source Files\Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="SceneA.cpp">
+    <ClCompile Include="SceneBulletPhysics.cpp">
       <Filter>Source Files\Scene</Filter>
     </ClCompile>
     <ClCompile Include="SceneB.cpp">
@@ -413,8 +440,29 @@
     <ClCompile Include="Vendor\imgui\imgui_widgets.cpp">
       <Filter>Source Files\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="EmptyObject.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneModelLoad.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneUI.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
     <ClCompile Include="UI.cpp">
-      <Filter>Source Files\Core</Filter>
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshExternal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelExternal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GLDebugDrawer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SingleLine.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

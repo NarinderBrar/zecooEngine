@@ -15,4 +15,5 @@ void Circle::render()
 
 Circle::~Circle()
 {
+
 }

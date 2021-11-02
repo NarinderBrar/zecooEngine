@@ -1,15 +1,14 @@
-#include "SceneA.h"
+#include "SceneBulletPhysics.h"
 
-SceneA::SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input )
+SceneBulletPhysics::SceneBulletPhysics(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input )
 {
 	// configure global opengl state
 	glEnable(GL_DEPTH_TEST);
 
 	phyEng = physicsEngine;
 
-	input = _input;
 
-	ui = new UI();
+	input = _input;
 
 	floorTexture = new Texture();
 	floorTexture->Load("resources\\textures\\brickwall.jpg");
@@ -47,55 +46,63 @@ SceneA::SceneA(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Inpu
 	cubeMaterial->linkLight(dlight);
 	cubeMaterial->linkCamera(camera);
 
-	plane = new Plane(floorMaterial, floorTexture);
-	plane->transform->translate( glm::vec3( 5.0f, 0.0f, 0.0f ) );
-	plane->transform->scale(glm::vec3(5.0f, 5.0f, 5.0f));
-
     cube = new Cube(cubeMaterial, cubeTexture);
-    cube->transform->translate(glm::vec3(5.0f, 0.0f, 0.0f));
-
-	planePhy = new Plane( floorMaterial, floorTexture );
-	planePhy->transform->translate( glm::vec3( 1.0f, 0.0f, 0.0f ) );
-	planePhy->transform->scale( glm::vec3( 1.0f, 1.0f, 1.0f ) );
+    cube->transform->translate(glm::vec3(-5.0f, 6.0f, 0.0f));
+	cube->transform->rotate( 45.0, glm::vec3( 1.0f, 0.0f, 0.0f ) );
+	cube->mass = 1.0;
+	cube->SetRigidbody( phyEng );
 
 	cubePhy = new Cube( cubeMaterial, cubeTexture );
-	cubePhy->transform->translate( glm::vec3( 0.0f, 4.0f, 0.0f ) );
-
+	cubePhy->transform->translate( glm::vec3( 0.0f, 6.0f, 0.0f ) );
 	cubePhy->mass = 1.0;
 	cubePhy->SetRigidbody( phyEng );
 	
+	customModel = new CustomModel( floorMaterial, floorTexture );
+	customModel->transform->translate( glm::vec3( -2.0f, 6.0f, 0.0f ) );
+	customModel->mass = 1.0;
+	customModel->SetRigidbody( phyEng );
+
+	planePhy = new Plane( floorMaterial, floorTexture );
+	
+	planePhy->transform->scale( glm::vec3( 1.0f, 1.0f, 1.0f ) );
+	planePhy->transform->rotate( 0.0, glm::vec3( 0.0f, 0.0f, 1.0f ) );
 	planePhy->mass = 0.0;
 	planePhy->SetRigidbody( phyEng );
-	
+
+	debugDraw = new GLDebugDrawer(camera);
+	phyEng->dynamicsWorld->setDebugDrawer( debugDraw );
 }
 
-void SceneA::Update(float deltaTime)
+void SceneBulletPhysics::Update(float deltaTime)
 {
 	if( input->getPressedKey() == "Up" )
 		std::cout << "up key" << std::endl;
 
+	cube->solve(phyEng);
 	cubePhy->solve( phyEng );
 	planePhy->solve( phyEng );
+	customModel->solve(phyEng);
 
-    cube->transform->position( glm::vec3( 5.0f, 0.0 + ui->translation, 0.0f ) );
-	cube->transform->Update();
+    //cube->transform->position( glm::vec3( 5.0f, 0.0 + ui->translation, 0.0f ) );
+	//cube->transform->Update();
 
 	camera->RotateViewPoint( 800, glfwGetTime() );
 	projection = camera->GetPerspectiveProjectionMatrix();
 }
 
-void SceneA::Render()
+void SceneBulletPhysics::Render()
 {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	plane->render();
-	
     cube->render();
-
 	planePhy->render();
-
 	cubePhy->render();
-	
-	ui->Render();
+	customModel->render();
+
+	phyEng->dynamicsWorld->debugDrawWorld();
+
+	phyEng->dynamicsWorld->getDebugDrawer()->setDebugMode( btIDebugDraw::DebugDrawModes::DBG_DrawWireframe );
+
+	phyEng->dynamicsWorld->debugDrawWorld();
 }
