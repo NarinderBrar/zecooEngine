@@ -5,8 +5,12 @@
 #include <map>
 #include <vector>
 
-#include <btBulletDynamicsCommon.h>
+#include "Model.h"
 
+#include <btBulletDynamicsCommon.h>
+#include <iostream>
+
+using namespace std;
 
 class PhysicsEngine
 {
@@ -29,6 +33,7 @@ public:
 	PhysicsEngine();
 
 	void Solve(float deltaTime);
+	bool CollisionTest( std::string bodyA, std::string bodyB );
     //void myTickCallback( btDynamicsWorld* dynamicsWorld, btScalar timeStep );
 	void Destroy();
 

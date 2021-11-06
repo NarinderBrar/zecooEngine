@@ -1,16 +1,33 @@
+#define STB_IMAGE_IMPLEMENTATION 
 #include "ModelExternal.h"
-/*
+
 // constructor, expects a filepath to a 3D model.
 ModelExternal::ModelExternal( string const& path, bool gamma ) : gammaCorrection( gamma )
 {
     loadModel( path );
+    transform = new Transform();
 }
 
+
 // draws the model, and thus all its meshes
-void ModelExternal::Draw( Shader& shader )
+void ModelExternal::Draw( Material* material, Texture* texture )
 {
+    material->shader->use();
+    material->shader->setMat4( "model", transform->pose );
+    material->update();
+
+    /*if( texture != NULL )
+    {
+        texture->Bind();
+        material->shader->setInt( "textureSample", 1 );
+    }
+    else
+    {
+        material->shader->setInt( "textureSample", 0 );
+    }*/
+
     for( unsigned int i = 0; i < meshes.size(); i++ )
-        meshes[i].Draw( shader );
+        meshes[i].Draw( material->shader );
 }
 
 // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
@@ -26,11 +43,12 @@ void ModelExternal::loadModel( string const& path )
         return;
     }
     // retrieve the directory path of the filepath
-    directory = path.substr( 0, path.find_last_of( '/' ) );
+   directory = path.substr( 0, path.find_last_of( '/' ) );
 
-    // process ASSIMP's root node recursively
-    processNode( scene->mRootNode, scene );
+    //process ASSIMP's root node recursively
+   processNode( scene->mRootNode, scene );
 }
+
 
 // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
 void ModelExternal::processNode( aiNode* node, const aiScene* scene )
@@ -48,7 +66,6 @@ void ModelExternal::processNode( aiNode* node, const aiScene* scene )
     {
         processNode( node->mChildren[i], scene );
     }
-
 }
 
 MeshExternal ModelExternal::processMesh( aiMesh* mesh, const aiScene* scene )
@@ -158,7 +175,7 @@ vector<MeshTexture> ModelExternal::loadMaterialTextures( aiMaterial* mat, aiText
         if( !skip )
         {   // if texture hasn't been loaded already, load it
             MeshTexture texture;
-           // texture.id = TextureFromFile( str.C_Str(), this->directory );
+            texture.id = TextureFromFile( str.C_Str(), this->directory );
             texture.type = typeName;
             texture.path = str.C_Str();
             textures.push_back( texture );
@@ -202,8 +219,8 @@ unsigned int TextureFromFile( const char* path, const string& directory, bool ga
     else
     {
         std::cout << "Texture failed to load at path: " << path << std::endl;
-        stbi_image_free( data );
+       stbi_image_free( data );
     }
 
     return textureID;
-}*/
+}

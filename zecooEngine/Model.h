@@ -13,6 +13,7 @@ private:
 	Texture* texture;
 
 public:
+	std::string name = "";
 	Transform* transform ;
 
 	Model(Material* material, Texture* texture);

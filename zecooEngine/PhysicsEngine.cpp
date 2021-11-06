@@ -1,8 +1,8 @@
 #include "PhysicsEngine.h"
 
-/*void PhysicsEngine::myTickCallback( btDynamicsWorld* dynamicsWorld, btScalar timeStep )
+void myTickCallback( btDynamicsWorld* dynamicsWorld, btScalar timeStep )
 {
-	objectsCollisions.clear();
+	//objectsCollisions.clear();
 
 	int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
 	for( int i = 0; i < numManifolds; i++ )
@@ -10,17 +10,21 @@
 		btPersistentManifold* contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal( i );
 		auto* objA = contactManifold->getBody0();
 		auto* objB = contactManifold->getBody1();
-		auto& collisionsA = objectsCollisions[objA];
-		auto& collisionsB = objectsCollisions[objB];
+
+		//auto& collisionsA = objectsCollisions[objA];
+		//auto& collisionsB = objectsCollisions[objB];
+
 		int numContacts = contactManifold->getNumContacts();
 		for( int j = 0; j < numContacts; j++ )
 		{
 			btManifoldPoint& pt = contactManifold->getContactPoint( j );
-			collisionsA.push_back( &pt );
-			collisionsB.push_back( &pt );
+			//collisionsA.push_back( &pt );
+			//collisionsB.push_back( &pt );
+
+			//cout << "h" << endl;
 		}
 	}
-}*/
+}
 
 PhysicsEngine::PhysicsEngine()
 {
@@ -38,14 +42,41 @@ PhysicsEngine::PhysicsEngine()
 
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
-	
-
+	//dynamicsWorld->setInternalTickCallback( myTickCallback );
 }
 
 void PhysicsEngine::Solve(float deltaTime)
 {
 	//dynamicsWorld->debugDrawWorld();
 	dynamicsWorld->stepSimulation(deltaTime);
+}
+
+bool PhysicsEngine::CollisionTest( std::string bodyA, std::string bodyB )
+{
+	const int numManifolds = dispatcher->getNumManifolds();
+
+	for( int m = 0; m < numManifolds; ++m )
+	{
+		btPersistentManifold* man = dispatcher->getManifoldByIndexInternal( m );
+
+		const btRigidBody* cube2RB = static_cast<const btRigidBody*>( man->getBody0() );
+		const btRigidBody* planePhyRB = static_cast<const btRigidBody*>( man->getBody1() );
+
+		const Model* rb1 = (Model*)cube2RB->getUserPointer();
+		const Model* rb2 = (Model*)planePhyRB->getUserPointer();
+
+		if( ( rb1->name != bodyA && rb2->name != bodyB ) || ( rb1->name != bodyB || rb2->name != bodyA ) )
+		{
+			float totalImpact = 0.0f;
+			for( int c = 0; c < man->getNumContacts(); ++c )
+				totalImpact += man->getContactPoint( c ).m_appliedImpulse;
+
+			if( totalImpact > 0 )
+				return true;
+		}
+	}
+
+	return false;
 }
 
 void PhysicsEngine::Destroy()

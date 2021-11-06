@@ -116,14 +116,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)\zecooEngine\Vendor;$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\include\GLFW;$(SolutionDir)\zecooEngine\Vendor\glad\include;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\src;$(SolutionDir)\zecooEngine\Vendor\JsonStthm\Src;$(SolutionDir)\zecooEngine\Vendor\imgui;$(SolutionDir)\zecooEngine\Vendor\stb_image;$(SolutionDir)\zecooEngine\Vendor\assimp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)\zecooEngine\Vendor;$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\include\GLFW;$(SolutionDir)\zecooEngine\Vendor\glad\include;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\src;$(SolutionDir)\zecooEngine\Vendor\JsonStthm\Src;$(SolutionDir)\zecooEngine\Vendor\imgui;$(SolutionDir)\zecooEngine\Vendor\stb_image;E:\Projects\Projects_Chitkara\zecooEngine\zecooEngine\Vendor\assimp-3.3.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\build\src\Debug;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\build\lib\Debug;$(SolutionDir)\zecooEngine\Vendor\assimp\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;FreeImage.lib;BulletDynamics_Debug.lib;BulletCollision_Debug.lib;LinearMath_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\build\src\Debug;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\build\lib\Debug;$(SolutionDir)\zecooEngine\Vendor\assimp-3.3.1\build\code\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;FreeImage.lib;BulletDynamics_Debug.lib;BulletCollision_Debug.lib;LinearMath_Debug.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

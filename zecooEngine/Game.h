@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-#include "SceneBulletPhysics.h"
+
+#include "SceneModelLoad.h"
 
 #include "Input.h"
 #include "Settings.h"
@@ -17,7 +18,7 @@ class Game
 public:
 	Input* input;
 
-	SceneBulletPhysics* scene;
+	SceneModelLoad* scene;
 	PhysicsEngine* phyEng;
 
 	Game(Input* _input);

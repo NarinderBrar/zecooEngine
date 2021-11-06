@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Material.h"
+#include "ModelExternal.h"
 
 #include "Plane.h"
 
@@ -17,6 +18,7 @@
 #include "PhysicsEngine.h"
 
 #include "Input.h"
+#include "Cube.h"
 
 class SceneModelLoad
 {
@@ -25,10 +27,13 @@ public:
 
 	DirectionalLight* dlight = NULL;
 	Material* material;
+	Texture* texture;
 
-	//ModelExternal* modelExternal;
+	Cube* cube;
+
+	ModelExternal* modelExternal;
 	Plane* plane;
-
+	Camera* camera;
 	PhysicsEngine* phyEng;
 
 	SceneModelLoad( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );

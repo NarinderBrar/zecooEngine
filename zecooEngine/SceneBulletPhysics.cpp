@@ -7,7 +7,6 @@ SceneBulletPhysics::SceneBulletPhysics(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEng
 
 	phyEng = physicsEngine;
 
-
 	input = _input;
 
 	floorTexture = new Texture();
@@ -51,26 +50,35 @@ SceneBulletPhysics::SceneBulletPhysics(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEng
 	cube->transform->rotate( 45.0, glm::vec3( 1.0f, 0.0f, 0.0f ) );
 	cube->mass = 1.0;
 	cube->SetRigidbody( phyEng );
+	cube->name = "cube1";
+	cube->rigidBody->setUserPointer( cube );
 
 	cubePhy = new Cube( cubeMaterial, cubeTexture );
 	cubePhy->transform->translate( glm::vec3( 0.0f, 6.0f, 0.0f ) );
 	cubePhy->mass = 1.0;
 	cubePhy->SetRigidbody( phyEng );
-	
+	cubePhy->name = "cube2";
+	cubePhy->rigidBody->setUserPointer( cubePhy );
+
 	customModel = new CustomModel( floorMaterial, floorTexture );
 	customModel->transform->translate( glm::vec3( -2.0f, 6.0f, 0.0f ) );
 	customModel->mass = 1.0;
 	customModel->SetRigidbody( phyEng );
+	customModel->name = "custom";
+	customModel->rigidBody->setUserPointer( customModel );
 
 	planePhy = new Plane( floorMaterial, floorTexture );
-	
 	planePhy->transform->scale( glm::vec3( 1.0f, 1.0f, 1.0f ) );
 	planePhy->transform->rotate( 0.0, glm::vec3( 0.0f, 0.0f, 1.0f ) );
 	planePhy->mass = 0.0;
 	planePhy->SetRigidbody( phyEng );
+	planePhy->name = "planePhy";
+	planePhy->rigidBody->setUserPointer( planePhy );
 
 	debugDraw = new GLDebugDrawer(camera);
 	phyEng->dynamicsWorld->setDebugDrawer( debugDraw );
+
+	
 }
 
 void SceneBulletPhysics::Update(float deltaTime)
@@ -88,6 +96,11 @@ void SceneBulletPhysics::Update(float deltaTime)
 
 	camera->RotateViewPoint( 800, glfwGetTime() );
 	projection = camera->GetPerspectiveProjectionMatrix();
+
+	if( phyEng->CollisionTest( "cube2", "planePhy" ) )
+	{
+		cout << "collision" << endl;
+	}
 }
 
 void SceneBulletPhysics::Render()
