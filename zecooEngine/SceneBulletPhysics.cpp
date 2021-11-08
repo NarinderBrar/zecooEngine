@@ -32,6 +32,9 @@ SceneBulletPhysics::SceneBulletPhysics(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEng
 
 	cubeShader = new Shader("resources\\shader\\basicTextureLight.vs", "resources\\shader\\basicTextureLight.fs");
 
+	debugDraw = new GLDebugDrawer( camera );
+	phyEng->dynamicsWorld->setDebugDrawer( debugDraw );
+
 	dlight = new DirectionalLight(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.2, -1.0, 0.2));
 	dlight->diffuse = glm::vec3(1.0, 1.0, 1.0);
 	dlight->ambient = glm::vec3(0.5, 0.5, 0.5);
@@ -45,40 +48,36 @@ SceneBulletPhysics::SceneBulletPhysics(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEng
 	cubeMaterial->linkLight(dlight);
 	cubeMaterial->linkCamera(camera);
 
-    cube = new Cube(cubeMaterial, cubeTexture);
+    /*cube = new Cube(cubeMaterial, cubeTexture);
     cube->transform->translate(glm::vec3(-5.0f, 6.0f, 0.0f));
 	cube->transform->rotate( 45.0, glm::vec3( 1.0f, 0.0f, 0.0f ) );
 	cube->mass = 1.0;
 	cube->SetRigidbody( phyEng );
 	cube->name = "cube1";
-	cube->rigidBody->setUserPointer( cube );
+	cube->rigidBody->setUserPointer( cube );*/
+
 
 	cubePhy = new Cube( cubeMaterial, cubeTexture );
 	cubePhy->transform->translate( glm::vec3( 0.0f, 6.0f, 0.0f ) );
 	cubePhy->mass = 1.0;
 	cubePhy->SetRigidbody( phyEng );
-	cubePhy->name = "cube2";
-	cubePhy->rigidBody->setUserPointer( cubePhy );
+	//cubePhy->name = "cube2";
+	//cubePhy->rigidBody->setUserPointer( cubePhy );
 
-	customModel = new CustomModel( floorMaterial, floorTexture );
+	/*customModel = new CustomModel( floorMaterial, floorTexture );
 	customModel->transform->translate( glm::vec3( -2.0f, 6.0f, 0.0f ) );
 	customModel->mass = 1.0;
 	customModel->SetRigidbody( phyEng );
 	customModel->name = "custom";
-	customModel->rigidBody->setUserPointer( customModel );
+	customModel->rigidBody->setUserPointer( customModel );*/
 
 	planePhy = new Plane( floorMaterial, floorTexture );
 	planePhy->transform->scale( glm::vec3( 1.0f, 1.0f, 1.0f ) );
 	planePhy->transform->rotate( 0.0, glm::vec3( 0.0f, 0.0f, 1.0f ) );
 	planePhy->mass = 0.0;
 	planePhy->SetRigidbody( phyEng );
-	planePhy->name = "planePhy";
-	planePhy->rigidBody->setUserPointer( planePhy );
-
-	debugDraw = new GLDebugDrawer(camera);
-	phyEng->dynamicsWorld->setDebugDrawer( debugDraw );
-
-	
+	//planePhy->name = "planePhy";
+	//planePhy->rigidBody->setUserPointer( planePhy );
 }
 
 void SceneBulletPhysics::Update(float deltaTime)
@@ -86,10 +85,11 @@ void SceneBulletPhysics::Update(float deltaTime)
 	if( input->getPressedKey() == "Up" )
 		std::cout << "up key" << std::endl;
 
-	cube->solve(phyEng);
+
+	//cube->solve(phyEng);
 	cubePhy->solve( phyEng );
 	planePhy->solve( phyEng );
-	customModel->solve(phyEng);
+	//customModel->solve(phyEng);
 
     //cube->transform->position( glm::vec3( 5.0f, 0.0 + ui->translation, 0.0f ) );
 	//cube->transform->Update();
@@ -97,10 +97,10 @@ void SceneBulletPhysics::Update(float deltaTime)
 	camera->RotateViewPoint( 800, glfwGetTime() );
 	projection = camera->GetPerspectiveProjectionMatrix();
 
-	if( phyEng->CollisionTest( "cube2", "planePhy" ) )
+	/*if( phyEng->CollisionTest( "cube2", "planePhy" ) )
 	{
 		cout << "collision" << endl;
-	}
+	}*/
 }
 
 void SceneBulletPhysics::Render()
@@ -108,14 +108,12 @@ void SceneBulletPhysics::Render()
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    cube->render();
+   // cube->render();
 	planePhy->render();
 	cubePhy->render();
-	customModel->render();
+	//customModel->render();
 
 	phyEng->dynamicsWorld->debugDrawWorld();
-
 	phyEng->dynamicsWorld->getDebugDrawer()->setDebugMode( btIDebugDraw::DebugDrawModes::DBG_DrawWireframe );
-
 	phyEng->dynamicsWorld->debugDrawWorld();
 }

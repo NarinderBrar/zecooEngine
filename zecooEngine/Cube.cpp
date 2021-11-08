@@ -28,7 +28,7 @@ void Cube::SetRigidbody(PhysicsEngine* physicsEngine)
 	//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
 	btDefaultMotionState* myMotionState = new btDefaultMotionState(btTrans);
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, colShape, localInertia);
-	rbInfo.m_restitution = 1.0;
+	//rbInfo.m_restitution = 1.0;
 	rigidBody = new btRigidBody(rbInfo);
 
 	isRigidBody = true;

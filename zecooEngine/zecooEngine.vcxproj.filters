@@ -55,6 +55,12 @@
     <Filter Include="Header Files\UI">
       <UniqueIdentifier>{b9d0bef8-e33f-42b9-8d34-7cbc6aa6240e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Physics">
+      <UniqueIdentifier>{4210a3bb-e08a-4f39-84a0-9d61c2c9e127}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Physics">
+      <UniqueIdentifier>{3060ae02-d8c0-4978-8a6a-fd45cf63124b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CubeMesh.h">
@@ -253,16 +259,16 @@
       <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="MeshExternal.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="ModelExternal.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Model</Filter>
     </ClInclude>
     <ClInclude Include="GLDebugDrawer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Physics</Filter>
     </ClInclude>
     <ClInclude Include="SingleLine.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Mesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -453,16 +459,16 @@
       <Filter>Source Files\UI</Filter>
     </ClCompile>
     <ClCompile Include="MeshExternal.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="ModelExternal.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Model</Filter>
     </ClCompile>
     <ClCompile Include="GLDebugDrawer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Physics</Filter>
     </ClCompile>
     <ClCompile Include="SingleLine.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Mesh</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
