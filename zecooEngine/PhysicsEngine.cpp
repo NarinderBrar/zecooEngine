@@ -59,13 +59,13 @@ bool PhysicsEngine::CollisionTest( std::string bodyA, std::string bodyB )
 	{
 		btPersistentManifold* man = dispatcher->getManifoldByIndexInternal( m );
 
-		const btRigidBody* cube2RB = static_cast<const btRigidBody*>( man->getBody0() );
-		const btRigidBody* planePhyRB = static_cast<const btRigidBody*>( man->getBody1() );
+		const btRigidBody* rb1 = static_cast<const btRigidBody*>( man->getBody0() );
+		const btRigidBody* rb2 = static_cast<const btRigidBody*>( man->getBody1() );
 
-		const Model* rb1 = (Model*)cube2RB->getUserPointer();
-		const Model* rb2 = (Model*)planePhyRB->getUserPointer();
+		const Model* rb1M = (Model*)rb1->getUserPointer();
+		const Model* rb2M = (Model*)rb2->getUserPointer();
 
-		if( ( rb1->name != bodyA && rb2->name != bodyB ) || ( rb1->name != bodyB || rb2->name != bodyA ) )
+		if( ( rb1M->name != bodyA && rb2M->name != bodyB ) || ( rb1M->name != bodyB || rb2M->name != bodyA ) )
 		{
 			float totalImpact = 0.0f;
 			for( int c = 0; c < man->getNumContacts(); ++c )

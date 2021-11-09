@@ -22,7 +22,7 @@
 
 #include "UI.h"
 
-class SceneBulletPhysics
+class ScenePhyCollision
 {
 public:
 	Texture* floorTexture;
@@ -58,13 +58,15 @@ public:
 
 	glm::mat4 projection;
 
-	
-
-	SceneBulletPhysics(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
+	float k = 0.0;
 
 
-	void Update(float deltaTime);
+	ScenePhyCollision( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
+
+
+	void Update( float deltaTime );
 
 	void Render();
 
 };
+
