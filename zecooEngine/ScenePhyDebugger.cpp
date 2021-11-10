@@ -61,7 +61,7 @@ ScenePhyDebugger::ScenePhyDebugger( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine
 	cubePhy->mass = 1.0;
 	cubePhy->SetRigidbody( phyEng );
 
-	customModel = new CustomModel( floorMaterial, floorTexture );
+	customModel = new Sphere( floorMaterial, floorTexture );
 	customModel->transform->translate( glm::vec3( -2.0f, 6.0f, 0.0f ) );
 	customModel->mass = 1.0;
 	customModel->SetRigidbody( phyEng );

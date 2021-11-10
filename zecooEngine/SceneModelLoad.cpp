@@ -15,7 +15,7 @@ SceneModelLoad::SceneModelLoad( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* ph
 	camera->Set( camPos, camView, camUp );
 
 	texture = new Texture();
-	texture->Load( "resources\\textures\\brickwall.jpg" );
+	texture->Load( "resources\\textures\\texture_diffuseN.png" );
 	texture->SetSamplerObjectParameter( GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
 	texture->SetSamplerObjectParameter( GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	texture->SetSamplerObjectParameter( GL_TEXTURE_WRAP_S, GL_REPEAT );
@@ -38,8 +38,7 @@ SceneModelLoad::SceneModelLoad( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* ph
 	cube->transform->translate( glm::vec3( 0.0f, 0.5f, 5.0f ) );
 	cube->transform->rotate( 45.0f, glm::vec3( 0.0f, 1.0f, 0.0f ) );
 
-	modelExternal = new ModelExternal( "resources\\objects\\model\\cube.fbx", NULL );
-	
+	modelExternal = new ModelExternal( "resources\\objects\\model\\cube_texture.fbx", NULL );
 }
 
 void SceneModelLoad::Update( float deltaTime )

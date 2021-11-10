@@ -1,6 +1,6 @@
-#include "ScenePhyRayTest.h"
+#include "SceneRollingBall.h"
 
-ScenePhyRayTest::ScenePhyRayTest( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input )
+SceneRollingBall::SceneRollingBall( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input )
 {
 	// configure global opengl state
 	glEnable( GL_DEPTH_TEST );
@@ -49,59 +49,47 @@ ScenePhyRayTest::ScenePhyRayTest( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* 
 	cubeMaterial->linkCamera( camera );
 
 	cubePhy = new Cube( cubeMaterial, cubeTexture );
-	cubePhy->transform->translate( glm::vec3( 0.0f, 6.0f, 0.0f ) );
+	cubePhy->transform->translate( glm::vec3( 2.0f, 1.0f, 0.0f ) );
 	cubePhy->mass = 1.0;
 	cubePhy->SetRigidbody( phyEng );
 
 	planePhy = new Plane( floorMaterial, floorTexture );
-	planePhy->transform->scale( glm::vec3( 1.0f, 1.0f, 1.0f ) );
-	planePhy->transform->rotate( 0.0, glm::vec3( 0.0f, 0.0f, 1.0f ) );
+	planePhy->transform->scale( glm::vec3( 5.0f, 0.0f, 5.0f ) );
+	//planePhy->transform->rotate( 0.0, glm::vec3( 0.0f, 0.0f, 1.0f ) );
 	planePhy->mass = 0.0;
 	planePhy->SetRigidbody( phyEng );
+
+	sphere = new Sphere( floorMaterial, NULL );
+	sphere->transform->translate( glm::vec3( 0.0f, 5.0f, 0.0f ) );
+	//planePhy->transform->rotate( 0.0, glm::vec3( 0.0f, 0.0f, 1.0f ) );
+	sphere->mass = 1.0;
+	sphere->SetRigidbody( phyEng );
 }
 
-void ScenePhyRayTest::RayCast()
-{
-	btVector3 from( 0, 0, 0 );
-	btVector3 to( 0, 10, 0 );
-	phyEng->dynamicsWorld->getDebugDrawer()->drawLine( from, to, btVector4( 0, 0, 1, 1 ) );
-
-	btCollisionWorld::ClosestRayResultCallback closestResults( from, to );
-	closestResults.m_flags |= btTriangleRaycastCallback::kF_FilterBackfaces;
-
-	phyEng->dynamicsWorld->rayTest( from, to, closestResults );
-
-	if( closestResults.hasHit() )
-	{
-		btVector3 p = from.lerp( to, closestResults.m_closestHitFraction );
-
-		phyEng->dynamicsWorld->getDebugDrawer()->drawLine( p, p + closestResults.m_hitNormalWorld, btVector4( 0, 0, 1, 1 ) );
-
-		std::cout << "ray test" << std::endl;
-	}
-}
-
-void ScenePhyRayTest::Update( float deltaTime )
+void SceneRollingBall::Update( float deltaTime )
 {
 	if( input->getPressedKey() == "Up" )
-		std::cout << "up key" << std::endl;
-
-	RayCast();
+	{
+		sphere->rigidBody->applyForce( btVector3( 5, 0, 0 ), btVector3(0,0.5,0) );
+	}
 
 	cubePhy->solve( phyEng );
 	planePhy->solve( phyEng );
+	sphere->solve( phyEng );
 
 	camera->RotateViewPoint( 800, glfwGetTime() );
 }
 
-void ScenePhyRayTest::Render()
+void SceneRollingBall::Render()
 {
 	glClearColor( 0.2f, 0.3f, 0.3f, 1.0f );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	planePhy->render();
 	cubePhy->render();
+	sphere->render();
 
+	phyEng->dynamicsWorld->debugDrawWorld();
 	phyEng->dynamicsWorld->getDebugDrawer()->setDebugMode( btIDebugDraw::DebugDrawModes::DBG_DrawWireframe );
 	phyEng->dynamicsWorld->debugDrawWorld();
 }

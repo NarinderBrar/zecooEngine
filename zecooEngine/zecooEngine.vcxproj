@@ -152,7 +152,7 @@
     <ClInclude Include="Cube.h" />
     <ClInclude Include="CubeMesh.h" />
     <ClInclude Include="CustomMesh.h" />
-    <ClInclude Include="CustomModel.h" />
+    <ClInclude Include="Sphere.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="CylinderMesh.h" />
     <ClInclude Include="Debugger.h" />
@@ -190,6 +190,7 @@
     <ClInclude Include="SceneB.h" />
     <ClInclude Include="SceneBasic.h" />
     <ClInclude Include="SceneC.h" />
+    <ClInclude Include="SceneRollingBall.h" />
     <ClInclude Include="SceneTriangle.h" />
     <ClInclude Include="SceneUI.h" />
     <ClInclude Include="Settings.h" />
@@ -227,7 +228,7 @@
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="CubeMesh.cpp" />
     <ClCompile Include="CustomMesh.cpp" />
-    <ClCompile Include="CustomModel.cpp" />
+    <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="CylinderMesh.cpp" />
     <ClCompile Include="Debugger.cpp" />
@@ -266,6 +267,7 @@
     <ClCompile Include="SceneB.cpp" />
     <ClCompile Include="SceneBasic.cpp" />
     <ClCompile Include="SceneC.cpp" />
+    <ClCompile Include="SceneRollingBall.cpp" />
     <ClCompile Include="SceneTriangle.cpp" />
     <ClCompile Include="SceneUI.cpp" />
     <ClCompile Include="Settings.cpp" />

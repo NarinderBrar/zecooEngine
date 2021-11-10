@@ -16,7 +16,7 @@ void ModelExternal::Draw( Material* material, Texture* texture )
     material->shader->setMat4( "model", transform->pose );
     material->update();
 
-    /*if( texture != NULL )
+    if( texture != NULL )
     {
         texture->Bind();
         material->shader->setInt( "textureSample", 1 );
@@ -24,7 +24,7 @@ void ModelExternal::Draw( Material* material, Texture* texture )
     else
     {
         material->shader->setInt( "textureSample", 0 );
-    }*/
+    }
 
     for( unsigned int i = 0; i < meshes.size(); i++ )
         meshes[i].Draw( material->shader );
@@ -188,7 +188,7 @@ vector<MeshTexture> ModelExternal::loadMaterialTextures( aiMaterial* mat, aiText
 unsigned int TextureFromFile( const char* path, const string& directory, bool gamma )
 {
     string filename = string( path );
-    filename = directory + '/' + filename;
+    filename = "resources\\textures\\" + filename;
 
     unsigned int textureID;
     glGenTextures( 1, &textureID );

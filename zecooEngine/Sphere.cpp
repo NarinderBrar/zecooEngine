@@ -1,11 +1,11 @@
-#include "CustomModel.h"
+#include "Sphere.h"
 
-CustomModel::CustomModel(Material* _material, Texture* _texture) : Model(_material, _texture)
+Sphere::Sphere(Material* _material, Texture* _texture) : Model(_material, _texture)
 {
 	customMesh = new CustomMesh();
 }
 
-void CustomModel::SetRigidbody( PhysicsEngine* physicsEngine )
+void Sphere::SetRigidbody( PhysicsEngine* physicsEngine )
 {
 	//create a dynamic rigidbody
 	btCollisionShape* colShape = new btSphereShape( btScalar( transform->pose[0][0]) );
@@ -36,7 +36,7 @@ void CustomModel::SetRigidbody( PhysicsEngine* physicsEngine )
 	physicsEngine->dynamicsWorld->addRigidBody( rigidBody );
 }
 
-void CustomModel::solve( PhysicsEngine* physicsEngine )
+void Sphere::solve( PhysicsEngine* physicsEngine )
 {
 	if( rigidBody && rigidBody->getMotionState() )
 		rigidBody->getMotionState()->getWorldTransform( btTrans );
@@ -51,12 +51,12 @@ void CustomModel::solve( PhysicsEngine* physicsEngine )
 }
 
 
-void CustomModel::render()
+void Sphere::render()
 {
 	Model::render();
 	customMesh->Render();
 }
 
-CustomModel::~CustomModel()
+Sphere::~Sphere()
 {
 }

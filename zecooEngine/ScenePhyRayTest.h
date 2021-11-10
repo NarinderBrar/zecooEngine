@@ -15,6 +15,8 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "PhysicsEngine.h"
+#include "GLDebugDrawer.h"
+
 #include "BulletCollision/NarrowPhaseCollision/btRaycastCallback.h"
 #include "Input.h"
 
@@ -40,6 +42,7 @@ public:
 	Cube* cubePhy;
 
 	PhysicsEngine* phyEng;
+	GLDebugDrawer* debugDraw;
 
 	Input* input;
 

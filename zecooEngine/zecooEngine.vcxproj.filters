@@ -75,7 +75,7 @@
     <ClInclude Include="CustomMesh.h">
       <Filter>Header Files\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="CustomModel.h">
+    <ClInclude Include="Sphere.h">
       <Filter>Header Files\Model</Filter>
     </ClInclude>
     <ClInclude Include="Cube.h">
@@ -289,7 +289,10 @@
       <Filter>Header Files\Scene\Physics</Filter>
     </ClInclude>
     <ClInclude Include="ScenePhyRayTest.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Scene\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneRollingBall.h">
+      <Filter>Header Files\Scene\Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -305,7 +308,7 @@
     <ClCompile Include="CustomMesh.cpp">
       <Filter>Source Files\Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="CustomModel.cpp">
+    <ClCompile Include="Sphere.cpp">
       <Filter>Source Files\Model</Filter>
     </ClCompile>
     <ClCompile Include="Game.cpp">
@@ -504,7 +507,10 @@
       <Filter>Source Files\Scene\Physics</Filter>
     </ClCompile>
     <ClCompile Include="ScenePhyRayTest.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Scene\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneRollingBall.cpp">
+      <Filter>Source Files\Scene\Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

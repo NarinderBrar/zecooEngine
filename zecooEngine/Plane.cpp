@@ -13,7 +13,7 @@ void Plane::SetRigidbody( PhysicsEngine* physicsEngine )
 
 	/// Create Dynamic Objects
 	btTrans.setIdentity();
-    btTrans.setFromOpenGLMatrix( glm::value_ptr(transform->pose ) );
+    //btTrans.setFromOpenGLMatrix( glm::value_ptr(transform->pose ) );
 	//glm::vec3 pos = transform->getPosition();
 	//btTrans.setOrigin( btVector3( pos.x, pos.y, pos.z ) );
 
@@ -28,7 +28,7 @@ void Plane::SetRigidbody( PhysicsEngine* physicsEngine )
 	//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
 	btDefaultMotionState* myMotionState = new btDefaultMotionState( btTrans );
 	btRigidBody::btRigidBodyConstructionInfo rbInfo( mass, myMotionState, groundShape, localInertia );
-	rbInfo.m_restitution = 1.0;
+	//rbInfo.m_restitution = 1.0;
 	rigidBody = new btRigidBody( rbInfo );
 
 	isRigidBody = true;
@@ -41,11 +41,11 @@ void Plane::solve( PhysicsEngine* physicsEngine )
 	if( rigidBody && rigidBody->getMotionState() )
 		rigidBody->getMotionState()->getWorldTransform( btTrans );
 
-	glm::mat4 openGLmatrix;
+	/*glm::mat4 openGLmatrix;
 	btTrans.getOpenGLMatrix( glm::value_ptr( openGLmatrix ) );
-	//transform->position(glm::vec3(btTrans.getOrigin().getX(), btTrans.getOrigin().getY(), btTrans.getOrigin().getZ()));
+	transform->position(glm::vec3(btTrans.getOrigin().getX(), btTrans.getOrigin().getY(), btTrans.getOrigin().getZ()));
 	transform->worldMatrix = openGLmatrix;
-	transform->Update();
+	transform->Update();*/
 
 	//printf("world pos object %d = %f,%f,%f\n", 1, float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
 }

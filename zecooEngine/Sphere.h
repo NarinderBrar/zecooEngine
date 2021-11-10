@@ -9,7 +9,7 @@
 #include "btBulletDynamicsCommon.h";
 #include "PhysicsEngine.h";
 
-class CustomModel :public Model
+class Sphere :public Model
 {
 private:
 	CustomMesh* customMesh;
@@ -22,7 +22,7 @@ public:
 	btCollisionShape* btColShape;
 	btRigidBody* rigidBody;
 
-	CustomModel(Material* material, Texture* texture);
+	Sphere(Material* material, Texture* texture);
 
 	void SetRigidbody( PhysicsEngine* physicsEngine );
 
@@ -30,6 +30,6 @@ public:
 
 	void render();
 
-	~CustomModel();
+	~Sphere();
 };
 

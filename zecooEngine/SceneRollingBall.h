@@ -20,9 +20,7 @@
 
 #include "Input.h"
 
-#include "UI.h"
-
-class ScenePhyDebugger
+class SceneRollingBall
 {
 public:
 	Texture* floorTexture;
@@ -33,20 +31,16 @@ public:
 
 	DirectionalLight* dlight;
 
-	PointLight* plight0;
-	PointLight* plight1;
-	PointLight* plight2;
-	PointLight* plight3;
-
 	SpotLight* slight;
 
 	Material* floorMaterial;
 	Material* cubeMaterial;
 
 	Cube* cube;
+
 	Plane* planePhy;
 	Cube* cubePhy;
-	Sphere* customModel;
+	Sphere* sphere;
 
 	PhysicsEngine* phyEng;
 	GLDebugDrawer* debugDraw;
@@ -55,13 +49,9 @@ public:
 
 	Camera* camera;
 
-	ScenePhyDebugger( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
-
-
+	SceneRollingBall( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input );
 	void Update( float deltaTime );
 
 	void Render();
 
 };
-
-

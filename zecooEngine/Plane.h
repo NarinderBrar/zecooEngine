@@ -29,6 +29,7 @@ class Plane:public Model
 		void SetRigidbody( PhysicsEngine* physicsEngine );
 
 		void solve( PhysicsEngine* physicsEngine );
+		void btScalar2mat4( btScalar* matrix );
 
 		void render();
 
