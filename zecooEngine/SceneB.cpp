@@ -29,18 +29,23 @@ SceneB::SceneB(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Inpu
 	plane->transform->scale(glm::vec3(5.0f, 5.0f, 5.0f));
 
 	cube = new Cube(material, NULL);
-	cube->transform->translate(glm::vec3(0.0f, 0.5f, 5.0f));
-	cube->transform->rotate(45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	cube->transform->position( glm::vec3(0,2,0) );
+	cube->transform->translate(glm::vec3(0.0f, 0.0f, 2.0f));
+	glm::vec3 a = glm::normalize(glm::vec3( 5, 0, 0 ));
+	glm::vec3 b = glm::vec3( -1, 0, 0 );
+	float c = glm::dot(a,b);
+	
+	//cube->transform->rotate(45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
-	cubeChild = new Cube(material, NULL);
+	//cubeChild = new Cube(material, NULL);
 }
 
 void SceneB::Update(float deltaTime)
 {
-	cube->transform->rotate(deltaTime, glm::vec3(0.0f, 1.0f, 0.0f));
+	//cube->transform->rotate(deltaTime, glm::vec3(0.0f, 1.0f, 0.0f));
 	
-	cubeChild->transform->setParent(cube->transform);
-	cubeChild->transform->position(glm::vec3(0.0f, 1.0f, 0.0f));
+	//cubeChild->transform->setParent(cube->transform);
+	//cubeChild->transform->position(glm::vec3(0.0f, 1.0f, 0.0f));
 
 	camera->RotateViewPoint(800, glfwGetTime());
 	projection = camera->GetPerspectiveProjectionMatrix();
@@ -53,5 +58,5 @@ void SceneB::Render()
 
 	plane->render();
 	cube->render();
-	cubeChild->render();
+	//cubeChild->render();
 }

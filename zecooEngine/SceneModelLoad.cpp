@@ -53,5 +53,5 @@ void SceneModelLoad::Render()
 
 	//plane->render();
 	//cube->render();
-	modelExternal->Draw( material, texture );
+	modelExternal->Draw( material, NULL );
 }

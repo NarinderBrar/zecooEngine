@@ -65,7 +65,7 @@ bool PhysicsEngine::CollisionTest( std::string bodyA, std::string bodyB )
 		const Model* rb1M = (Model*)rb1->getUserPointer();
 		const Model* rb2M = (Model*)rb2->getUserPointer();
 
-		if( ( rb1M->name != bodyA && rb2M->name != bodyB ) || ( rb1M->name != bodyB || rb2M->name != bodyA ) )
+		if( ( rb1M->name == bodyA && rb2M->name == bodyB ) || ( rb1M->name == bodyB && rb2M->name == bodyA ) )
 		{
 			float totalImpact = 0.0f;
 			for( int c = 0; c < man->getNumContacts(); ++c )
