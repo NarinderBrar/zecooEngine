@@ -4,7 +4,7 @@
 <br />
 <div align="center">
   <a>
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="images/logo.png" alt="Logo" width="578" height="396">
   </a>
 
   <h3 align="center">zecooEngine</h3>
@@ -43,7 +43,7 @@
 
 
 ## About The Project
-[Product Name Screen Shot][product-screenshot]
+![Product Name Screen Shot][product-screenshot]
 zecooEngine is an open source C++ graphics engine mainly developed for educational purpose. Its developed while teaching fundamental of graphics programming. zecooEngine supports OpenGL 3.3 as graphic API. 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
