@@ -34,7 +34,7 @@
 
 ## About The Project
 ![Product Name Screen Shot][product-screenshot]
-zecooEngine is an open source C++ graphics engine mainly developed for educational purpose. Its developed while teaching fundamental of graphics programming. zecooEngine supports OpenGL 3.3 as graphic API. 
+zecooEngine is an open-source C++ graphics engine mainly developed for educational purposes. It developed while teaching the fundamental of graphics programming. zecooEngine supports OpenGL 3.3 as a graphic API. You can draw 3d models, add lights, apply textures while creating materials. It provides features to add physics on the models using Bullet Physics Engine, can add force, apply constraints, can test collision between bodies.
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Features
