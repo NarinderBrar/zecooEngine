@@ -4,10 +4,8 @@
 <br />
 <div align="center">
   <a>
-    <img src="images/logo.png" alt="Logo" width="578" height="396">
+    <img src="images/logo.png" alt="Logo" width="200" height="137">
   </a>
-
-  <h3 align="center">zecooEngine</h3>
 
   <p align="center">
     An Educational Open Source 3d Graphics Engine
