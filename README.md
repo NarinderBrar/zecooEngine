@@ -1,10 +1,5 @@
 <div id="top"></div>
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
@@ -28,35 +23,31 @@
 
 
 <!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
-    <li><a href="#features">Features</a></li>
-    <li><a href="#screenshots">Screenshots</a></li>
-    <li><a href="#dependencies">Dependencies</a></li>
-    <li><a href="#requirements">Requirements</a></li>
-    <li>
-        <a href="#installing">Installing and running </a>
-        <ul>
-            <li><a href="#build_glfw">Build GLFW</a></li>
-            <li><a href="#build_glfw">Build Bullet Physics</a></li>
-            <li><a href="#build_glfw">Build Assimp</a></li>
-        </ul>
-    </li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-  </ol>
-</details>
+
+<summary>Table of Contents</summary>
+<li><a href="#about-the-project">About The Project</a></li>
+<li><a href="#features">Features</a></li>
+<li><a href="#screenshots">Screenshots</a></li>
+<li><a href="#dependencies">Dependencies</a></li>
+<li><a href="#requirements">Requirements</a></li>
+<li>
+    <a href="#installing">Installing and running </a>
+    <ul>
+        <li><a href="#build_glfw">Build GLFW</a></li>
+        <li><a href="#build_glfw">Build Bullet Physics</a></li>
+        <li><a href="#build_glfw">Build Assimp</a></li>
+    </ul>
+</li>
+<li><a href="#contact">Contact</a></li>
+<li><a href="#contributing">Contributing</a></li>
+
 
 ## About The Project
-[![Product Name Screen Shot][product-screenshot]]
+[Product Name Screen Shot][product-screenshot]
 zecooEngine is an open source C++ graphics engine mainly developed for educational purpose. Its developed while teaching fundamental of graphics programming. zecooEngine supports OpenGL 3.3 as graphic API. 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Features
-<details>
-<ol>
 <li>Draw basic primitives like cube, cone, cylinder and sphere etc.</li>
 <li>Basic lighting using directional, point and spot dynamic lights.</li>
 <li>Draw ray, line for debugging.</li>
@@ -66,8 +57,7 @@ zecooEngine is an open source C++ graphics engine mainly developed for education
 <li>External 3d model import via Assimp library.</li>
 <li>Inputs using mouse, keyboard.</li>
 <li>Inputs using mouse, keyboard.</li>
-</ol>
-</details>
+
 
 
 ### Screenshots
@@ -152,16 +142,4 @@ As engine developed during the course, So following students contributed and pro
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
-[contributors-url]: https://github.com/NarinderBrar/zecooEngine/graphs/contributors
-
-[forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
-[forks-url]: https://github.com/NarinderBrar/zecooEngine/network/members
-
-[stars-shield]: https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge
-[stars-url]: https://github.com/NarinderBrar/zecooEngine/stargazers
-
-[issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
-[issues-url]: https://github.com/NarinderBrar/zecooEngine/issues
 [product-screenshot]: images/productImage.jpg
