@@ -28,10 +28,9 @@
 <li><a href="#screenshots">Screenshots</a></li>
 <li><a href="#dependencies">Dependencies</a></li>
 <li><a href="#requirements">Requirements</a></li>
-<li><a href="#building">Building Dependencies</a></li>
+<li><a href="#Building">Building Dependencies</a></li>
 <li><a href="#contact">Contact</a></li>
 <li><a href="#contributing">Contributing</a></li>
-
 
 ## About The Project
 ![Product Name Screen Shot][product-screenshot]
@@ -59,12 +58,12 @@ Made with zecooEngine
 ### Dependencies
 zecooEngine use multiple third-party libraries. Here is the full list of dependencies.
 
-<li>GLFW - Open Source, multi-platform library for OpenGL, with the API we can create windows, receiving input and events. </li>
-<li>GLM - is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications. </li>
-<li>ImGui - is a bloat-free graphical user interface library for C++. </li>
-<li>assimp - Open Asset Import Library is a cross-platform 3D model import library which aims to provide a common application programming interface for different 3D asset file formats.</li>
-<li>FreeImage - is an Open Source library project for developers who would like to support popular graphics image formats like PNG, BMP, JPEG, TIFF and others as needed by today's multimedia applications.</li>
-<li>Bullet3 - real-time collision detection and multi-physics simulation library portable file dialogs - cross-platform file dialog library.</li>
+<li><b>GLFW</b> - Open Source, multi-platform library for OpenGL, with the API we can create windows, receiving input and events. </li>
+<li><b>GLM</b> - is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications. </li>
+<li><b>ImGui</b> - is a bloat-free graphical user interface library for C++. </li>
+<li><b>AssImp</b> - Open Asset Import Library is a cross-platform 3D model import library which aims to provide a common application programming interface for different 3D asset file formats.</li>
+<li><b>FreeImage</b> - is an Open Source library project for developers who would like to support popular graphics image formats like PNG, BMP, JPEG, TIFF and others as needed by today's multimedia applications.</li>
+<li><b>Bullet3</b> - real-time collision detection and multi-physics simulation library portable file dialogs - cross-platform file dialog library.</li>
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -82,7 +81,7 @@ Ram : 4 GB or Higher
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-### building
+### Building
 zecooEngine is distributed in source code as a Visual Studio Project 2019. 
 
 Clone this repo to your system using 
