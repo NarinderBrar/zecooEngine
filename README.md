@@ -6,7 +6,6 @@
   <a>
     <img src="images/logo.png" alt="Logo" width="200" height="137">
   </a>
-
   <p align="center">
     An Educational Open Source 3d Graphics Engine
     <br />
@@ -89,30 +88,29 @@ git clone https://github.com/NarinderBrar/zecooEngine
 
 <b>Building Dependencies</b>
 <b>Build GLFW-3.3.4</b>
-Go to path \zecooEngine\Vendor\glfw-3.3.4
-Make “build” folder
-Use CMake to build Visual Studio Project 2019
-Open GLFW.sln -> Build Solution
+<br/>Go to path \zecooEngine\Vendor\glfw-3.3.4
+<br/>Make “build” folder
+<br/>Use CMake to build Visual Studio Project 2019
+<br/>Open GLFW.sln -> Build Solution
 
 <b>Build Bullet Physics 3.17 </b>
-Go to path \zecooEngine\Vendor\bullet3-3.17
-Make “build” dir in Bullet folder
-Use CMake to build Visual Studio Project 2019
-Open ALL_BUILD.vcxproj
-Right click -> App_HelloWorld project -> Set as Startup Project
-Right click -> App_HelloWorld project -> Properties
-C/C++ -> Code Generation -> Runtime Library -> Multi-threaded Debug DLL (/MDd)
-Repeat for BulletCollision, BulletDynamics, LinearMath
+<br/>Go to path \zecooEngine\Vendor\bullet3-3.17
+<br/>Make “build” dir in Bullet folder
+<br/>Use CMake to build Visual Studio Project 2019
+<br/>Open ALL_BUILD.vcxproj
+<br/>Right click -> App_HelloWorld project -> Set as Startup Project
+<br/>Right click -> App_HelloWorld project -> Properties
+<br/>C/C++ -> Code Generation -> Runtime Library -> Multi-threaded Debug DLL (/MDd)
+<br/>Repeat for BulletCollision, BulletDynamics, LinearMath
 
 <b> Build assimp-3.3.1 </b>
-Go to path \zecooEngine\Vendor\assimp-3.3.1
-Make “build” folder
-Use CMake to build Visual Studio Project 2019
-Open ALL_BUILD.vcxproj
-build gtest
-build assimp
-copy .dll file from \zecooEngine\Vendor\assimp-3.3.1\build\code\Debug
-to \x64\Debug
+<br/>Go to path \zecooEngine\Vendor\assimp-3.3.1
+<br/>Make “build” folder
+<br/>Use CMake to build Visual Studio Project 2019
+<br/>Open ALL_BUILD.vcxproj
+<br/>build gtest
+<br/>build assimp
+<br/>copy .dll file from \zecooEngine\Vendor\assimp-3.3.1\build\code\Debug to \x64\Debug
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
