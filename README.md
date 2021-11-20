@@ -46,9 +46,7 @@ zecooEngine is an open-source C++ graphics engine mainly developed for education
 <li>External 3d model import via Assimp library.</li>
 <li>Inputs using mouse, keyboard.</li>
 <li>Inputs using mouse, keyboard.</li>
-
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 ### Screenshots
 Made with zecooEngine
@@ -63,9 +61,7 @@ zecooEngine use multiple third-party libraries. Here is the full list of depende
 <li><b>AssImp</b> - Open Asset Import Library is a cross-platform 3D model import library which aims to provide a common application programming interface for different 3D asset file formats.</li>
 <li><b>FreeImage</b> - is an Open Source library project for developers who would like to support popular graphics image formats like PNG, BMP, JPEG, TIFF and others as needed by today's multimedia applications.</li>
 <li><b>Bullet3</b> - real-time collision detection and multi-physics simulation library portable file dialogs - cross-platform file dialog library.</li>
-
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 ### Requirements
 Software Requirements
@@ -77,7 +73,6 @@ Software Requirements
 <br/>Processor : N/A
 <br/>Graphics Card : Should supports OpenGL 3.2 and GLSL Shading language 3.3
 <br/>Ram : 4 GB or Higher
-
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ### Building
@@ -111,13 +106,11 @@ git clone https://github.com/NarinderBrar/zecooEngine
 <br/>build gtest
 <br/>build assimp
 <br/>copy .dll file from \zecooEngine\Vendor\assimp-3.3.1\build\code\Debug to \x64\Debug
-
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Contact
 If you need any help please feel free to contact me at nsidhubrar@gmail.com
-you can report bugs while creating issue in this repository. 
-
+<br/>you can report bugs while creating issue in this repository. 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Contributing
@@ -127,7 +120,6 @@ As engine developed during the course, So following students contributed and pro
 - Student 3
 - Student 4
 - Student 5
-
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
