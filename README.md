@@ -69,14 +69,14 @@ zecooEngine use multiple third-party libraries. Here is the full list of depende
 
 ### Requirements
 Software Requirements
-OS : Windows
-IDE : Visual Studio
-CMake
+<br/>OS : Windows
+<br/>IDE : Visual Studio
+<br/>CMake
 
-Hardware Requirements
-Processor : N/A
-Graphics Card : Should supports OpenGL 3.2 and GLSL Shading language 3.3
-Ram : 4 GB or Higher
+<br/>Hardware Requirements
+<br/>Processor : N/A
+<br/>Graphics Card : Should supports OpenGL 3.2 and GLSL Shading language 3.3
+<br/>Ram : 4 GB or Higher
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
