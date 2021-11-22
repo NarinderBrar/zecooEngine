@@ -97,5 +97,4 @@ void ScenePhyDebugger::Render()
 
 	phyEng->dynamicsWorld->debugDrawWorld();
 	phyEng->dynamicsWorld->getDebugDrawer()->setDebugMode( btIDebugDraw::DebugDrawModes::DBG_DrawWireframe );
-	phyEng->dynamicsWorld->debugDrawWorld();
 }

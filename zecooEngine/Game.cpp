@@ -6,7 +6,7 @@ Game::Game(Input* _input)
 
 	phyEng = new PhysicsEngine();
 
-	scene = new SceneB(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, phyEng, input );
+	scene = new ScenePhyDebugger(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, phyEng, input );
 }
 
 void Game::Update(float deltaTime)

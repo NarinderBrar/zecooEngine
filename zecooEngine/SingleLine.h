@@ -25,6 +25,7 @@ public:
     SingleLine( glm::vec3 start, glm::vec3 end );
     int setMVP( glm::mat4 mvp );
     int setColor( glm::vec3 color );
+    void Update( glm::vec3 start, glm::vec3 end );
     int draw();
     ~SingleLine();
 };

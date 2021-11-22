@@ -8,6 +8,9 @@ GLDebugDrawer::GLDebugDrawer( Camera* camera ) : m_debugMode( 0 )
 
     material = new Material( shader, color );
     material->linkCamera( camera );
+
+    singleLine = new SingleLine( glm::vec3( 0, 0, 0 ), glm::vec3( 0, 0, 0 ) );
+
 }
 
 GLDebugDrawer::~GLDebugDrawer()
@@ -20,8 +23,7 @@ void GLDebugDrawer::drawLine( const btVector3& from, const btVector3& to, const 
     material->shader->use();
     material->shader->setMat4( "model", p);
     material->update();
-
-    singleLine = new SingleLine( glm::vec3( from.getX(), from.getY(), from.getZ() ), glm::vec3( to.getX(), to.getY(), to.getZ() ) );
+    singleLine->Update( glm::vec3( from.getX(), from.getY(), from.getZ() ), glm::vec3( to.getX(), to.getY(), to.getZ() ) );
     singleLine->draw();
 }
 
