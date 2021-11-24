@@ -294,6 +294,9 @@
     <ClInclude Include="SceneRollingBall.h">
       <Filter>Header Files\Scene\Physics</Filter>
     </ClInclude>
+    <ClInclude Include="SceneAudioTest.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -511,6 +514,9 @@
     </ClCompile>
     <ClCompile Include="SceneRollingBall.cpp">
       <Filter>Source Files\Scene\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneAudioTest.cpp">
+      <Filter>Source Files\Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

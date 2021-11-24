@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "ScenePhyDebugger.h"
+#include "SceneAudioTest.h"
 
 #include "Input.h"
 #include "Settings.h"
@@ -17,7 +17,7 @@ class Game
 public:
 	Input* input;
 
-	ScenePhyDebugger* scene;
+	SceneAudioTest* scene;
 	PhysicsEngine* phyEng;
 
 	Game(Input* _input);
