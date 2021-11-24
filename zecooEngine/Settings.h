@@ -2,7 +2,7 @@
 class Settings
 {
 public:
-	static const int SCR_WIDTH = 800;
-	static const int SCR_HEIGHT = 600;
+	static const int SCR_WIDTH = 1280;
+	static const int SCR_HEIGHT = 720;
 };
 

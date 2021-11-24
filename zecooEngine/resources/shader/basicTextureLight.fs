@@ -39,6 +39,7 @@ void main()
     // properties
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(viewPos - FragPos);
+    float k = mix(0.0,0.0,0.0);
     
     vec3 result;
     result += CalcDirLight(dirLight, norm, viewDir);
