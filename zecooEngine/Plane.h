@@ -22,8 +22,6 @@ class Plane:public Model
 		btCollisionShape* btColShape;
 		btRigidBody* rigidBody;
 
-		
-
 		Plane(Material* _material, Texture* _texture);
 
 		void SetRigidbody( PhysicsEngine* physicsEngine );

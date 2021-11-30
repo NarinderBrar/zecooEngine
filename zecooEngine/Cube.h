@@ -20,6 +20,7 @@ public:
 	btCollisionShape* btColShape;
 	btRigidBody* rigidBody;
 
+	glm::vec3 scale;
 	Cube(Material* material, Texture* texture);
 
 	void SetRigidbody(PhysicsEngine* physicsEngine);

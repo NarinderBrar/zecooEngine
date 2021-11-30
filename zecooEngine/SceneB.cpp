@@ -36,7 +36,6 @@ SceneB::SceneB(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Inpu
 	float c = glm::dot(a,b);
 	
 	//cube->transform->rotate(45.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-
 	//cubeChild = new Cube(material, NULL);
 }
 
@@ -47,8 +46,10 @@ void SceneB::Update(float deltaTime)
 	//cubeChild->transform->setParent(cube->transform);
 	//cubeChild->transform->position(glm::vec3(0.0f, 1.0f, 0.0f));
 
-	camera->RotateViewPoint(800, glfwGetTime());
-	projection = camera->GetPerspectiveProjectionMatrix();
+	//camera->RotateViewPoint(800, glfwGetTime());
+	//projection = camera->GetPerspectiveProjectionMatrix();
+
+	camera->Update( deltaTime );
 }
 
 void SceneB::Render()

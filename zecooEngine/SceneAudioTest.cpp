@@ -33,6 +33,9 @@ SceneAudioTest::SceneAudioTest(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* phy
 
 	cubeShader = new Shader("resources\\shader\\basicTextureLight.vs", "resources\\shader\\basicTextureLight.fs");
 
+	debugDraw = new GLDebugDrawer( camera );
+	phyEng->dynamicsWorld->setDebugDrawer( debugDraw );
+
 	dlight = new DirectionalLight(glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.2, -1.0, 0.2));
 	dlight->diffuse = glm::vec3(1.0, 1.0, 1.0);
 	dlight->ambient = glm::vec3(0.5, 0.5, 0.5);
@@ -47,7 +50,8 @@ SceneAudioTest::SceneAudioTest(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* phy
 	cubeMaterial->linkCamera(camera);
 
 	cubePhy = new Cube(cubeMaterial, cubeTexture);
-	cubePhy->transform->translate(glm::vec3(0.0f, 60.0f, 0.0f));
+	cubePhy->transform->translate(glm::vec3(0.0f, 10.0f, 0.0f));
+	cubePhy->transform->scale( glm::vec3( 2.0f, 4.0f, 2.0f ) );
 	cubePhy->mass = 1.0;
 	cubePhy->SetRigidbody(phyEng);
 	cubePhy->name = "cubePhy";
@@ -73,7 +77,7 @@ void SceneAudioTest::Update(float deltaTime)
 
 	if (phyEng->CollisionTest("cubePhy", "planePhy") && !playonce)
 	{	cout << "collision" << endl;
-		collisionSound->play2D("resources\\audio\\breakout.mp3", false);
+		//collisionSound->play2D("resources\\audio\\breakout.mp3", false);
 	    playonce = true;   
 	}
 }
@@ -85,4 +89,7 @@ void SceneAudioTest::Render()
 
 	planePhy->render();
 	cubePhy->render();
+
+	phyEng->dynamicsWorld->debugDrawWorld();
+	phyEng->dynamicsWorld->getDebugDrawer()->setDebugMode( btIDebugDraw::DebugDrawModes::DBG_DrawWireframe );
 }

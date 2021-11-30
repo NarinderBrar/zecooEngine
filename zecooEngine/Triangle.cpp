@@ -2,7 +2,7 @@
 
 Triangle::Triangle(Material* _material, Texture* _texture): Model(_material, _texture)
 {
-	triangleIndexMesh = new TriangleIndexMesh();
+	triangleIndexMesh = new TriangleMesh();
 }
 
 void Triangle::render()

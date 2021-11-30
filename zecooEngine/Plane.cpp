@@ -67,4 +67,5 @@ void Plane::render()
 
 Plane::~Plane()
 {
+	planeMesh->~PlaneMesh();
 }

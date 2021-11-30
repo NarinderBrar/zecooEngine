@@ -25,5 +25,6 @@ private:
 public:
     PlaneMesh();
     void Render();
+    ~PlaneMesh();
 };
 
