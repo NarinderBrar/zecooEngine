@@ -50,7 +50,8 @@ void Transform::rotate(float angle, glm::vec3 axis)
 void Transform::scale(glm::vec3 vec)
 {
 	worldMatrix = glm::scale( worldMatrix, vec);
-	localScaleMatrix = glm::scale( localScaleMatrix, vec );
+	//localScaleMatrix = glm::scale( localScaleMatrix, vec );
+	localScale = vec;
 	Update();
 }
 

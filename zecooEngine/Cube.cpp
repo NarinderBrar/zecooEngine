@@ -8,17 +8,12 @@ Cube::Cube(Material* _material, Texture* _texture):Model(_material, _texture)
 void Cube::SetRigidbody(PhysicsEngine* physicsEngine)
 {
 	//create a dynamic rigidbody
-	btCollisionShape* colShape = new btBoxShape(btVector3( transform->pose[0][0]/2, transform->pose[1][1] / 2, transform->pose[2][2] / 2 ));
+	btCollisionShape* colShape = new btBoxShape(btVector3( transform->localScale.x/2.0, transform->localScale.y / 2.0, transform->localScale.z / 2.0 ));
 	physicsEngine->collisionShapes.push_back(colShape);
 
 	/// Create Dynamic Objects
 	btTrans.setIdentity();
 	btTrans.setFromOpenGLMatrix( glm::value_ptr( transform->pose ) );
-
-	scale = glm::vec3( transform->pose[0][0], transform->pose[1][1], transform->pose[2][2]);
-
-	//glm::vec3 pos = transform->getPosition();
-	//btTrans.setOrigin( btVector3( pos.x, pos.y, pos.z ) );
 
 	//rigidbody is dynamic if and only if mass is non zero, otherwise static
 	bool isDynamic = (mass != 0.f);
@@ -46,12 +41,8 @@ void Cube::solve(PhysicsEngine* physicsEngine)
 
 	glm::mat4 openGLmatrix;
 	btTrans.getOpenGLMatrix(glm::value_ptr( openGLmatrix ));
-	//transform->position(glm::vec3(btTrans.getOrigin().getX(), btTrans.getOrigin().getY(), btTrans.getOrigin().getZ()));
-	transform->worldMatrix = openGLmatrix;
-	transform->scale( scale );
+	transform->worldMatrix = glm::scale( openGLmatrix, transform->localScale );
 	transform->Update();
-	
-	//printf("world pos object %d = %f,%f,%f\n", 1, float(trans.getOrigin().getX()), float(trans.getOrigin().getY()), float(trans.getOrigin().getZ()));
 }
 
 void Cube::render()

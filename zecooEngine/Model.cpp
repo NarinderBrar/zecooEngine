@@ -26,5 +26,5 @@ void Model::render()
 
 Model::~Model()
 {
-
+	delete transform;
 }
