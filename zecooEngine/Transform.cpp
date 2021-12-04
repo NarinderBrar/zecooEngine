@@ -43,6 +43,7 @@ void Transform::translate(glm::vec3 vec)
 
 void Transform::rotate(float angle, glm::vec3 axis)
 {
+	eulerAngle += axis * angle;
 	worldMatrix = glm::rotate( worldMatrix, glm::degrees(angle), axis);
 	Update();
 }
@@ -84,6 +85,7 @@ void Transform::worldScale(glm::vec3 vec)
 
 	Update();
 }
+
 void Transform::resetParentScale( glm::vec3 vec )
 {
 	glm::mat4 I = glm::mat4( 1.0 );

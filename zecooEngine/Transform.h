@@ -21,6 +21,7 @@ class Transform
 		glm::mat4 worldScaleMatrix = glm::mat4( 1.0f );
 
 		glm::vec3 localScale = glm::vec3(1.0f,1.0f,1.0f);
+		glm::vec3 eulerAngle = glm::vec3(0.0f,0.0f,0.0f);
 
 		Transform* parent;
 

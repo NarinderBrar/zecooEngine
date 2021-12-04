@@ -70,7 +70,7 @@ SceneAudioTest::SceneAudioTest(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* phy
 	planePhy = new Plane(floorMaterial, floorTexture);
 	planePhy->transform->translate( glm::vec3( 0.0f, 1.0f, 0.0f ) );
 	planePhy->transform->scale(glm::vec3(5.0f, 0.1f, 5.0f));
-	planePhy->transform->rotate(45.0, glm::vec3(1.0f, 0.0f, 1.0f));
+	planePhy->transform->rotate(15.0, glm::vec3(0.0f, 0.0f, 1.0f));
 	planePhy->mass = 0.0;
 	planePhy->SetRigidbody(phyEng);
 	planePhy->name = "planePhy";
@@ -87,7 +87,7 @@ void SceneAudioTest::Update(float deltaTime)
 	if( planePhy != nullptr )
 		planePhy->solve(phyEng);
 
-	camera->RotateViewPoint(800, glfwGetTime());
+	//camera->RotateViewPoint(800, glfwGetTime());
 
 	if (phyEng->CollisionTest("cubePhy", "planePhy") && !playonce)
 	{	cout << "collision" << endl;
