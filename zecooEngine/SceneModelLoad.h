@@ -29,10 +29,7 @@ public:
 	Material* material;
 	Texture* texture;
 
-	Cube* cube;
-
 	ModelExternal* modelExternal;
-	Plane* plane;
 	Camera* camera;
 	PhysicsEngine* phyEng;
 

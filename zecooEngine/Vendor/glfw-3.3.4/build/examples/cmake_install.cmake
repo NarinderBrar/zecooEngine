@@ -1,4 +1,4 @@
-# Install script for directory: E:/Projects/Projects_Chitkara/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/examples
+# Install script for directory: D:/zecooEngine/zecooEngine/Vendor/glfw-3.3.4/examples
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

@@ -32,12 +32,6 @@ SceneModelLoad::SceneModelLoad( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* ph
 	material->linkLight( dlight );
 	material->linkCamera( camera );
 
-	plane = new Plane( material, NULL );
-
-	cube = new Cube( material, NULL );
-	cube->transform->translate( glm::vec3( 0.0f, 0.5f, 5.0f ) );
-	cube->transform->rotate( 45.0f, glm::vec3( 0.0f, 1.0f, 0.0f ) );
-
 	modelExternal = new ModelExternal( "resources\\objects\\model\\cube_texture.fbx", NULL );
 }
 
@@ -51,7 +45,5 @@ void SceneModelLoad::Render()
 	glClearColor( 0.8f, 0.8f, 0.8f, 1.0f );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	//plane->render();
-	//cube->render();
 	modelExternal->Draw( material, NULL );
 }

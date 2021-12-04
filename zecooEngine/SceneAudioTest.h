@@ -51,6 +51,7 @@ public:
 	Cube* cube;
 
 	Plane* planePhy;
+	Plane* planePhy2;
 	Cube* cubePhy;
 	Sphere* customModel;
 

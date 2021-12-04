@@ -50,7 +50,7 @@ SceneAudioTest::SceneAudioTest(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* phy
 	cubeMaterial->linkCamera(camera);
 
 	cubePhy = new Cube(cubeMaterial, cubeTexture);
-	cubePhy->transform->translate(glm::vec3(0.0f, 15.0f, 0.0f));
+	cubePhy->transform->translate(glm::vec3(0.0f, 7.0f, 0.0f));
 	cubePhy->transform->scale( glm::vec3( 1.0f, 2.0f, 1.0f ) );
 	cubePhy->transform->rotate(45,glm::vec3( 0.0f, 1.0f, 0.0f ) );
 	cubePhy->mass = 1.0;
@@ -59,13 +59,22 @@ SceneAudioTest::SceneAudioTest(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* phy
 	cubePhy->rigidBody->setUserPointer(cubePhy);
 
 	cube = new Cube( cubeMaterial, cubeTexture );
-	cube->transform->translate( glm::vec3( 0.0f, 10.0f, 0.0f ) );
-	cube->transform->scale( glm::vec3( 2.0f, 1.0f, 1.0f ) );
+	cube->transform->translate( glm::vec3( 3.0f, -1.0f, 0.0f ) );
+	cube->transform->scale( glm::vec3( 2.0f, 2.0f, 2.0f ) );
 	cube->transform->rotate( 45, glm::vec3( 0.0f, 1.0f, 0.0f ) );
-	cube->mass = 1.0;
+	cube->mass = 0.0;
 	cube->SetRigidbody( phyEng );
 	cube->name = "cubePhy";
 	cube->rigidBody->setUserPointer( cube );
+
+	planePhy2 = new Plane( floorMaterial, floorTexture );
+	planePhy2->transform->translate( glm::vec3( 1.0f, 5.0f, 0.0f ) );
+	planePhy2->transform->scale( glm::vec3( 2.0f, 0.1f, 1.0f ) );
+	//planePhy2->transform->rotate( 15.0, glm::vec3( 0.0f, 0.0f, 1.0f ) );
+	planePhy2->mass = 1.0;
+	planePhy2->SetRigidbody( phyEng );
+	planePhy2->name = "planePhy";
+	planePhy2->rigidBody->setUserPointer( planePhy2 );
 
 	planePhy = new Plane(floorMaterial, floorTexture);
 	planePhy->transform->translate( glm::vec3( 0.0f, 1.0f, 0.0f ) );
@@ -87,6 +96,7 @@ void SceneAudioTest::Update(float deltaTime)
 	if( planePhy != nullptr )
 		planePhy->solve(phyEng);
 
+	planePhy2->solve( phyEng );
 	//camera->RotateViewPoint(800, glfwGetTime());
 
 	if (phyEng->CollisionTest("cubePhy", "planePhy") && !playonce)
@@ -106,6 +116,7 @@ void SceneAudioTest::Render()
 
 	cubePhy->render();
 	cube->render();
+	planePhy2->render();
 
 	phyEng->dynamicsWorld->debugDrawWorld();
 	phyEng->dynamicsWorld->getDebugDrawer()->setDebugMode( btIDebugDraw::DebugDrawModes::DBG_DrawWireframe );

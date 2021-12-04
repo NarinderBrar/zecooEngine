@@ -30,6 +30,8 @@ void Plane::SetRigidbody( PhysicsEngine* physicsEngine )
 		btQuaternion orn;
 		orn.setEuler( transform->eulerAngle.y, transform->eulerAngle.x, transform->eulerAngle.z );
 		btTrans.setRotation( orn );
+
+		btTrans.setOrigin( btVector3( transform->getPosition().x, transform->getPosition().y, transform->getPosition().z) );
 	}
 
 	//using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
