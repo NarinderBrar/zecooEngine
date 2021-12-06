@@ -188,8 +188,14 @@ vector<MeshTexture> ModelExternal::loadMaterialTextures( aiMaterial* mat, aiText
 
 unsigned int TextureFromFile( const char* path, const string& directory, bool gamma )
 {
-    string filename = string( path );
-    filename = "resources\\textures\\" + filename;
+    std::string k = "";
+    size_t lastdot = directory.find_last_of( "." );
+    if( lastdot == std::string::npos )  
+        k = directory;
+     k = directory.substr( 0, lastdot );
+
+     string filename = string( path );
+     filename = k + "\\" + filename;
 
     unsigned int textureID;
     glGenTextures( 1, &textureID );

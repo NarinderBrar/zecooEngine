@@ -24,7 +24,7 @@ SceneModelLoad::SceneModelLoad( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* ph
 	shader = new Shader( "resources\\shader\\basicTextureLight.vs", "resources\\shader\\basicTextureLight.fs" );
 
 	dlight = new DirectionalLight( glm::vec3( 0.0, 0.0, 0.0 ), glm::vec3( 0.2, -1.0, 0.2 ) );
-	dlight->diffuse = glm::vec3( 1.0, 1.0, 1.0 );
+	dlight->diffuse = glm::vec3( 1.0, 1.0, 1.0 ); 
 	dlight->ambient = glm::vec3( 0.5, 0.5, 0.5 );
 
 	glm::vec4 color = glm::vec4( 1.0f, 1.0f, 1.0f, 1.0f );
