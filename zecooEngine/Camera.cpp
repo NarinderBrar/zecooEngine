@@ -23,58 +23,6 @@ void Camera::Set(glm::vec3& position, glm::vec3& viewpoint, glm::vec3& upVector)
 	m_upVector = upVector;
 }
 
-// Respond to mouse movement
-void Camera::SetViewByMouse()
-{
-	int middle_x = SCR_WIDTH >> 1;
-	int middle_y = SCR_HEIGHT >> 1;
-
-	float angle_y = 0.0f;
-	float angle_z = 0.0f;
-	static float rotation_x = 0.0f;
-
-	POINT mouse;
-	GetCursorPos(&mouse);
-
-	if (mouse.x == middle_x && mouse.y == middle_y) {
-		return;
-	}
-
-	SetCursorPos(middle_x, middle_y);
-
-	angle_y = (float)(middle_x - mouse.x) / 1000.0f;
-	angle_z = (float)(middle_y - mouse.y) / 1000.0f;
-
-	rotation_x -= angle_z;
-
-	float maxAngle = 1.56f; // Just a little bit below PI / 2
-
-	if (rotation_x > maxAngle) 
-	{
-		rotation_x = maxAngle;
-	}
-	else if (rotation_x < -maxAngle)
-	{
-		rotation_x = -maxAngle;
-	}
-	else 
-	{
-		glm::vec3 cross = glm::cross(m_view - m_position, m_upVector);
-		glm::vec3 axis = glm::normalize(cross);
-
-		//RotateViewPointMouse(angle_z, axis);
-	}
-
-	glm::vec3 y = glm::vec3(0, 1, 0);
-	//RotateViewPointMouse(angle_y, y);
-}
-
-// Rotate the camera view point -- this effectively rotates the camera since it is looking at the view point
-void Camera::RotateViewPointMouse( float radius, float angle )
-{
-	Set( m_position, m_view, m_upVector );
-}
-
 // Rotate the camera view point -- this effectively rotates the camera since it is looking at the view point
 void Camera::RotateViewPoint(float radius, float angle)
 {
@@ -115,7 +63,6 @@ void Camera::Update(double dt)
 	glm::vec3 vector = glm::cross(m_view - m_position, m_upVector);
 	m_strafeVector = glm::normalize(vector);
 
-	//SetViewByMouse();
 	TranslateByKeyboard(dt);
 }
 
@@ -137,6 +84,73 @@ void Camera::TranslateByKeyboard(double dt)
 	if (GetKeyState(VK_RIGHT) & 0x80 || GetKeyState('D') & 0x80) {
 		Strafe(5.0 * dt);
 	}
+}
+
+// Respond to mouse movement
+void Camera::SetViewByMouse()
+{
+	POINT mouse;
+	GetCursorPos( &mouse );
+
+	if( firstMouse )
+	{
+		lastX = mouse.x;
+		lastY = mouse.y;
+		firstMouse = false;
+	}
+
+	float xoffset = mouse.x - lastX;
+
+	// reversed since y-coordinates go from bottom to top
+	float yoffset = lastY - mouse.y;
+
+	lastX = mouse.x;
+	lastY = mouse.y;
+
+	ProcessMouseMovement( xoffset, yoffset );
+}
+
+void Camera::ProcessMouseMovement( float xoffset, float yoffset )
+{
+	GLboolean constrainPitch = true;
+
+	xoffset *= MouseSensitivity;
+	yoffset *= MouseSensitivity;
+
+	Yaw += xoffset;
+	Pitch += yoffset;
+
+	cout << Yaw << " " << Pitch << endl;
+
+	// make sure that when pitch is out of bounds, screen doesn't get flipped
+	if( constrainPitch )
+	{
+		if( Pitch > 89.0f )
+			Pitch = 89.0f;
+		if( Pitch < -89.0f )
+			Pitch = -89.0f;
+	}
+
+	// update Front, Right and Up Vectors using the updated Euler angles
+	updateCameraVectors();
+}
+
+void Camera::updateCameraVectors()
+{
+	// calculate the new Front vector
+	glm::vec3 front;
+	front.x = cos( glm::radians( Yaw ) ) * cos( glm::radians( Pitch ) );
+	front.y = sin( glm::radians( Pitch ) );
+	front.z = sin( glm::radians( Yaw ) ) * cos( glm::radians( Pitch ) );
+
+	front = glm::normalize( front );
+	// also re-calculate the Right and Up vector
+	// normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+	glm::vec3 right = glm::normalize( glm::cross( front, WorldUp ) );
+	//m_upVector = glm::normalize( glm::cross( right, front ) );
+	//m_upVector = glm::vec3( 0, 1, 0 );
+	glm::vec3 m_viewn = m_position + front;
+	m_view = glm::vec3( m_viewn.x, m_view.y, m_view.z );
 }
 
 // Return the camera position

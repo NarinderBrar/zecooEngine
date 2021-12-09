@@ -71,10 +71,8 @@ public:
 
 	SceneAudioTest(int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* physicsEngine, Input* _input);
 
-
 	void Update(float deltaTime);
 
 	void Render();
-
 };
 

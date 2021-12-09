@@ -24,6 +24,16 @@ glm::vec3 Transform::getPosition()
 	return cubPos;
 }
 
+glm::vec3 Transform::getlocalXDir()
+{
+	return glm::vec3( pose[0][0], pose[0][1], pose[0][2] );
+}
+
+glm::vec3 Transform::getlocalYDir()
+{
+	return glm::vec3( pose[1][0], pose[1][1], pose[1][2] );
+}
+
 glm::vec3 Transform::getlocalZDir()
 {
 	return glm::vec3( pose[2][0], pose[2][1], pose[2][2] );

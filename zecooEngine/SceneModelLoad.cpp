@@ -37,6 +37,8 @@ SceneModelLoad::SceneModelLoad( int SCR_WIDTH, int SCR_HEIGHT, PhysicsEngine* ph
 
 void SceneModelLoad::Update( float deltaTime )
 {
+	//camera->SetViewByMouse();
+	//camera->Update( deltaTime );
 	camera->RotateViewPoint( 1800, glfwGetTime() );
 }
 

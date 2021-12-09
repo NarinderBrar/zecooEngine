@@ -7,10 +7,29 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+#include <iostream>
+using namespace std;
+
 class Camera {
 public:
 	int SCR_WIDTH = 800;
 	int SCR_HEIGHT = 600;
+
+	float Yaw = 0.0;
+	float Pitch = 0.0;
+
+	float MouseSensitivity = 0.1;
+
+	glm::vec3 Position;
+
+	float lastX = SCR_WIDTH / 2.0f;
+	float lastY = SCR_HEIGHT / 2.0f;
+	bool firstMouse = true;
+
+	glm::vec3 Front;
+	glm::vec3 Up;
+	glm::vec3 Right;
+	glm::vec3 WorldUp = glm::vec3(0,1,0);
 
 	Camera(int SCR_WIDTH, int SCR_HEIGHT);										// Constructor - sets default values for camera position, viewvector, upvector, and speed
 	~Camera();										// Destructor
@@ -29,7 +48,7 @@ public:
 	// Rotate the camera viewpoint -- this effectively rotates the camera
 	void RotateViewPoint(float radius, float angle);
 
-	void RotateViewPointMouse( float radius, float angle );
+	void RotateViewPointMouse( float radius, glm::vec3 angle );
 
 	// Respond to mouse movement to rotate the camera
 	void SetViewByMouse();
@@ -51,6 +70,9 @@ public:
 	void SetOrthographicProjectionMatrix();
 
 	glm::mat3 ComputeNormalMatrix(const glm::mat4& modelViewMatrix);
+
+	void ProcessMouseMovement( float xoffset, float yoffset );
+	void updateCameraVectors();
 
 private:
 	glm::vec3 m_position;			// The position of the camera's centre of projection
