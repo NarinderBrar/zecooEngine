@@ -1,0 +1,198 @@
+#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/imgui_PS_Main.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct PS_INPUT
+{
+	vec4 pos;
+	vec4 col;
+	vec2 uv;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t texture0[24];
+};
+layout(location = 0) in Block
+{
+PS_INPUT BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+PS_INPUT BlockData=ioblock.BlockData;
+//#line 688 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+vec4 out_col=BlockData.col*texture(sampler2D(texture0[1 + 9]),BlockData.uv).aaaa;
+{returnObject_vec4=out_col;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/imgui_VS_Main_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 0) uniform vertexBuffer
+{
+	mat4 ProjectionMatrix;
+};
+struct VS_INPUT
+{
+	vec2 pos;
+	vec2 uv;
+	vec4 col;
+};
+struct PS_INPUT
+{
+	vec4 pos;
+	vec4 col;
+	vec2 uv;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location=0) in vec2 pos;
+layout(location=1) in vec2 uv;
+layout(location=2) in vec4 col;
+
+layout(location = 0) out Block
+{
+PS_INPUT BlockData;
+} ioblock;
+void main()
+{
+VS_INPUT vertex;
+vertex.pos=pos;
+vertex.uv=uv;
+vertex.col=col;
+//#line 677 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+PS_INPUT v_out;
+v_out.pos=mul(ProjectionMatrix,vec4(vertex.pos.xy,0.f,1.f));
+v_out.col=vertex.col;
+v_out.uv=vertex.uv;
+{
+ioblock.BlockData=v_out;
+gl_Position=v_out.pos;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/imgui_VS_Main_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 0) uniform vertexBuffer
+{
+	mat4 ProjectionMatrix;
+};
+struct VS_INPUT
+{
+	vec2 pos;
+	vec2 uv;
+	vec4 col;
+};
+struct PS_INPUT
+{
+	vec4 pos;
+	vec4 col;
+	vec2 uv;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location=0) in vec2 pos;
+layout(location=1) in vec2 uv;
+layout(location=2) in vec4 col;
+
+layout(location = 0) out Block
+{
+PS_INPUT BlockData;
+} ioblock;
+void main()
+{
+VS_INPUT vertex;
+vertex.pos=pos;
+vertex.uv=uv;
+vertex.col=col;
+//#line 677 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/imgui.sfx"
+PS_INPUT v_out;
+v_out.pos=mul(ProjectionMatrix,vec4(vertex.pos.xy,0.f,1.f));
+v_out.col=vertex.col;
+v_out.uv=vertex.uv;
+{
+ioblock.BlockData=v_out;
+gl_Position=v_out.pos;
+}
+}

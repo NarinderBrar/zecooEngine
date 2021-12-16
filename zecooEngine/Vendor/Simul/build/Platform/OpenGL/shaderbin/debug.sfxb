@@ -1,0 +1,6381 @@
+#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+//#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_CS_Clear2DArray_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+layout(rgba32f, binding = 1) uniform image2DArray FastClearTarget2DArray;
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+//#line 1982 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 sub_pos=uvec3(g.xy*8+t.xy,t.z);
+if(sub_pos.x<texSize.x&&sub_pos.y<texSize.y)imageStore(FastClearTarget2DArray,ivec3(sub_pos),vec4(debugColour));
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+//#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_CS_Clear2DArray_U8_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+layout(rgba8, binding = 2) uniform image2DArray FastClearTarget2DArrayU8;
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+//#line 1989 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 sub_pos=uvec3(g.xy*8+t.xy,t.z);
+if(sub_pos.x<texSize.x&&sub_pos.y<texSize.y)imageStore(FastClearTarget2DArrayU8,ivec3(sub_pos),vec4(debugColour));
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+//#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_CS_Clear3D_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+layout(rgba32f, binding = 3) uniform image3D FastClearTarget3D;
+layout(local_size_x=4, local_size_y=4, local_size_z=4) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+//#line 1997 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 sub_pos=g*4+t;
+if(sub_pos.x<texSize.x&&sub_pos.y<texSize.y&&sub_pos.z<texSize.z)
+{
+imageStore(FastClearTarget3D,ivec3(sub_pos),vec4(debugColour));
+}
+
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+//#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_CS_Clear3D_U8_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+layout(rgba8, binding = 4) uniform image3D FastClearTarget3DU8;
+layout(local_size_x=4, local_size_y=4, local_size_z=4) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+//#line 2006 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 sub_pos=g*4+t;
+if(sub_pos.x<texSize.x&&sub_pos.y<texSize.y&&sub_pos.z<texSize.z)
+{
+imageStore(FastClearTarget3DU8,ivec3(sub_pos),vec4(debugColour));
+}
+
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+//#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_CS_Clear_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+layout(rgba32f, binding = 0) uniform image2D FastClearTarget;
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+//#line 1972 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec2 sub_pos=g.xy*8+t.xy;
+if(sub_pos.x<texSize.x&&sub_pos.y<texSize.y)
+{
+imageStore(FastClearTarget,ivec2(sub_pos),vec4(debugColour));
+}
+
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+//#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_CS_LatLongToCubemap_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+layout(rgba32f, binding = 1) uniform image2DArray FastClearTarget2DArray;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t imageTexture[24];
+};
+//#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+//#line 23 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+//#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+//#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(local_size_x=4, local_size_y=4, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+//#line 1938 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 idx=g.xyz*uvec3(4,4,1)+t.xyz;
+uvec3 dims;
+ivec3 ivFastClearTarget2DArray = imageSize(FastClearTarget2DArray);
+dims.x = ivFastClearTarget2DArray.x;dims.y = ivFastClearTarget2DArray.y;dims.z = ivFastClearTarget2DArray.z;;
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(dims.xy);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+clip_pos.xy*=-1.0;
+mat4 cubeInvViewProj[6]={{{0,0,-1,0},{0,-1,0,0},{1,0,0,0},{0,0,0,1}},{{0,0,1,0},{0,-1,0,0},{-1,0,0,0},{0,0,0,1}},{{-1,0,0,0},{0,0,-1,0},{0,1,0,0},{0,0,0,1}},{{-1,0,0,0},{0,0,1,0},{0,-1,0,0},{0,0,0,1}},{{-1,0,0,0},{0,-1,0,0},{0,0,-1,0},{0,0,0,1}},{{1,0,0,0},{0,-1,0,0},{0,0,1,0},{0,0,0,1}}};
+vec3 view=normalize(mul(cubeInvViewProj[idx.z],clip_pos).xyz);
+float lat=asin(view.z);
+float lon=atan(view.x,view.y);
+vec2 texc=vec2(lon/(2.0*3.1415926536),lat*2.0/3.1415926536*0.5+0.5);
+vec4 lookup=textureLod(sampler2D(imageTexture[1 + 2]),texc,0);
+imageStore(FastClearTarget2DArray,ivec3(idx),vec4(vec4(saturate(lookup.xyz),0.5)));
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+//#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_CS_TexelQuery_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std430, binding = 5) buffer textureQueryResults_ssbo
+{
+	vec4 textureQueryResults[]; 
+};
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t imageTexture[24];
+};
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+//#line 2016 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 sub_pos=g+t;
+textureQueryResults[sub_pos.x]=texelFetch(sampler2D(imageTexture[0]),ivec2(queryPos).xy,0);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_CircleVS_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1300 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+float angle=2.0*3.1415926536*float(IN.vertex_id)/31.0;
+vec4 pos=vec4(100.0*vec3(radius*vec2(cos(angle),sin(angle)),1.0),1.0);
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+OUT.colour=debugColour;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_CircleVS_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1300 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+float angle=2.0*3.1415926536*float(IN.vertex_id)/31.0;
+vec4 pos=vec4(100.0*vec3(radius*vec2(cos(angle),sin(angle)),1.0),1.0);
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+OUT.colour=debugColour;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_Debug2dVS_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct a2v
+{
+	vec3 position;
+	vec4 colour;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+layout(location=0) in vec3 position;
+layout(location=1) in vec4 colour;
+
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+a2v IN;
+IN.position=position;
+IN.colour=colour;
+//#line 1292 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+OUT.hPosition=vec4(rect.xy+rect.zw*IN.position.xy,0.0,1.0);
+OUT.colour=IN.colour;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_Debug2dVS_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct a2v
+{
+	vec3 position;
+	vec4 colour;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+layout(location=0) in vec3 position;
+layout(location=1) in vec4 colour;
+
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+a2v IN;
+IN.position=position;
+IN.colour=colour;
+//#line 1292 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+OUT.hPosition=vec4(rect.xy+rect.zw*IN.position.xy,0.0,1.0);
+OUT.colour=IN.colour;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_DebugPS.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+layout(location = 0) in Block
+{
+v2f BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+v2f BlockData=ioblock.BlockData;
+//#line 1322 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 c=BlockData.colour;
+{returnObject_vec4=c;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_DebugVS_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct positionColourVertexInput
+{
+	vec3 position;
+	vec4 colour;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location=0) in vec3 position;
+layout(location=1) in vec4 colour;
+
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+positionColourVertexInput IN;
+IN.position=position;
+IN.colour=colour;
+//#line 1283 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+vec3 pos=IN.position.xyz;
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+OUT.colour=IN.colour;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_DebugVS_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct positionColourVertexInput
+{
+	vec3 position;
+	vec4 colour;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location=0) in vec3 position;
+layout(location=1) in vec4 colour;
+
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+positionColourVertexInput IN;
+IN.position=position;
+IN.colour=colour;
+//#line 1283 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+vec3 pos=IN.position.xyz;
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+OUT.colour=IN.colour;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_FilledCircleVS_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+//#line 46 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+//#line 50 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+//#line 54 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+//#line 58 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+//#line 62 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+//#line 66 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+//#line 70 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+//#line 74 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1310 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+int j=int(typed_mod(IN.vertex_id,uint(2)));
+float angle=2.0*3.1415926536*float(IN.vertex_id)/31.0;
+vec4 pos=vec4(100.0*vec3(radius*j*vec2(cos(angle),sin(angle)),1.0),1.0);
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+OUT.colour=debugColour;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_FilledCircleVS_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+//#line 46 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+//#line 50 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+//#line 54 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+//#line 58 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+//#line 62 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+//#line 66 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+//#line 70 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+//#line 74 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1310 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+int j=int(typed_mod(IN.vertex_id,uint(2)));
+float angle=2.0*3.1415926536*float(IN.vertex_id)/31.0;
+vec4 pos=vec4(100.0*vec3(radius*j*vec2(cos(angle),sin(angle)),1.0),1.0);
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+OUT.colour=debugColour;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_Clear.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1932 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+{returnObject_vec4=debugColour;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_Copy2D.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1911 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 texc=BlockData.texCoords.xy;
+vec4 res=textureLod(sampler2D(imageTexture[1 + 9]),texc.xy,0);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_Copy2DOffset.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1925 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 texc=fract((BlockData.texCoords.xy+rect.xy)*rect.zw);
+vec4 res=textureLod(sampler2D(imageTexture[1 + 9]),texc.xy,0);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_Copy2DWrap.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1918 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 texc=BlockData.texCoords.xy;
+vec4 res=textureLod(sampler2D(imageTexture[1 + 6]),texc.xy,0);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_DrawCubemap.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+struct v2f_cubemap
+{
+	vec4 hPosition;
+	vec3 wDirection;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t cubeTexture[24];
+};
+//#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+//#line 23 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+//#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+//#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+layout(location = 0) in Block
+{
+v2f_cubemap BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+v2f_cubemap BlockData=ioblock.BlockData;
+//#line 1622 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 view=BlockData.wDirection.xyz;
+vec4 result=textureLod(samplerCube(cubeTexture[1 + 4]),view,displayLod);
+result.rgb*=multiplier.rgb;
+result.rgb=pow(result.rgb,vec3(debugGamma,debugGamma,debugGamma));
+vec4 u=vec4(saturate(result.rgb),1.0);
+{returnObject_vec4=u;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_DrawSphere.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct v2f_cubemap
+{
+	vec4 hPosition;
+	vec3 wDirection;
+};
+layout(location = 0) in Block
+{
+v2f_cubemap BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+v2f_cubemap BlockData=ioblock.BlockData;
+//#line 1438 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 view=BlockData.wDirection.xyz;
+vec4 u=vec4(view.rgb,1.0);
+{returnObject_vec4=u;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_DrawTextureOnSphere.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1611 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 texc=BlockData.texCoords.xy;
+texc.y=1.0-texc.y;
+vec4 res=multiplier*textureLod(sampler2D(imageTexture[1 + 11]),texc.xy,0);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_ShowCubemapArray.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t cubeTextureArray[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1373 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 texc=BlockData.texCoords.xy;
+float se=texc.y*2.0-1.0;
+float ce=cos(asin(se));
+float az=texc.x*3.1415926536*2.0;
+float cs=cos(az);
+float ss=sin(az);
+vec3 view=normalize(vec3(ce*ss,ce*cs,se));
+vec4 res=textureLod(samplerCubeArray(cubeTextureArray[1 + 4]),vec4(view,displayLevel),displayLod);
+;
+vec3 v=abs(view);
+float e=max(max(v.x,v.y),v.z);
+vec3 N=step(vec3(e,e,e),v);
+if(dot(N,view)<0)N=vec3(1.0,1.0,1.0)-N;
+N*=0.03;
+res=vec4(pow(res.xyz,vec3(0.44,0.44,0.44))+N,0.0);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_ShowCubemap.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t cubeTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1351 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 texc=BlockData.texCoords.xy;
+float se=texc.y*2.0-1.0;
+float ce=cos(asin(se));
+float az=texc.x*3.1415926536*2.0;
+float cs=cos(az);
+float ss=sin(az);
+vec3 view=normalize(vec3(ce*ss,ce*cs,se));
+vec4 res=textureLod(samplerCube(cubeTexture[1 + 4]),view,displayLod);
+;
+vec3 v=abs(view);
+float e=max(max(v.x,v.y),v.z);
+vec3 N=step(vec3(e,e,e),v);
+if(dot(N,view)<0)N=vec3(1.0,1.0,1.0)-N;
+N*=0.001;
+res=vec4(pow(res.xyz+N,vec3(debugGamma,debugGamma,debugGamma)),0.0);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_ShowDepthCube_Forward.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t cubeTexture[24];
+};
+//#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+//#line 23 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+//#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+//#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+//#line 676 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+float depthToLinearDistance(float depth, DepthInterpretationStruct dis)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth);
+return linearFadeDistanceZ;
+}
+//#line 692 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 depthToLinearDistance(vec4 depth, DepthInterpretationStruct dis)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+if(dis.reverseDepth)
+{
+vec4 st=step(depth,vec4(0.0,0.0,0.0,0.0));
+linearFadeDistanceZ*=(vec4(1.0,1.0,1.0,1.0)-st);
+linearFadeDistanceZ+=st;
+}
+else
+
+{
+linearFadeDistanceZ=min(vec4(1.0,1.0,1.0,1.0),linearFadeDistanceZ);
+}
+
+return linearFadeDistanceZ;
+}
+//#line 709 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 depthToLinearDistance(vec2 depth, DepthInterpretationStruct dis)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+if(dis.reverseDepth)
+{
+linearFadeDistanceZ.x=max(linearFadeDistanceZ.x,step(0.0,-depth.x));
+linearFadeDistanceZ.y=max(linearFadeDistanceZ.y,step(0.0,-depth.y));
+}
+else
+
+{
+linearFadeDistanceZ.x=max(linearFadeDistanceZ.x,step(1.0,depth.x));
+linearFadeDistanceZ.y=max(linearFadeDistanceZ.y,step(1.0,depth.y));
+}
+
+return linearFadeDistanceZ;
+}
+//#line 1327 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 ShowDepthCube(posTexVertexOutput IN, bool reverseDepth)
+{
+vec2 texc=IN.texCoords.xy;
+float se=texc.y*2.0-1.0;
+float ce=cos(asin(se));
+float az=texc.x*3.1415926536*2.0;
+float cs=cos(az);
+float ss=sin(az);
+vec3 view=normalize(vec3(ce*ss,ce*cs,se));
+vec4 depth=texture(samplerCube(cubeTexture[1 + 4]),view);
+;
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=debugDepthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=reverseDepth;
+vec4 dist=depthToLinearDistance(depth,depthInterpretationStruct);
+if(texc.x+texc.y>1.0)dist.xy=dist.zw;
+dist.z=0;
+vec4 result=vec4(pow(dist.xyz,vec3(0.44,0.44,0.44)),1.0);
+return result;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1751 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 res=ShowDepthCube(BlockData,false);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_ShowDepthCube_Reverse.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t cubeTexture[24];
+};
+//#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+//#line 23 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+//#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+//#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+//#line 676 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+float depthToLinearDistance(float depth, DepthInterpretationStruct dis)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth);
+return linearFadeDistanceZ;
+}
+//#line 692 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 depthToLinearDistance(vec4 depth, DepthInterpretationStruct dis)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+if(dis.reverseDepth)
+{
+vec4 st=step(depth,vec4(0.0,0.0,0.0,0.0));
+linearFadeDistanceZ*=(vec4(1.0,1.0,1.0,1.0)-st);
+linearFadeDistanceZ+=st;
+}
+else
+
+{
+linearFadeDistanceZ=min(vec4(1.0,1.0,1.0,1.0),linearFadeDistanceZ);
+}
+
+return linearFadeDistanceZ;
+}
+//#line 709 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 depthToLinearDistance(vec2 depth, DepthInterpretationStruct dis)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+if(dis.reverseDepth)
+{
+linearFadeDistanceZ.x=max(linearFadeDistanceZ.x,step(0.0,-depth.x));
+linearFadeDistanceZ.y=max(linearFadeDistanceZ.y,step(0.0,-depth.y));
+}
+else
+
+{
+linearFadeDistanceZ.x=max(linearFadeDistanceZ.x,step(1.0,depth.x));
+linearFadeDistanceZ.y=max(linearFadeDistanceZ.y,step(1.0,depth.y));
+}
+
+return linearFadeDistanceZ;
+}
+//#line 1327 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 ShowDepthCube(posTexVertexOutput IN, bool reverseDepth)
+{
+vec2 texc=IN.texCoords.xy;
+float se=texc.y*2.0-1.0;
+float ce=cos(asin(se));
+float az=texc.x*3.1415926536*2.0;
+float cs=cos(az);
+float ss=sin(az);
+vec3 view=normalize(vec3(ce*ss,ce*cs,se));
+vec4 depth=texture(samplerCube(cubeTexture[1 + 4]),view);
+;
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=debugDepthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=reverseDepth;
+vec4 dist=depthToLinearDistance(depth,depthInterpretationStruct);
+if(texc.x+texc.y>1.0)dist.xy=dist.zw;
+dist.z=0;
+vec4 result=vec4(pow(dist.xyz,vec3(0.44,0.44,0.44)),1.0);
+return result;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1757 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 res=ShowDepthCube(BlockData,true);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_ShowDepthMS_Forward.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTextureMS[24];
+};
+//#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+//#line 23 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+//#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+//#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+//#line 762 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+//#line 781 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+//#line 800 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+//#line 1762 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 ShowDepthMS_PS(posTexVertexOutput IN, bool reverseDepth)
+{
+vec2 texc=IN.texCoords.xy;
+texc.y=1.0-texc.y;
+uvec2 dims;
+uint numSamples;
+ivec2 ivimageTextureMS = textureSize(sampler2DMS(imageTextureMS[0]));
+dims.x = ivimageTextureMS.x;dims.y = ivimageTextureMS.y;;
+ivec2 pos=ivec2(texc.xy*vec2(dims.xy));
+vec4 depth=texelFetch(sampler2DMS(imageTextureMS[0]),ivec2(pos),int(0));
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=debugDepthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=reverseDepth;
+vec2 dist=depthToFadeDistance(depth.xx,2.0*(texc-0.5),depthInterpretationStruct,debugTanHalfFov);
+vec4 result=vec4(pow(dist.xy,vec2(0.44,0.44)),depth.z,1.0);
+if(IN.texCoords.x<viewport.x||IN.texCoords.x>viewport.x+viewport.z||IN.texCoords.y<viewport.y||IN.texCoords.y>viewport.y+viewport.w)result*=0.25;
+result.b+=1;
+return result;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1787 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 res=ShowDepthMS_PS(BlockData,false);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_ShowDepthMS_Reverse.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTextureMS[24];
+};
+//#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+//#line 23 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+//#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+//#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+//#line 762 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+//#line 781 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+//#line 800 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+//#line 1762 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 ShowDepthMS_PS(posTexVertexOutput IN, bool reverseDepth)
+{
+vec2 texc=IN.texCoords.xy;
+texc.y=1.0-texc.y;
+uvec2 dims;
+uint numSamples;
+ivec2 ivimageTextureMS = textureSize(sampler2DMS(imageTextureMS[0]));
+dims.x = ivimageTextureMS.x;dims.y = ivimageTextureMS.y;;
+ivec2 pos=ivec2(texc.xy*vec2(dims.xy));
+vec4 depth=texelFetch(sampler2DMS(imageTextureMS[0]),ivec2(pos),int(0));
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=debugDepthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=reverseDepth;
+vec2 dist=depthToFadeDistance(depth.xx,2.0*(texc-0.5),depthInterpretationStruct,debugTanHalfFov);
+vec4 result=vec4(pow(dist.xy,vec2(0.44,0.44)),depth.z,1.0);
+if(IN.texCoords.x<viewport.x||IN.texCoords.x>viewport.x+viewport.z||IN.texCoords.y<viewport.y||IN.texCoords.y>viewport.y+viewport.w)result*=0.25;
+result.b+=1;
+return result;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1793 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 res=ShowDepthMS_PS(BlockData,true);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_ShowDepth_Forward.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTexture[24];
+};
+//#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+//#line 23 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+//#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+//#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+//#line 762 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+//#line 781 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+//#line 800 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+//#line 1716 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 ShowDepthPS(posTexVertexOutput IN, bool reverseDepth)
+{
+vec2 texc=IN.texCoords.xy;
+texc.y=1.0-texc.y;
+vec4 depth=textureLod(sampler2D(imageTexture[1 + 11]),texc,0);
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=debugDepthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=reverseDepth;
+vec4 dist=depthToFadeDistance(depth,2.0*(IN.texCoords-0.5),depthInterpretationStruct,debugTanHalfFov);
+if(texc.x>.5)dist.xy=dist.zw;
+dist.z=0;
+vec4 result=vec4(pow(dist.xyz,vec3(0.44,0.44,0.44)),1.0);
+if(depth.x<=0)return vec4(1,0,0,0);
+if(depth.x==1.0)return vec4(0,0,1,0);
+return result;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1739 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 res=ShowDepthPS(BlockData,false);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_ShowDepth_Reverse.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTexture[24];
+};
+//#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+//#line 23 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+//#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+//#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+//#line 762 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+//#line 781 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+//#line 800 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+//#line 1716 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 ShowDepthPS(posTexVertexOutput IN, bool reverseDepth)
+{
+vec2 texc=IN.texCoords.xy;
+texc.y=1.0-texc.y;
+vec4 depth=textureLod(sampler2D(imageTexture[1 + 11]),texc,0);
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=debugDepthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=reverseDepth;
+vec4 dist=depthToFadeDistance(depth,2.0*(IN.texCoords-0.5),depthInterpretationStruct,debugTanHalfFov);
+if(texc.x>.5)dist.xy=dist.zw;
+dist.z=0;
+vec4 result=vec4(pow(dist.xyz,vec3(0.44,0.44,0.44)),1.0);
+if(depth.x<=0)return vec4(1,0,0,0);
+if(depth.x==1.0)return vec4(0,0,1,0);
+return result;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1745 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 res=ShowDepthPS(BlockData,true);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_ShowTextureArray.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTextureArray[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1643 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 texc=vec3(BlockData.texCoords.xy,displayLevel);
+texc.y=1.0-texc.y;
+vec4 res=multiplier*textureLod(sampler2DArray(imageTextureArray[1 + 11]),texc.xyz,0);
+res.rgb+=res.aaa;
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_ShowTexture.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1633 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 texc=BlockData.texCoords.xy;
+texc.y=1.0-texc.y;
+vec4 res=multiplier*textureLod(sampler2D(imageTexture[1 + 11]),texc.xy,0);
+res.rgb+=res.aaa;
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_ShowTextureMS.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTextureMS[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1707 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec2 dims;
+uint numSamples;
+ivec2 ivimageTextureMS = textureSize(sampler2DMS(imageTextureMS[0]));
+dims.x = ivimageTextureMS.x;dims.y = ivimageTextureMS.y;;
+ivec2 pos=ivec2(BlockData.texCoords.xy*vec2(dims.xy));
+vec4 res=multiplier*texelFetch(sampler2DMS(imageTextureMS[0]),ivec2(pos),int(0));
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_ShowTextureRadial.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1653 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 offs=BlockData.texCoords.xy-vec2(.5,.5);
+float rad=length(offs)/0.5;
+float azim=fract(atan(offs.x,offs.y)/(2.0*3.1415926536));
+vec2 texc=vec2(azim,rad);
+vec4 res=textureLod(sampler2D(imageTexture[1 + 11]),texc.xy,0);
+res*=step(rad,1.0);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_ShowVolume.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t volumeTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1671 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 texc=BlockData.texCoords.xy;
+texc.y=1.0-texc.y;
+float z=floor(8.0f*BlockData.texCoords.x)/8.0f;
+if(texc.y>.5)
+{
+z=1.0;
+texc.y=2.0*(texc.y-.5);
+}
+else
+
+{
+texc.y*=2.0;
+texc.x=fract(8.0f*BlockData.texCoords.x);
+}
+
+vec3 tc=vec3(texc.x,mix(texc.y,z,sideview),mix(z,texc.y,sideview));
+vec4 colour=textureLod(sampler3D(volumeTexture[1 + 6]),tc,0);
+colour.rgb*=multiplier.rgb;
+colour.rgb=abs(colour.rgb);
+colour.rgb=mix(colour.rgb,tc,0.1);
+{returnObject_vec4=colour;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_TraceVolume.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t volumeTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1697 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 texc=vec3(BlockData.texCoords.xy,displayLevel);
+vec4 colour=textureLod(sampler3D(volumeTexture[1 + 6]),texc,0);
+colour*=multiplier;
+{returnObject_vec4=colour;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_PS_Untextured.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1665 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 res=multiplier;
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DepthWrite_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1807 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=debugDepth;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DepthWrite_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1807 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=debugDepth;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawCircleOnSphere_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+//#line 1057 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_conj(vec4 q)
+{
+return vec4(-q.x,-q.y,-q.z,q.w);
+}
+//#line 1074 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_mult(vec4 q1, vec4 q2)
+{
+vec4 qr;
+qr.w=(q1.w*q2.w)-(q1.x*q2.x)-(q1.y*q2.y)-(q1.z*q2.z);
+qr.x=(q1.w*q2.x)+(q1.x*q2.w)+(q1.y*q2.z)-(q1.z*q2.y);
+qr.y=(q1.w*q2.y)-(q1.x*q2.z)+(q1.y*q2.w)+(q1.z*q2.x);
+qr.z=(q1.w*q2.z)+(q1.x*q2.y)-(q1.y*q2.x)+(q1.z*q2.w);
+return qr;
+}
+//#line 1084 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_vec(vec4 q, vec3 v)
+{
+vec4 qr;
+qr.w=-(q.x*v.x)-(q.y*v.y)-(q.z*v.z);
+qr.x=(q.w*v.x)+(q.y*v.z)-(q.z*v.y);
+qr.y=(q.w*v.y)+(q.z*v.x)-(q.x*v.z);
+qr.z=(q.w*v.z)+(q.x*v.y)-(q.y*v.x);
+return qr;
+}
+//#line 1094 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 rotate_by_quaternion(vec4 quat, vec3 position)
+{
+vec4 qr_conj=quat_conj(quat);
+vec4 q_tmp=quat_vec(quat,position);
+vec4 qr=quat_mult(q_tmp,qr_conj);
+return qr.xyz;
+}
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1556 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+float angle=float(IN.vertex_id)/31.0*3.1415926536*2.0;
+vec3 pos=vec3(sideview*cos(angle),sideview*sin(angle),1.0);
+pos=normalize(pos);
+OUT.colour=debugColour;
+pos=radius*rotate_by_quaternion(quaternion,pos);
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawCircleOnSphere_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+//#line 1057 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_conj(vec4 q)
+{
+return vec4(-q.x,-q.y,-q.z,q.w);
+}
+//#line 1074 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_mult(vec4 q1, vec4 q2)
+{
+vec4 qr;
+qr.w=(q1.w*q2.w)-(q1.x*q2.x)-(q1.y*q2.y)-(q1.z*q2.z);
+qr.x=(q1.w*q2.x)+(q1.x*q2.w)+(q1.y*q2.z)-(q1.z*q2.y);
+qr.y=(q1.w*q2.y)-(q1.x*q2.z)+(q1.y*q2.w)+(q1.z*q2.x);
+qr.z=(q1.w*q2.z)+(q1.x*q2.y)-(q1.y*q2.x)+(q1.z*q2.w);
+return qr;
+}
+//#line 1084 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_vec(vec4 q, vec3 v)
+{
+vec4 qr;
+qr.w=-(q.x*v.x)-(q.y*v.y)-(q.z*v.z);
+qr.x=(q.w*v.x)+(q.y*v.z)-(q.z*v.y);
+qr.y=(q.w*v.y)+(q.z*v.x)-(q.x*v.z);
+qr.z=(q.w*v.z)+(q.x*v.y)-(q.y*v.x);
+return qr;
+}
+//#line 1094 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 rotate_by_quaternion(vec4 quat, vec3 position)
+{
+vec4 qr_conj=quat_conj(quat);
+vec4 q_tmp=quat_vec(quat,position);
+vec4 qr=quat_mult(q_tmp,qr_conj);
+return qr.xyz;
+}
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1556 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+float angle=float(IN.vertex_id)/31.0*3.1415926536*2.0;
+vec3 pos=vec3(sideview*cos(angle),sideview*sin(angle),1.0);
+pos=normalize(pos);
+OUT.colour=debugColour;
+pos=radius*rotate_by_quaternion(quaternion,pos);
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawCubemap_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct vec3input
+{
+	vec3 position;
+};
+struct v2f_cubemap
+{
+	vec4 hPosition;
+	vec3 wDirection;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location=0) in vec3 position;
+
+layout(location = 0) out Block
+{
+v2f_cubemap BlockData;
+} ioblock;
+void main()
+{
+vec3input IN;
+IN.position=position;
+//#line 1406 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f_cubemap OUT;
+OUT.hPosition=mul(debugWorldViewProj,vec4(IN.position.xyz,1.0));
+OUT.wDirection=normalize(IN.position.xyz);
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawCubemap_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct vec3input
+{
+	vec3 position;
+};
+struct v2f_cubemap
+{
+	vec4 hPosition;
+	vec3 wDirection;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location=0) in vec3 position;
+
+layout(location = 0) out Block
+{
+v2f_cubemap BlockData;
+} ioblock;
+void main()
+{
+vec3input IN;
+IN.position=position;
+//#line 1406 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f_cubemap OUT;
+OUT.hPosition=mul(debugWorldViewProj,vec4(IN.position.xyz,1.0));
+OUT.wDirection=normalize(IN.position.xyz);
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawCubemapSphere_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f_cubemap
+{
+	vec4 hPosition;
+	vec3 wDirection;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+v2f_cubemap BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1414 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f_cubemap OUT;
+uint vertex_id=IN.vertex_id;
+uint latitude_strip=vertex_id/(longitudes+1)/2;
+vertex_id-=latitude_strip*(longitudes+1)*2;
+uint longitude=vertex_id/2;
+vertex_id-=longitude*2;
+float azimuth=2.0*3.1415926536*float(longitude)/float(longitudes);
+float elevation=.99*(float(latitude_strip+vertex_id)/float(latitudes+1)-0.5)*3.1415926536;
+elevation*=-1;
+float cos_el=cos(elevation);
+vec3 pos=radius*vec3(sin(azimuth)*cos_el,cos(azimuth)*cos_el,sin(elevation));
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+OUT.hPosition.y*=-1;
+OUT.wDirection=normalize(pos.xyz);
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawCubemapSphere_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f_cubemap
+{
+	vec4 hPosition;
+	vec3 wDirection;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+v2f_cubemap BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1414 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f_cubemap OUT;
+uint vertex_id=IN.vertex_id;
+uint latitude_strip=vertex_id/(longitudes+1)/2;
+vertex_id-=latitude_strip*(longitudes+1)*2;
+uint longitude=vertex_id/2;
+vertex_id-=longitude*2;
+float azimuth=2.0*3.1415926536*float(longitude)/float(longitudes);
+float elevation=.99*(float(latitude_strip+vertex_id)/float(latitudes+1)-0.5)*3.1415926536;
+elevation*=-1;
+float cos_el=cos(elevation);
+vec3 pos=radius*vec3(sin(azimuth)*cos_el,cos(azimuth)*cos_el,sin(elevation));
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+OUT.hPosition.y*=-1;
+OUT.wDirection=normalize(pos.xyz);
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawFilledCircleOnSphere_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+//#line 46 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+//#line 50 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+//#line 54 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+//#line 58 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+//#line 62 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+//#line 66 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+//#line 70 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+//#line 74 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+//#line 1057 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_conj(vec4 q)
+{
+return vec4(-q.x,-q.y,-q.z,q.w);
+}
+//#line 1074 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_mult(vec4 q1, vec4 q2)
+{
+vec4 qr;
+qr.w=(q1.w*q2.w)-(q1.x*q2.x)-(q1.y*q2.y)-(q1.z*q2.z);
+qr.x=(q1.w*q2.x)+(q1.x*q2.w)+(q1.y*q2.z)-(q1.z*q2.y);
+qr.y=(q1.w*q2.y)-(q1.x*q2.z)+(q1.y*q2.w)+(q1.z*q2.x);
+qr.z=(q1.w*q2.z)+(q1.x*q2.y)-(q1.y*q2.x)+(q1.z*q2.w);
+return qr;
+}
+//#line 1084 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_vec(vec4 q, vec3 v)
+{
+vec4 qr;
+qr.w=-(q.x*v.x)-(q.y*v.y)-(q.z*v.z);
+qr.x=(q.w*v.x)+(q.y*v.z)-(q.z*v.y);
+qr.y=(q.w*v.y)+(q.z*v.x)-(q.x*v.z);
+qr.z=(q.w*v.z)+(q.x*v.y)-(q.y*v.x);
+return qr;
+}
+//#line 1094 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 rotate_by_quaternion(vec4 quat, vec3 position)
+{
+vec4 qr_conj=quat_conj(quat);
+vec4 q_tmp=quat_vec(quat,position);
+vec4 qr=quat_mult(q_tmp,qr_conj);
+return qr.xyz;
+}
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1571 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+float angle=float(IN.vertex_id/2)/31.0*3.1415926536*2.0;
+float mult=float(typed_mod(IN.vertex_id,2));
+vec3 pos=vec3(mult*sideview*cos(angle),mult*sideview*sin(angle),1.0);
+pos=normalize(pos);
+OUT.colour=multiplier;
+pos=radius*rotate_by_quaternion(quaternion,pos);
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawFilledCircleOnSphere_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+//#line 46 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+//#line 50 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+//#line 54 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+//#line 58 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+//#line 62 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+//#line 66 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+//#line 70 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+//#line 74 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+//#line 1057 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_conj(vec4 q)
+{
+return vec4(-q.x,-q.y,-q.z,q.w);
+}
+//#line 1074 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_mult(vec4 q1, vec4 q2)
+{
+vec4 qr;
+qr.w=(q1.w*q2.w)-(q1.x*q2.x)-(q1.y*q2.y)-(q1.z*q2.z);
+qr.x=(q1.w*q2.x)+(q1.x*q2.w)+(q1.y*q2.z)-(q1.z*q2.y);
+qr.y=(q1.w*q2.y)-(q1.x*q2.z)+(q1.y*q2.w)+(q1.z*q2.x);
+qr.z=(q1.w*q2.z)+(q1.x*q2.y)-(q1.y*q2.x)+(q1.z*q2.w);
+return qr;
+}
+//#line 1084 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_vec(vec4 q, vec3 v)
+{
+vec4 qr;
+qr.w=-(q.x*v.x)-(q.y*v.y)-(q.z*v.z);
+qr.x=(q.w*v.x)+(q.y*v.z)-(q.z*v.y);
+qr.y=(q.w*v.y)+(q.z*v.x)-(q.x*v.z);
+qr.z=(q.w*v.z)+(q.x*v.y)-(q.y*v.x);
+return qr;
+}
+//#line 1094 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 rotate_by_quaternion(vec4 quat, vec3 position)
+{
+vec4 qr_conj=quat_conj(quat);
+vec4 q_tmp=quat_vec(quat,position);
+vec4 qr=quat_mult(q_tmp,qr_conj);
+return qr.xyz;
+}
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1571 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+float angle=float(IN.vertex_id/2)/31.0*3.1415926536*2.0;
+float mult=float(typed_mod(IN.vertex_id,2));
+vec3 pos=vec3(mult*sideview*cos(angle),mult*sideview*sin(angle),1.0);
+pos=normalize(pos);
+OUT.colour=multiplier;
+pos=radius*rotate_by_quaternion(quaternion,pos);
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawFilledQuadOnSphere_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+//#line 46 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+//#line 50 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+//#line 54 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+//#line 58 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+//#line 62 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+//#line 66 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+//#line 70 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+//#line 74 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+//#line 1057 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_conj(vec4 q)
+{
+return vec4(-q.x,-q.y,-q.z,q.w);
+}
+//#line 1074 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_mult(vec4 q1, vec4 q2)
+{
+vec4 qr;
+qr.w=(q1.w*q2.w)-(q1.x*q2.x)-(q1.y*q2.y)-(q1.z*q2.z);
+qr.x=(q1.w*q2.x)+(q1.x*q2.w)+(q1.y*q2.z)-(q1.z*q2.y);
+qr.y=(q1.w*q2.y)-(q1.x*q2.z)+(q1.y*q2.w)+(q1.z*q2.x);
+qr.z=(q1.w*q2.z)+(q1.x*q2.y)-(q1.y*q2.x)+(q1.z*q2.w);
+return qr;
+}
+//#line 1084 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_vec(vec4 q, vec3 v)
+{
+vec4 qr;
+qr.w=-(q.x*v.x)-(q.y*v.y)-(q.z*v.z);
+qr.x=(q.w*v.x)+(q.y*v.z)-(q.z*v.y);
+qr.y=(q.w*v.y)+(q.z*v.x)-(q.x*v.z);
+qr.z=(q.w*v.z)+(q.x*v.y)-(q.y*v.x);
+return qr;
+}
+//#line 1094 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 rotate_by_quaternion(vec4 quat, vec3 position)
+{
+vec4 qr_conj=quat_conj(quat);
+vec4 q_tmp=quat_vec(quat,position);
+vec4 qr=quat_mult(q_tmp,qr_conj);
+return qr.xyz;
+}
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1536 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+vec3 poss[4];
+poss[1]=vec3(1.0,-1.0,1.0);
+poss[0]=vec3(1.0,1.0,1.0);
+poss[2]=vec3(-1.0,1.0,1.0);
+poss[3]=vec3(-1.0,-1.0,1.0);
+vec3 pos;
+uint vert=(IN.vertex_id);
+pos=poss[typed_mod(vert,4)];
+pos.xy*=sideview;
+pos.z=1.0;
+pos=normalize(pos);
+OUT.colour=multiplier;
+pos=radius*rotate_by_quaternion(quaternion,pos);
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawFilledQuadOnSphere_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+//#line 46 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+//#line 50 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+//#line 54 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+//#line 58 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+//#line 62 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+//#line 66 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+//#line 70 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+//#line 74 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+//#line 1057 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_conj(vec4 q)
+{
+return vec4(-q.x,-q.y,-q.z,q.w);
+}
+//#line 1074 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_mult(vec4 q1, vec4 q2)
+{
+vec4 qr;
+qr.w=(q1.w*q2.w)-(q1.x*q2.x)-(q1.y*q2.y)-(q1.z*q2.z);
+qr.x=(q1.w*q2.x)+(q1.x*q2.w)+(q1.y*q2.z)-(q1.z*q2.y);
+qr.y=(q1.w*q2.y)-(q1.x*q2.z)+(q1.y*q2.w)+(q1.z*q2.x);
+qr.z=(q1.w*q2.z)+(q1.x*q2.y)-(q1.y*q2.x)+(q1.z*q2.w);
+return qr;
+}
+//#line 1084 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_vec(vec4 q, vec3 v)
+{
+vec4 qr;
+qr.w=-(q.x*v.x)-(q.y*v.y)-(q.z*v.z);
+qr.x=(q.w*v.x)+(q.y*v.z)-(q.z*v.y);
+qr.y=(q.w*v.y)+(q.z*v.x)-(q.x*v.z);
+qr.z=(q.w*v.z)+(q.x*v.y)-(q.y*v.x);
+return qr;
+}
+//#line 1094 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 rotate_by_quaternion(vec4 quat, vec3 position)
+{
+vec4 qr_conj=quat_conj(quat);
+vec4 q_tmp=quat_vec(quat,position);
+vec4 qr=quat_mult(q_tmp,qr_conj);
+return qr.xyz;
+}
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1536 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+vec3 poss[4];
+poss[1]=vec3(1.0,-1.0,1.0);
+poss[0]=vec3(1.0,1.0,1.0);
+poss[2]=vec3(-1.0,1.0,1.0);
+poss[3]=vec3(-1.0,-1.0,1.0);
+vec3 pos;
+uint vert=(IN.vertex_id);
+pos=poss[typed_mod(vert,4)];
+pos.xy*=sideview;
+pos.z=1.0;
+pos=normalize(pos);
+OUT.colour=multiplier;
+pos=radius*rotate_by_quaternion(quaternion,pos);
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawLatLongSphere_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1445 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+uint vertex_id=IN.vertex_id;
+vec3 pos;
+if(vertex_id<(latitudes+1)*(longitudes+1))
+{
+uint latitude_strip=vertex_id/(longitudes+1);
+vertex_id-=latitude_strip*(longitudes+1);
+uint longitude=vertex_id;
+float azimuth=2.0*3.1415926536*float(longitude)/float(longitudes);
+float elevation=.999*(float(latitude_strip)/float(latitudes)-0.5)*3.1415926536;
+float cos_el=cos(elevation);
+pos=radius*vec3(sin(azimuth)*cos_el,-cos(azimuth)*cos_el,sin(elevation));
+float b=latitude_strip==latitudes/2?1.0:0.2;
+OUT.colour=multiplier*vec4(1.0,1.0,1.0,longitude>0&&longitude<(longitudes)?b:0.0);
+}
+else
+
+{
+vertex_id-=(latitudes+1)*(longitudes+1);
+uint longitude_strip=vertex_id/(latitudes+1);
+uint latitude=uint(vertex_id-longitude_strip*(latitudes+1));
+float azimuth=2.0*3.1415926536*float(longitude_strip)/float(longitudes);
+float elevation=.999*(float(latitude)/float(latitudes)-0.5)*3.1415926536;
+float cos_el=cos(elevation);
+pos=radius*vec3(sin(azimuth)*cos_el,-cos(azimuth)*cos_el,sin(elevation));
+float b=longitude_strip==0?1.0:0.2;
+OUT.colour=multiplier*vec4(1.0,1.0,1.0,latitude>0&&latitude<latitudes?b:0.0);
+}
+
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+vec4 temp=mul(debugWorldViewProj,vec4(2.0*pos.xyz,1.0));
+float tz=temp.z/temp.w;
+float z=OUT.hPosition.z/OUT.hPosition.w;
+if(tz<z)OUT.colour.a*=0;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawLatLongSphere_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1445 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+uint vertex_id=IN.vertex_id;
+vec3 pos;
+if(vertex_id<(latitudes+1)*(longitudes+1))
+{
+uint latitude_strip=vertex_id/(longitudes+1);
+vertex_id-=latitude_strip*(longitudes+1);
+uint longitude=vertex_id;
+float azimuth=2.0*3.1415926536*float(longitude)/float(longitudes);
+float elevation=.999*(float(latitude_strip)/float(latitudes)-0.5)*3.1415926536;
+float cos_el=cos(elevation);
+pos=radius*vec3(sin(azimuth)*cos_el,-cos(azimuth)*cos_el,sin(elevation));
+float b=latitude_strip==latitudes/2?1.0:0.2;
+OUT.colour=multiplier*vec4(1.0,1.0,1.0,longitude>0&&longitude<(longitudes)?b:0.0);
+}
+else
+
+{
+vertex_id-=(latitudes+1)*(longitudes+1);
+uint longitude_strip=vertex_id/(latitudes+1);
+uint latitude=uint(vertex_id-longitude_strip*(latitudes+1));
+float azimuth=2.0*3.1415926536*float(longitude_strip)/float(longitudes);
+float elevation=.999*(float(latitude)/float(latitudes)-0.5)*3.1415926536;
+float cos_el=cos(elevation);
+pos=radius*vec3(sin(azimuth)*cos_el,-cos(azimuth)*cos_el,sin(elevation));
+float b=longitude_strip==0?1.0:0.2;
+OUT.colour=multiplier*vec4(1.0,1.0,1.0,latitude>0&&latitude<latitudes?b:0.0);
+}
+
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+vec4 temp=mul(debugWorldViewProj,vec4(2.0*pos.xyz,1.0));
+float tz=temp.z/temp.w;
+float z=OUT.hPosition.z/OUT.hPosition.w;
+if(tz<z)OUT.colour.a*=0;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawQuadOnSphere_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+//#line 46 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+//#line 50 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+//#line 54 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+//#line 58 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+//#line 62 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+//#line 66 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+//#line 70 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+//#line 74 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+//#line 1057 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_conj(vec4 q)
+{
+return vec4(-q.x,-q.y,-q.z,q.w);
+}
+//#line 1074 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_mult(vec4 q1, vec4 q2)
+{
+vec4 qr;
+qr.w=(q1.w*q2.w)-(q1.x*q2.x)-(q1.y*q2.y)-(q1.z*q2.z);
+qr.x=(q1.w*q2.x)+(q1.x*q2.w)+(q1.y*q2.z)-(q1.z*q2.y);
+qr.y=(q1.w*q2.y)-(q1.x*q2.z)+(q1.y*q2.w)+(q1.z*q2.x);
+qr.z=(q1.w*q2.z)+(q1.x*q2.y)-(q1.y*q2.x)+(q1.z*q2.w);
+return qr;
+}
+//#line 1084 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_vec(vec4 q, vec3 v)
+{
+vec4 qr;
+qr.w=-(q.x*v.x)-(q.y*v.y)-(q.z*v.z);
+qr.x=(q.w*v.x)+(q.y*v.z)-(q.z*v.y);
+qr.y=(q.w*v.y)+(q.z*v.x)-(q.x*v.z);
+qr.z=(q.w*v.z)+(q.x*v.y)-(q.y*v.x);
+return qr;
+}
+//#line 1094 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 rotate_by_quaternion(vec4 quat, vec3 position)
+{
+vec4 qr_conj=quat_conj(quat);
+vec4 q_tmp=quat_vec(quat,position);
+vec4 qr=quat_mult(q_tmp,qr_conj);
+return qr.xyz;
+}
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1486 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+vec3 poss[4];
+poss[0]=vec3(1.0,-1.0,1.0);
+poss[1]=vec3(1.0,1.0,1.0);
+poss[2]=vec3(-1.0,1.0,1.0);
+poss[3]=vec3(-1.0,-1.0,1.0);
+vec3 pos;
+if(IN.vertex_id<8)
+{
+uint vert=(IN.vertex_id+1)/2;
+pos=poss[typed_mod(vert,4)];
+pos.xy*=sideview;
+pos.z=1.0;
+pos=normalize(pos);
+OUT.colour=debugColour;
+}
+else
+
+{
+uint vert=IN.vertex_id-8;
+int axis=int(vert/3);
+vec3 ax=vec3(axis==0,axis==1,axis==2);
+pos=vec3(0,0,1.0);
+if(bool(typed_mod(vert,2)))pos+=ax*sideview;
+vec4 finalCol=vec4(0.0,0.0,0.0,1.0);
+if(axis==0)
+{
+finalCol.xyz+=vec3(0.5,0.0,0.0);
+}
+
+if(axis==1)
+{
+finalCol.xyz+=0.75*vec3(0.0,0.5,0.0);
+}
+
+if(axis==2)
+{
+finalCol.xyz+=vec3(0.0,0.0,0.5);
+}
+
+OUT.colour=finalCol;
+}
+
+pos=radius*rotate_by_quaternion(quaternion,pos);
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawQuadOnSphere_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+//#line 46 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+//#line 50 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+//#line 54 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+//#line 58 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+//#line 62 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+//#line 66 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+//#line 70 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+//#line 74 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+//#line 1057 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_conj(vec4 q)
+{
+return vec4(-q.x,-q.y,-q.z,q.w);
+}
+//#line 1074 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_mult(vec4 q1, vec4 q2)
+{
+vec4 qr;
+qr.w=(q1.w*q2.w)-(q1.x*q2.x)-(q1.y*q2.y)-(q1.z*q2.z);
+qr.x=(q1.w*q2.x)+(q1.x*q2.w)+(q1.y*q2.z)-(q1.z*q2.y);
+qr.y=(q1.w*q2.y)-(q1.x*q2.z)+(q1.y*q2.w)+(q1.z*q2.x);
+qr.z=(q1.w*q2.z)+(q1.x*q2.y)-(q1.y*q2.x)+(q1.z*q2.w);
+return qr;
+}
+//#line 1084 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_vec(vec4 q, vec3 v)
+{
+vec4 qr;
+qr.w=-(q.x*v.x)-(q.y*v.y)-(q.z*v.z);
+qr.x=(q.w*v.x)+(q.y*v.z)-(q.z*v.y);
+qr.y=(q.w*v.y)+(q.z*v.x)-(q.x*v.z);
+qr.z=(q.w*v.z)+(q.x*v.y)-(q.y*v.x);
+return qr;
+}
+//#line 1094 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 rotate_by_quaternion(vec4 quat, vec3 position)
+{
+vec4 qr_conj=quat_conj(quat);
+vec4 q_tmp=quat_vec(quat,position);
+vec4 qr=quat_mult(q_tmp,qr_conj);
+return qr.xyz;
+}
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1486 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+vec3 poss[4];
+poss[0]=vec3(1.0,-1.0,1.0);
+poss[1]=vec3(1.0,1.0,1.0);
+poss[2]=vec3(-1.0,1.0,1.0);
+poss[3]=vec3(-1.0,-1.0,1.0);
+vec3 pos;
+if(IN.vertex_id<8)
+{
+uint vert=(IN.vertex_id+1)/2;
+pos=poss[typed_mod(vert,4)];
+pos.xy*=sideview;
+pos.z=1.0;
+pos=normalize(pos);
+OUT.colour=debugColour;
+}
+else
+
+{
+uint vert=IN.vertex_id-8;
+int axis=int(vert/3);
+vec3 ax=vec3(axis==0,axis==1,axis==2);
+pos=vec3(0,0,1.0);
+if(bool(typed_mod(vert,2)))pos+=ax*sideview;
+vec4 finalCol=vec4(0.0,0.0,0.0,1.0);
+if(axis==0)
+{
+finalCol.xyz+=vec3(0.5,0.0,0.0);
+}
+
+if(axis==1)
+{
+finalCol.xyz+=0.75*vec3(0.0,0.5,0.0);
+}
+
+if(axis==2)
+{
+finalCol.xyz+=vec3(0.0,0.0,0.5);
+}
+
+OUT.colour=finalCol;
+}
+
+pos=radius*rotate_by_quaternion(quaternion,pos);
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawTextureOnSphere_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+//#line 46 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+//#line 50 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+//#line 54 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+//#line 58 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+//#line 62 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+//#line 66 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+//#line 70 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+//#line 74 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+//#line 1057 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_conj(vec4 q)
+{
+return vec4(-q.x,-q.y,-q.z,q.w);
+}
+//#line 1074 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_mult(vec4 q1, vec4 q2)
+{
+vec4 qr;
+qr.w=(q1.w*q2.w)-(q1.x*q2.x)-(q1.y*q2.y)-(q1.z*q2.z);
+qr.x=(q1.w*q2.x)+(q1.x*q2.w)+(q1.y*q2.z)-(q1.z*q2.y);
+qr.y=(q1.w*q2.y)-(q1.x*q2.z)+(q1.y*q2.w)+(q1.z*q2.x);
+qr.z=(q1.w*q2.z)+(q1.x*q2.y)-(q1.y*q2.x)+(q1.z*q2.w);
+return qr;
+}
+//#line 1084 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_vec(vec4 q, vec3 v)
+{
+vec4 qr;
+qr.w=-(q.x*v.x)-(q.y*v.y)-(q.z*v.z);
+qr.x=(q.w*v.x)+(q.y*v.z)-(q.z*v.y);
+qr.y=(q.w*v.y)+(q.z*v.x)-(q.x*v.z);
+qr.z=(q.w*v.z)+(q.x*v.y)-(q.y*v.x);
+return qr;
+}
+//#line 1094 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 rotate_by_quaternion(vec4 quat, vec3 position)
+{
+vec4 qr_conj=quat_conj(quat);
+vec4 q_tmp=quat_vec(quat,position);
+vec4 qr=quat_mult(q_tmp,qr_conj);
+return qr.xyz;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1587 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput OUT;
+vec3 poss[4];
+poss[0]=vec3(1.0,-1.0,1.0);
+poss[1]=vec3(1.0,1.0,1.0);
+poss[2]=vec3(-1.0,1.0,1.0);
+poss[3]=vec3(-1.0,-1.0,1.0);
+vec3 pos;
+uint vert=typed_mod(IN.vertex_id,4);
+
+{
+pos=poss[vert];
+OUT.texCoords=pos.xy*0.5+vec2(0.5,0.5);
+pos.xy*=sideview;
+pos.z=1.0;
+pos=normalize(pos);
+}
+
+pos=radius*rotate_by_quaternion(quaternion,pos);
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_DrawTextureOnSphere_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+//#line 46 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+//#line 50 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+//#line 54 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+//#line 58 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+//#line 62 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+//#line 66 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+//#line 70 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+//#line 74 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+//#line 1057 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_conj(vec4 q)
+{
+return vec4(-q.x,-q.y,-q.z,q.w);
+}
+//#line 1074 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_mult(vec4 q1, vec4 q2)
+{
+vec4 qr;
+qr.w=(q1.w*q2.w)-(q1.x*q2.x)-(q1.y*q2.y)-(q1.z*q2.z);
+qr.x=(q1.w*q2.x)+(q1.x*q2.w)+(q1.y*q2.z)-(q1.z*q2.y);
+qr.y=(q1.w*q2.y)-(q1.x*q2.z)+(q1.y*q2.w)+(q1.z*q2.x);
+qr.z=(q1.w*q2.z)+(q1.x*q2.y)-(q1.y*q2.x)+(q1.z*q2.w);
+return qr;
+}
+//#line 1084 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 quat_vec(vec4 q, vec3 v)
+{
+vec4 qr;
+qr.w=-(q.x*v.x)-(q.y*v.y)-(q.z*v.z);
+qr.x=(q.w*v.x)+(q.y*v.z)-(q.z*v.y);
+qr.y=(q.w*v.y)+(q.z*v.x)-(q.x*v.z);
+qr.z=(q.w*v.z)+(q.x*v.y)-(q.y*v.x);
+return qr;
+}
+//#line 1094 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 rotate_by_quaternion(vec4 quat, vec3 position)
+{
+vec4 qr_conj=quat_conj(quat);
+vec4 q_tmp=quat_vec(quat,position);
+vec4 qr=quat_mult(q_tmp,qr_conj);
+return qr.xyz;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 1587 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput OUT;
+vec3 poss[4];
+poss[0]=vec3(1.0,-1.0,1.0);
+poss[1]=vec3(1.0,1.0,1.0);
+poss[2]=vec3(-1.0,1.0,1.0);
+poss[3]=vec3(-1.0,-1.0,1.0);
+vec3 pos;
+uint vert=typed_mod(IN.vertex_id,4);
+
+{
+pos=poss[vert];
+OUT.texCoords=pos.xy*0.5+vec2(0.5,0.5);
+pos.xy*=sideview;
+pos.z=1.0;
+pos=normalize(pos);
+}
+
+pos=radius*rotate_by_quaternion(quaternion,pos);
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_Quad_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+//#line 230 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput VS_ScreenQuad(idOnly IN, vec4 rect)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,0.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(0.0,0.0);
+poss[3]=vec2(0.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(rect.xy+rect.zw*pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=pos;
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly id;
+id.vertex_id=gl_VertexID;
+//#line 1278 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+{
+ioblock.BlockData=VS_ScreenQuad(id,rect);
+gl_Position=VS_ScreenQuad(id,rect).hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_Quad_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+//#line 230 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput VS_ScreenQuad(idOnly IN, vec4 rect)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,0.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(0.0,0.0);
+poss[3]=vec2(0.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(rect.xy+rect.zw*pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=pos;
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly id;
+id.vertex_id=gl_VertexID;
+//#line 1278 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+{
+ioblock.BlockData=VS_ScreenQuad(id,rect);
+gl_Position=VS_ScreenQuad(id,rect).hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_SimpleFullscreen_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_SimpleFullscreen_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_Vec3InputSignatureVS_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+struct vec3input
+{
+	vec3 position;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location=0) in vec3 position;
+
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+vec3input IN;
+IN.position=position;
+//#line 1799 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+OUT.hPosition=mul(debugWorldViewProj,vec4(IN.position.xyz,1.0));
+OUT.colour=vec4(1.0,1.0,1.0,1.0);
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_Vec3InputSignatureVS_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+struct vec3input
+{
+	vec3 position;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location=0) in vec3 position;
+
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+vec3input IN;
+IN.position=position;
+//#line 1799 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+OUT.hPosition=mul(debugWorldViewProj,vec4(IN.position.xyz,1.0));
+OUT.colour=vec4(1.0,1.0,1.0,1.0);
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_DebugPS.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+layout(location = 0) in Block
+{
+v2f BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+v2f BlockData=ioblock.BlockData;
+//#line 1322 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 c=BlockData.colour;
+{returnObject_vec4=c;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_DebugVS_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct positionColourVertexInput
+{
+	vec3 position;
+	vec4 colour;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location=0) in vec3 position;
+layout(location=1) in vec4 colour;
+
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+positionColourVertexInput IN;
+IN.position=position;
+IN.colour=colour;
+//#line 1283 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+vec3 pos=IN.position.xyz;
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+OUT.colour=IN.colour;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_DebugVS_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct positionColourVertexInput
+{
+	vec3 position;
+	vec4 colour;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+struct v2f
+{
+	vec4 hPosition;
+	vec4 colour;
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location=0) in vec3 position;
+layout(location=1) in vec4 colour;
+
+layout(location = 0) out Block
+{
+v2f BlockData;
+} ioblock;
+void main()
+{
+positionColourVertexInput IN;
+IN.position=position;
+IN.colour=colour;
+//#line 1283 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+v2f OUT;
+vec3 pos=IN.position.xyz;
+OUT.hPosition=mul(debugWorldViewProj,vec4(pos.xyz,1.0));
+OUT.colour=IN.colour;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_Quad_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+//#line 230 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput VS_ScreenQuad(idOnly IN, vec4 rect)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,0.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(0.0,0.0);
+poss[3]=vec2(0.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(rect.xy+rect.zw*pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=pos;
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly id;
+id.vertex_id=gl_VertexID;
+//#line 1278 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+{
+ioblock.BlockData=VS_ScreenQuad(id,rect);
+gl_Position=VS_ScreenQuad(id,rect).hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_Quad_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+//#line 230 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput VS_ScreenQuad(idOnly IN, vec4 rect)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,0.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(0.0,0.0);
+poss[3]=vec2(0.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(rect.xy+rect.zw*pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=pos;
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly id;
+id.vertex_id=gl_VertexID;
+//#line 1278 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+{
+ioblock.BlockData=VS_ScreenQuad(id,rect);
+gl_Position=VS_ScreenQuad(id,rect).hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_SimpleFullscreen_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/debug_VS_SimpleFullscreen_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/debug.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}

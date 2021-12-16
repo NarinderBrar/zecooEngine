@@ -1,0 +1,1743 @@
+#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_Debug2DVS_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+//#line 230 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput VS_ScreenQuad(idOnly IN, vec4 rect)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,0.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(0.0,0.0);
+poss[3]=vec2(0.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(rect.xy+rect.zw*pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=pos;
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly id;
+id.vertex_id=gl_VertexID;
+//#line 1489 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+{
+ioblock.BlockData=VS_ScreenQuad(id,rect);
+gl_Position=VS_ScreenQuad(id,rect).hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_Debug2DVS_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+//#line 230 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput VS_ScreenQuad(idOnly IN, vec4 rect)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,0.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(0.0,0.0);
+poss[3]=vec2(0.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(rect.xy+rect.zw*pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=pos;
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly id;
+id.vertex_id=gl_VertexID;
+//#line 1489 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+{
+ioblock.BlockData=VS_ScreenQuad(id,rect);
+gl_Position=VS_ScreenQuad(id,rect).hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_ExposureGammaPS.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 12) uniform HdrConstants
+{
+	mat4 worldToScatteringVolumeMatrix;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec2 offset;
+	float alpha;
+	float nearDist;
+	vec4 colour2;
+	vec4 tanHalfFov;
+	vec2 tanHalfFovUnused;
+	float exposure;
+	float gamma;
+	vec4 depthToLinFadeDistParams;
+	vec4 warpHmdWarpParam;
+	vec3 cubemapGroundColour;
+	float ccgcpad;
+	vec2 warpScreenCentre;
+	vec2 warpScale;
+	vec2 warpScaleIn;
+	vec2 padHdrConstants1;
+	uvec2 hiResDimsX;
+	uvec2 lowResDims;
+	uvec2 fullResDims;
+	int numSamples;
+	float maxFadeDistanceKm;
+	vec3 infraredIntegrationFactors;
+	int randomSeed;
+	vec3 viewPos;
+	float fogExtinction;
+	vec3 fogColour;
+	float fogCeilingKm;
+	vec3 fogAmbient;
+	float anotherFloatXXX;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1507 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 c=texture(sampler2D(imageTexture[1 + 11]),BlockData.texCoords);
+c.rgb*=exposure;
+c.rgb=pow(c.rgb,vec3(gamma,gamma,gamma));
+vec4 u=vec4(c.rgb,1.0);
+{returnObject_vec4=u;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_ExposureGammaPS_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 12) uniform HdrConstants
+{
+	mat4 worldToScatteringVolumeMatrix;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec2 offset;
+	float alpha;
+	float nearDist;
+	vec4 colour2;
+	vec4 tanHalfFov;
+	vec2 tanHalfFovUnused;
+	float exposure;
+	float gamma;
+	vec4 depthToLinFadeDistParams;
+	vec4 warpHmdWarpParam;
+	vec3 cubemapGroundColour;
+	float ccgcpad;
+	vec2 warpScreenCentre;
+	vec2 warpScale;
+	vec2 warpScaleIn;
+	vec2 padHdrConstants1;
+	uvec2 hiResDimsX;
+	uvec2 lowResDims;
+	uvec2 fullResDims;
+	int numSamples;
+	float maxFadeDistanceKm;
+	vec3 infraredIntegrationFactors;
+	int randomSeed;
+	vec3 viewPos;
+	float fogExtinction;
+	vec3 fogColour;
+	float fogCeilingKm;
+	vec3 fogAmbient;
+	float anotherFloatXXX;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTextureMS[24];
+};
+//#line 1385 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 texture_resolve(uint64_t textureMS[24], vec2 texCoords)
+{
+uvec2 dims;
+uint numberOfSamples;
+ivec2 ivtextureMS = textureSize(sampler2DMS(textureMS[0]));
+dims.x = ivtextureMS.x;dims.y = ivtextureMS.y;;
+ivec2 pos=ivec2(vec2(dims)*texCoords);
+vec4 d=vec4(0,0,0,0);
+for(uint k=0;k<numberOfSamples;k++)
+{
+d+=texelFetch(sampler2DMS(textureMS[0]),ivec2(pos),int(k));
+}
+
+d/=float(numberOfSamples);
+return d;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1517 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 c=texture_resolve(imageTextureMS,BlockData.texCoords);
+c.rgb*=exposure;
+c.rgb=pow(c.rgb,vec3(gamma,gamma,gamma));
+vec4 u=vec4(c.rgb,1.0);
+{returnObject_vec4=u;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_GlowExposureGammaPS.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 12) uniform HdrConstants
+{
+	mat4 worldToScatteringVolumeMatrix;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec2 offset;
+	float alpha;
+	float nearDist;
+	vec4 colour2;
+	vec4 tanHalfFov;
+	vec2 tanHalfFovUnused;
+	float exposure;
+	float gamma;
+	vec4 depthToLinFadeDistParams;
+	vec4 warpHmdWarpParam;
+	vec3 cubemapGroundColour;
+	float ccgcpad;
+	vec2 warpScreenCentre;
+	vec2 warpScale;
+	vec2 warpScaleIn;
+	vec2 padHdrConstants1;
+	uvec2 hiResDimsX;
+	uvec2 lowResDims;
+	uvec2 fullResDims;
+	int numSamples;
+	float maxFadeDistanceKm;
+	vec3 infraredIntegrationFactors;
+	int randomSeed;
+	vec3 viewPos;
+	float fogExtinction;
+	vec3 fogColour;
+	float fogCeilingKm;
+	vec3 fogAmbient;
+	float anotherFloatXXX;
+};
+
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTexture[24];
+	uint64_t glowTexture[24];
+};
+//#line 958 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 convertInt(uint64_t glowTexture[24], uvec2 location)
+{
+uint int_color=uint(texelFetch(usampler2D(glowTexture[0]),ivec2(ivec3(ivec2(location),0)).xy,int(ivec3(ivec2(location),0).y)).x);
+vec4 color;
+color.r=float(int_color>>uint(21))/2047.0f;
+color.g=float((int_color>>uint(10))&uint(0x7ff))/2047.0f;
+color.b=float(int_color&uint(0x0003ff))/1023.0f;
+color.a=1;
+color.rgb*=10.0;
+return color;
+}
+//#line 972 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 texture_int(uint64_t glowTexture[24], vec2 texCoord)
+{
+uvec2 tex_dim;
+ivec2 ivglowTexture = textureSize(usampler2D(glowTexture[0]),0);
+tex_dim.x = ivglowTexture.x;tex_dim.y = ivglowTexture.y;;
+vec2 pos1=vec2(tex_dim.x*texCoord.x-0.5,tex_dim.y*texCoord.y-0.5);
+vec2 pos2=vec2(tex_dim.x*texCoord.x+0.5,tex_dim.y*texCoord.y+0.5);
+uvec2 location1=uvec2(pos1);
+uvec2 location2=uvec2(pos2);
+vec2 l=vec2(tex_dim.x*texCoord.x,tex_dim.y*texCoord.y)-vec2(location1);
+vec4 tex00=convertInt(glowTexture,location1);
+vec4 tex10=convertInt(glowTexture,uvec2(location2.x,location1.y));
+vec4 tex11=convertInt(glowTexture,location2);
+vec4 tex01=convertInt(glowTexture,uvec2(location1.x,location2.y));
+vec4 tex0=mix(tex00,tex10,l.x);
+vec4 tex1=mix(tex01,tex11,l.x);
+vec4 tex=mix(tex0,tex1,l.y);
+return tex;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1443 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 c=textureLod(sampler2D(imageTexture[1 + 11]),BlockData.texCoords,0);
+vec4 glow=texture_int(glowTexture,BlockData.texCoords);
+c.rgb+=glow.rgb;
+c.rgb*=exposure;
+c.rgb=pow(c.rgb,vec3(gamma,gamma,gamma));
+vec4 u=vec4(c.rgb,1.0);
+{returnObject_vec4=u;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_GlowExposureGammaPS_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 12) uniform HdrConstants
+{
+	mat4 worldToScatteringVolumeMatrix;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec2 offset;
+	float alpha;
+	float nearDist;
+	vec4 colour2;
+	vec4 tanHalfFov;
+	vec2 tanHalfFovUnused;
+	float exposure;
+	float gamma;
+	vec4 depthToLinFadeDistParams;
+	vec4 warpHmdWarpParam;
+	vec3 cubemapGroundColour;
+	float ccgcpad;
+	vec2 warpScreenCentre;
+	vec2 warpScale;
+	vec2 warpScaleIn;
+	vec2 padHdrConstants1;
+	uvec2 hiResDimsX;
+	uvec2 lowResDims;
+	uvec2 fullResDims;
+	int numSamples;
+	float maxFadeDistanceKm;
+	vec3 infraredIntegrationFactors;
+	int randomSeed;
+	vec3 viewPos;
+	float fogExtinction;
+	vec3 fogColour;
+	float fogCeilingKm;
+	vec3 fogAmbient;
+	float anotherFloatXXX;
+};
+
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTextureMS[24];
+	uint64_t glowTexture[24];
+};
+//#line 958 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 convertInt(uint64_t glowTexture[24], uvec2 location)
+{
+uint int_color=uint(texelFetch(usampler2D(glowTexture[0]),ivec2(ivec3(ivec2(location),0)).xy,int(ivec3(ivec2(location),0).y)).x);
+vec4 color;
+color.r=float(int_color>>uint(21))/2047.0f;
+color.g=float((int_color>>uint(10))&uint(0x7ff))/2047.0f;
+color.b=float(int_color&uint(0x0003ff))/1023.0f;
+color.a=1;
+color.rgb*=10.0;
+return color;
+}
+//#line 972 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 texture_int(uint64_t glowTexture[24], vec2 texCoord)
+{
+uvec2 tex_dim;
+ivec2 ivglowTexture = textureSize(usampler2D(glowTexture[0]),0);
+tex_dim.x = ivglowTexture.x;tex_dim.y = ivglowTexture.y;;
+vec2 pos1=vec2(tex_dim.x*texCoord.x-0.5,tex_dim.y*texCoord.y-0.5);
+vec2 pos2=vec2(tex_dim.x*texCoord.x+0.5,tex_dim.y*texCoord.y+0.5);
+uvec2 location1=uvec2(pos1);
+uvec2 location2=uvec2(pos2);
+vec2 l=vec2(tex_dim.x*texCoord.x,tex_dim.y*texCoord.y)-vec2(location1);
+vec4 tex00=convertInt(glowTexture,location1);
+vec4 tex10=convertInt(glowTexture,uvec2(location2.x,location1.y));
+vec4 tex11=convertInt(glowTexture,location2);
+vec4 tex01=convertInt(glowTexture,uvec2(location1.x,location2.y));
+vec4 tex0=mix(tex00,tex10,l.x);
+vec4 tex1=mix(tex01,tex11,l.x);
+vec4 tex=mix(tex0,tex1,l.y);
+return tex;
+}
+//#line 1385 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 texture_resolve(uint64_t textureMS[24], vec2 texCoords)
+{
+uvec2 dims;
+uint numberOfSamples;
+ivec2 ivtextureMS = textureSize(sampler2DMS(textureMS[0]));
+dims.x = ivtextureMS.x;dims.y = ivtextureMS.y;;
+ivec2 pos=ivec2(vec2(dims)*texCoords);
+vec4 d=vec4(0,0,0,0);
+for(uint k=0;k<numberOfSamples;k++)
+{
+d+=texelFetch(sampler2DMS(textureMS[0]),ivec2(pos),int(k));
+}
+
+d/=float(numberOfSamples);
+return d;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1454 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 c=texture_resolve(imageTextureMS,BlockData.texCoords);
+vec4 glow=texture_int(glowTexture,BlockData.texCoords);
+c.rgb+=glow.rgb;
+c.rgb*=exposure;
+c.rgb=pow(c.rgb,vec3(gamma,gamma,gamma));
+vec4 u=vec4(c.rgb,1.0);
+{returnObject_vec4=u;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_GlowPS.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 12) uniform HdrConstants
+{
+	mat4 worldToScatteringVolumeMatrix;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec2 offset;
+	float alpha;
+	float nearDist;
+	vec4 colour2;
+	vec4 tanHalfFov;
+	vec2 tanHalfFovUnused;
+	float exposure;
+	float gamma;
+	vec4 depthToLinFadeDistParams;
+	vec4 warpHmdWarpParam;
+	vec3 cubemapGroundColour;
+	float ccgcpad;
+	vec2 warpScreenCentre;
+	vec2 warpScale;
+	vec2 warpScaleIn;
+	vec2 padHdrConstants1;
+	uvec2 hiResDimsX;
+	uvec2 lowResDims;
+	uvec2 fullResDims;
+	int numSamples;
+	float maxFadeDistanceKm;
+	vec3 infraredIntegrationFactors;
+	int randomSeed;
+	vec3 viewPos;
+	float fogExtinction;
+	vec3 fogColour;
+	float fogCeilingKm;
+	vec3 fogAmbient;
+	float anotherFloatXXX;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1558 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 c=vec4(0,0,0,0);
+c+=texture(sampler2D(imageTexture[1 + 9]),BlockData.texCoords+offset/2.0);
+c+=texture(sampler2D(imageTexture[1 + 9]),BlockData.texCoords-offset/2.0);
+vec2 offset2=offset;
+offset2.x=offset.x*-1.0;
+c+=texture(sampler2D(imageTexture[1 + 9]),BlockData.texCoords+offset2/2.0);
+c+=texture(sampler2D(imageTexture[1 + 9]),BlockData.texCoords-offset2/2.0);
+c=c*exposure/4.0;
+c-=1.0*vec4(1.0,1.0,1.0,1.0);
+c=clamp(c,vec4(0.0,0.0,0.0,0.0),vec4(10.0,10.0,10.0,10.0));
+{returnObject_vec4=c;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_PS_Blur.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 12) uniform HdrConstants
+{
+	mat4 worldToScatteringVolumeMatrix;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec2 offset;
+	float alpha;
+	float nearDist;
+	vec4 colour2;
+	vec4 tanHalfFov;
+	vec2 tanHalfFovUnused;
+	float exposure;
+	float gamma;
+	vec4 depthToLinFadeDistParams;
+	vec4 warpHmdWarpParam;
+	vec3 cubemapGroundColour;
+	float ccgcpad;
+	vec2 warpScreenCentre;
+	vec2 warpScale;
+	vec2 warpScaleIn;
+	vec2 padHdrConstants1;
+	uvec2 hiResDimsX;
+	uvec2 lowResDims;
+	uvec2 fullResDims;
+	int numSamples;
+	float maxFadeDistanceKm;
+	vec3 infraredIntegrationFactors;
+	int randomSeed;
+	vec3 viewPos;
+	float fogExtinction;
+	vec3 fogColour;
+	float fogCeilingKm;
+	vec3 fogAmbient;
+	float anotherFloatXXX;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTexture[24];
+};
+//#line 1090 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+float rand(float c)
+{
+return fract(sin(dot(vec2(c,11.1*c),vec2(12.9898,78.233)))*43758.5453);
+}
+//#line 1095 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+float rand(vec2 co)
+{
+return fract(sin(dot(co.xy,vec2(12.9898,78.233)))*43758.5453);
+}
+//#line 1573 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+float safelog(float x)
+{
+if(x<0.001)x=0.001;
+return log(x);
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1581 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+float r1=rand(BlockData.texCoords.xy+vec2(11.19*randomSeed,2.3*randomSeed));
+float r2=rand(vec2(1.0,0.5)+13.09*BlockData.texCoords.xy-vec2(5.1*randomSeed,3.9*randomSeed));
+float rad=sqrt(-2.0*safelog(r1));
+float angle=2.0*3.1415926536*r2;
+vec2 sampleOffset=offset*rad*vec2(cos(angle),sin(angle));
+vec4 c=textureLod(sampler2D(imageTexture[1 + 9]),BlockData.texCoords+sampleOffset,0);
+{returnObject_vec4=vec4(c.rgb,alpha);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_PS_CubemapToScreenspace.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 12) uniform HdrConstants
+{
+	mat4 worldToScatteringVolumeMatrix;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec2 offset;
+	float alpha;
+	float nearDist;
+	vec4 colour2;
+	vec4 tanHalfFov;
+	vec2 tanHalfFovUnused;
+	float exposure;
+	float gamma;
+	vec4 depthToLinFadeDistParams;
+	vec4 warpHmdWarpParam;
+	vec3 cubemapGroundColour;
+	float ccgcpad;
+	vec2 warpScreenCentre;
+	vec2 warpScale;
+	vec2 warpScaleIn;
+	vec2 padHdrConstants1;
+	uvec2 hiResDimsX;
+	uvec2 lowResDims;
+	uvec2 fullResDims;
+	int numSamples;
+	float maxFadeDistanceKm;
+	vec3 infraredIntegrationFactors;
+	int randomSeed;
+	vec3 viewPos;
+	float fogExtinction;
+	vec3 fogColour;
+	float fogCeilingKm;
+	vec3 fogAmbient;
+	float anotherFloatXXX;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t nearFarTexture[24];
+};
+//#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+//#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+//#line 29 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+//#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+//#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+//#line 33 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1548 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*BlockData.texCoords.x;
+clip_pos.y-=2.0*BlockData.texCoords.y;
+vec3 view=mul(invViewProj,clip_pos).xyz;
+vec4 res=textureLod(samplerCube(nearFarTexture[1 + 4]),view,0);
+;
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_PS_InfraRed.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 12) uniform HdrConstants
+{
+	mat4 worldToScatteringVolumeMatrix;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec2 offset;
+	float alpha;
+	float nearDist;
+	vec4 colour2;
+	vec4 tanHalfFov;
+	vec2 tanHalfFovUnused;
+	float exposure;
+	float gamma;
+	vec4 depthToLinFadeDistParams;
+	vec4 warpHmdWarpParam;
+	vec3 cubemapGroundColour;
+	float ccgcpad;
+	vec2 warpScreenCentre;
+	vec2 warpScale;
+	vec2 warpScaleIn;
+	vec2 padHdrConstants1;
+	uvec2 hiResDimsX;
+	uvec2 lowResDims;
+	uvec2 fullResDims;
+	int numSamples;
+	float maxFadeDistanceKm;
+	vec3 infraredIntegrationFactors;
+	int randomSeed;
+	vec3 viewPos;
+	float fogExtinction;
+	vec3 fogColour;
+	float fogCeilingKm;
+	vec3 fogAmbient;
+	float anotherFloatXXX;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1465 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 c=texture(sampler2D(imageTexture[1 + 9]),BlockData.texCoords);
+c.rgb*=infraredIntegrationFactors.xyz;
+float final_radiance=c.x+c.y+c.z;
+c=vec4(final_radiance,final_radiance,final_radiance,c.a);
+c.rgb*=exposure;
+c.rgb=pow(c.rgb,vec3(gamma,gamma,gamma));
+vec4 u=vec4(c.rgb,1.0);
+{returnObject_vec4=u;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_PS_InfraRed_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(std140, binding = 12) uniform HdrConstants
+{
+	mat4 worldToScatteringVolumeMatrix;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec2 offset;
+	float alpha;
+	float nearDist;
+	vec4 colour2;
+	vec4 tanHalfFov;
+	vec2 tanHalfFovUnused;
+	float exposure;
+	float gamma;
+	vec4 depthToLinFadeDistParams;
+	vec4 warpHmdWarpParam;
+	vec3 cubemapGroundColour;
+	float ccgcpad;
+	vec2 warpScreenCentre;
+	vec2 warpScale;
+	vec2 warpScaleIn;
+	vec2 padHdrConstants1;
+	uvec2 hiResDimsX;
+	uvec2 lowResDims;
+	uvec2 fullResDims;
+	int numSamples;
+	float maxFadeDistanceKm;
+	vec3 infraredIntegrationFactors;
+	int randomSeed;
+	vec3 viewPos;
+	float fogExtinction;
+	vec3 fogColour;
+	float fogCeilingKm;
+	vec3 fogAmbient;
+	float anotherFloatXXX;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t imageTextureMS[24];
+};
+//#line 1385 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 texture_resolve(uint64_t textureMS[24], vec2 texCoords)
+{
+uvec2 dims;
+uint numberOfSamples;
+ivec2 ivtextureMS = textureSize(sampler2DMS(textureMS[0]));
+dims.x = ivtextureMS.x;dims.y = ivtextureMS.y;;
+ivec2 pos=ivec2(vec2(dims)*texCoords);
+vec4 d=vec4(0,0,0,0);
+for(uint k=0;k<numberOfSamples;k++)
+{
+d+=texelFetch(sampler2DMS(textureMS[0]),ivec2(pos),int(k));
+}
+
+d/=float(numberOfSamples);
+return d;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1477 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 c=texture_resolve(imageTextureMS,BlockData.texCoords);
+c.rgb*=infraredIntegrationFactors.xyz;
+float final_radiance=c.x+c.y+c.z;
+c=vec4(final_radiance,final_radiance,final_radiance,c.a);
+c.rgb*=exposure;
+c.rgb=pow(c.rgb,vec3(gamma,gamma,gamma));
+vec4 u=vec4(c.rgb,1.0);
+{returnObject_vec4=u;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_ShowDepthPS_ForwardDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+layout(std140, binding = 12) uniform HdrConstants
+{
+	mat4 worldToScatteringVolumeMatrix;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec2 offset;
+	float alpha;
+	float nearDist;
+	vec4 colour2;
+	vec4 tanHalfFov;
+	vec2 tanHalfFovUnused;
+	float exposure;
+	float gamma;
+	vec4 depthToLinFadeDistParams;
+	vec4 warpHmdWarpParam;
+	vec3 cubemapGroundColour;
+	float ccgcpad;
+	vec2 warpScreenCentre;
+	vec2 warpScale;
+	vec2 warpScaleIn;
+	vec2 padHdrConstants1;
+	uvec2 hiResDimsX;
+	uvec2 lowResDims;
+	uvec2 fullResDims;
+	int numSamples;
+	float maxFadeDistanceKm;
+	vec3 infraredIntegrationFactors;
+	int randomSeed;
+	vec3 viewPos;
+	float fogExtinction;
+	vec3 fogColour;
+	float fogCeilingKm;
+	vec3 fogAmbient;
+	float anotherFloatXXX;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t depthTexture[24];
+};
+//#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+//#line 23 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+//#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+//#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+//#line 762 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+//#line 781 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+//#line 800 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1412 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 depth=texture(sampler2D(depthTexture[1 + 9]),BlockData.texCoords);
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=depthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=false;
+float dist=10.0*depthToFadeDistance(depth.x,2.0*(BlockData.texCoords-0.5),depthInterpretationStruct,tanHalfFov);
+vec4 u=vec4(1,dist,dist,1.0);
+{returnObject_vec4=u;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_ShowDepthPS_ReverseDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+layout(std140, binding = 12) uniform HdrConstants
+{
+	mat4 worldToScatteringVolumeMatrix;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec2 offset;
+	float alpha;
+	float nearDist;
+	vec4 colour2;
+	vec4 tanHalfFov;
+	vec2 tanHalfFovUnused;
+	float exposure;
+	float gamma;
+	vec4 depthToLinFadeDistParams;
+	vec4 warpHmdWarpParam;
+	vec3 cubemapGroundColour;
+	float ccgcpad;
+	vec2 warpScreenCentre;
+	vec2 warpScale;
+	vec2 warpScaleIn;
+	vec2 padHdrConstants1;
+	uvec2 hiResDimsX;
+	uvec2 lowResDims;
+	uvec2 fullResDims;
+	int numSamples;
+	float maxFadeDistanceKm;
+	vec3 infraredIntegrationFactors;
+	int randomSeed;
+	vec3 viewPos;
+	float fogExtinction;
+	vec3 fogColour;
+	float fogCeilingKm;
+	vec3 fogAmbient;
+	float anotherFloatXXX;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t depthTexture[24];
+};
+//#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+//#line 23 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+//#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+//#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+//#line 762 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+//#line 781 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+//#line 800 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1401 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 depth=texture(sampler2D(depthTexture[1 + 9]),BlockData.texCoords);
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=depthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=true;
+float dist=10.0*depthToFadeDistance(depth.x,2.0*(BlockData.texCoords-0.5),depthInterpretationStruct,tanHalfFov);
+vec4 u=vec4(1,dist,dist,1.0);
+{returnObject_vec4=u;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_TexturedPS.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 1494 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+vec4 res=vec4(0,1,0,1);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_VS_SimpleFullscreen_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_VS_SimpleFullscreen_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_VS_SimpleFullscreen_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_VS_SimpleFullscreen_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_VS_SimpleFullscreen_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_VS_SimpleFullscreen_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_VS_SimpleFullscreen_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/hdr_VS_SimpleFullscreen_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/hdr.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}

@@ -300,6 +300,9 @@
     <ClInclude Include="Wave.h">
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="SceneSimul.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp">
@@ -523,6 +526,9 @@
     </ClCompile>
     <ClCompile Include="Wave.cpp">
       <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneSimul.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

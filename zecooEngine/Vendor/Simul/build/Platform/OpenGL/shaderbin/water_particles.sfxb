@@ -1,0 +1,879 @@
+#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/water_particles_CS_GenerateParticles_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 43 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles_constants.sl"
+layout(std140, binding = 2) uniform cbParticleGenerationConstants
+{
+	mat4 g_planeMat;
+	int g_offset;
+	float g_maxLifetime;
+	float g_minLifetime;
+	float g_averageMass;
+	vec3 g_velocity;
+	int g_maxParticles;
+	vec3 g_position;
+	int g_maxTotalParticles;
+	vec2 g_planeScale;
+	vec2 fduioshfiu;
+	vec3 g_planeVelocity;
+	float fndjsonf;
+};
+#line 71 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles_constants.sl"
+layout(std140, binding = 4) uniform cbParticleGenerationPlaneConstants
+{
+	vec2 g_surfaceUVScale;
+	vec2 g_surfaceUVOffset;
+	vec3 g_surfaceCenter;
+	float g_surfaceProfileUVScale;
+	float g_surfaceWindDirection;
+	float g_surfaceWindDependancy;
+	float g_surfaceWaveAmplitude;
+	bool g_enableWaveGrid;
+	vec3 g_scale;
+	int jfgidsjoi;
+	mat4 g_generationPlaneMat;
+	mat4 g_rotationPlaneMat;
+};
+#line 81 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles_constants.sl"
+struct particleData
+{
+	vec3 position;
+	vec3 velocity;
+	float age;
+	float mass;
+	vec4 colour;
+};
+layout(std430, binding = 0) buffer particleDataRW_ssbo
+{
+	particleData particleDataRW[]; 
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t g_GenerationPlane[24];
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 39 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+#line 43 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+#line 47 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+#line 51 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+#line 55 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+#line 59 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+#line 63 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+#line 67 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles.sl"
+float nrand(vec2 uv)
+{
+return fract(sin(dot(uv,vec2(12.9898,78.233)))*43758.5453);
+}
+#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles.sl"
+uint wang_hash(uint value)
+{
+uint seed=value;
+seed=(seed^61)^(seed>>16);
+seed*=9;
+seed=seed^(seed>>4);
+seed*=0x27d4eb2d;
+seed=seed^(seed>>15);
+return seed;
+}
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+void main()
+{
+uvec3 sub_pos = gl_GlobalInvocationID;
+#line 161 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/water_particles.sfx"
+particleData newParticle;
+float seed=typed_mod(wang_hash(sub_pos.x+g_offset),g_maxTotalParticles);
+float horizontalVelocity=nrand(vec2(seed/2.0,seed));
+vec4 planePos=vec4(nrand(vec2(seed/3.0,-seed))-0.5,(nrand(vec2(seed,seed/4.0))-0.5),0.0,1.0);
+float validPosition=textureLod(sampler2D(g_GenerationPlane[1 + 9]),(planePos.xy+vec2(0.5,0.5)),0).x;
+if(validPosition==0.0)return ;
+planePos.xy*=g_planeScale.xy;
+vec4 particleDirection=mul(g_rotationPlaneMat,vec4(0.0,0.0,1.0,1.0));
+vec4 pos_local=mul(g_generationPlaneMat,planePos);
+newParticle.velocity=particleDirection.xyz*10.f;
+newParticle.position=pos_local.xyz;
+newParticle.age=2.f;
+newParticle.mass=0.1f;
+newParticle.colour=vec4(nrand(vec2(seed/2.0,seed))+nrand(vec2(seed,seed/2.0))+nrand(vec2(seed,-seed))/3.0,nrand(vec2(seed/2.0,seed))+nrand(vec2(seed,seed/2.0))+nrand(vec2(seed,-seed))/3.0,nrand(vec2(seed/2.0,seed))+nrand(vec2(seed,seed/2.0))+nrand(vec2(seed,-seed))/3.0,1.0);
+particleDataRW[typed_mod((sub_pos.x+g_offset),g_maxTotalParticles)]=newParticle;
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/water_particles_CS_UpdateParticles_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 50 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles_constants.sl"
+layout(std140, binding = 3) uniform cbParticleUpdateConstants
+{
+	vec3 gnfjxoin;
+	float g_dt;
+};
+#line 81 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles_constants.sl"
+struct particleData
+{
+	vec3 position;
+	vec3 velocity;
+	float age;
+	float mass;
+	vec4 colour;
+};
+layout(std430, binding = 0) buffer particleDataRW_ssbo
+{
+	particleData particleDataRW[]; 
+};
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+void main()
+{
+uvec3 sub_pos = gl_GlobalInvocationID;
+#line 196 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/water_particles.sfx"
+particleData updatedParticle;
+if(particleDataRW[sub_pos.x].age<=0)return ;
+updatedParticle.age=particleDataRW[sub_pos.x].age-g_dt;
+updatedParticle.mass=0.1f;
+updatedParticle.position=particleDataRW[sub_pos.x].position+particleDataRW[sub_pos.x].velocity*g_dt;
+float newVelocity=particleDataRW[sub_pos.x].velocity.z+-9.81*g_dt;
+updatedParticle.velocity=vec3(particleDataRW[sub_pos.x].velocity.xy,newVelocity);
+updatedParticle.colour=particleDataRW[sub_pos.x].colour;
+particleDataRW[sub_pos.x]=updatedParticle;
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/water_particles_PS_GenerationPlane.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 71 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles_constants.sl"
+layout(std140, binding = 4) uniform cbParticleGenerationPlaneConstants
+{
+	vec2 g_surfaceUVScale;
+	vec2 g_surfaceUVOffset;
+	vec3 g_surfaceCenter;
+	float g_surfaceProfileUVScale;
+	float g_surfaceWindDirection;
+	float g_surfaceWindDependancy;
+	float g_surfaceWaveAmplitude;
+	bool g_enableWaveGrid;
+	vec3 g_scale;
+	int jfgidsjoi;
+	mat4 g_generationPlaneMat;
+	mat4 g_rotationPlaneMat;
+};
+
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t g_ProfileBuffers[24];
+	uint64_t g_WaveGridAmplitude[24];
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 39 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+#line 43 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+#line 47 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+#line 51 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+#line 55 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+#line 59 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+#line 63 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+#line 67 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out float4 returnObject_float4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 47 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/water_particles.sfx"
+float profileOffsets[16]={0.54,0.18,0.61,0.28,0.09,0.71,0.99,0.43,0.11,0.85,0.24,0.67,0.31,0.86,0.13,0.01};
+vec2 profile32Directons[32]={vec2(1.0,0.0),vec2(0.98,0.19),vec2(0.92,0.38),vec2(0.83,0.55),vec2(0.707,0.707),vec2(0.55,0.83),vec2(0.38,0.92),vec2(0.19,0.98),vec2(0.0,1.0),vec2(-0.19,0.98),vec2(-0.38,0.92),vec2(-0.55,0.83),vec2(-0.707,0.707),vec2(-0.83,0.55),vec2(-0.92,0.38),vec2(-0.98,0.19),vec2(-1.0,-0.0),vec2(-0.98,-0.19),vec2(-0.92,-0.38),vec2(-0.83,-0.55),vec2(-0.707,-0.707),vec2(-0.55,-0.83),vec2(-0.38,-0.92),vec2(-0.19,-0.98),vec2(0.0,-1.0),vec2(0.19,-0.98),vec2(0.38,-0.92),vec2(0.55,-0.83),vec2(0.707,-0.707),vec2(0.83,-0.55),vec2(0.92,-0.38),vec2(0.98,-0.19),};
+uint dirNum=16;
+uint N=2*dirNum;
+float dx=dirNum*6.28318530718f/N;
+vec3 planePos=vec3(BlockData.texCoords.x-0.5,BlockData.texCoords.y-0.5,0.0)*g_scale;
+vec4 pos_local=mul(g_generationPlaneMat,vec4(planePos,1.0));
+vec2 uv_local=((pos_local.xy*g_surfaceUVScale))+g_surfaceUVOffset-g_surfaceCenter.yx*g_surfaceUVScale;
+vec3 displacement=vec3(0.0,0.0,0.0);
+vec2 displacementValue=vec2(0.0,0.0);
+vec2 waveGridAmp=vec2(0.0,0.0);
+vec2 windDirection=normalize(vec2(sin(g_surfaceWindDirection),cos(g_surfaceWindDirection)));
+int i;
+for(i=0;i<N;i++)
+{
+float angle=((i)/(N))*6.28318530718f;
+vec2 texcDir=normalize(profile32Directons[i]);
+vec2 texc=texcDir*uv_local*g_surfaceProfileUVScale;
+float baseAmplitude=pow(((dot(windDirection,texcDir)+1.0)+((dot(-windDirection,texcDir)+1.0)*(1.0-g_surfaceWindDependancy)))/2.0,4.0);
+vec2 baseWaveAmp=(g_surfaceWaveAmplitude*baseAmplitude*(textureLod(sampler2DArray(g_ProfileBuffers[1 + 8]),vec3(texc.x+texc.y+profileOffsets[typed_mod(i,16)],0.0,0.0),2).xy)/2.0);
+if(g_enableWaveGrid)
+{
+waveGridAmp=(textureLod(sampler2DArray(g_ProfileBuffers[1 + 8]),vec3(texc.x+texc.y+profileOffsets[typed_mod(i,16)],0.0,1.0),2).xy*textureLod(sampler3D(g_WaveGridAmplitude[1 + 6]),vec3(uv_local.x/5.0,uv_local.y/5.0,(i+0.5)/N),0).x);
+}
+
+displacementValue=dx*(waveGridAmp+baseWaveAmp);
+displacement+=vec3(displacementValue.x*texcDir.x,displacementValue.x*texcDir.y,displacementValue.y);
+}
+
+displacement*=0.1;
+if(abs(displacement.z-(pos_local.z-g_surfaceCenter.z))<0.5){returnObject_float4=float4(1.0,0.0,0.0,1.0);}else
+{returnObject_float4=float4(0.0,0.0,0.0,0.0);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/water_particles_PS_SingleParticle.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles.sl"
+struct VS_OUTPUT
+{
+	vec4 Position;
+	vec2 texCoords;
+	vec3 LocalPos;
+	vec4 vecColour;
+	vec4 SurePosition;
+};
+layout(location = 0) in Block
+{
+VS_OUTPUT BlockData;
+} ioblock;
+layout(location = 0) out float4 returnObject_float4;
+
+void main()
+{
+VS_OUTPUT BlockData=ioblock.BlockData;
+#line 271 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/water_particles.sfx"
+float4 Output=BlockData.vecColour;
+{returnObject_float4=Output;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/water_particles_VS_SimpleFullscreen_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 119 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+#line 132 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 134 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/water_particles_VS_SimpleFullscreen_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 119 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+#line 132 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 134 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/water_particles_VS_SingleParticle_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles.sl"
+struct VS_OUTPUT
+{
+	vec4 Position;
+	vec2 texCoords;
+	vec3 LocalPos;
+	vec4 vecColour;
+	vec4 SurePosition;
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles_constants.sl"
+layout(std140, binding = 1) uniform cbParticleRenderConstants
+{
+	mat4 g_matWorldViewProj;
+	mat4 g_matInvViewProj;
+	mat4 g_matWorld;
+	vec2 g_UVBase;
+	vec2 g_objectCenter;
+	vec3 g_LocalEye;
+	float hgfdsgfdce;
+};
+#line 81 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles_constants.sl"
+struct particleData
+{
+	vec3 position;
+	vec3 velocity;
+	float age;
+	float mass;
+	vec4 colour;
+};
+layout(std430, binding = 0) buffer particleDataR_ssbo
+{
+	particleData particleDataR[]; 
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 39 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+#line 43 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+#line 47 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+#line 51 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+#line 55 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+#line 59 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+#line 63 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+#line 67 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+layout(location = 0) out Block
+{
+VS_OUTPUT BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+VS_OUTPUT Output;
+uint vertex_index=typed_mod(IN.vertex_id,6);
+uint particle_id=(IN.vertex_id-vertex_index)/6;
+if(particleDataR[particle_id].age<=0.0)
+{
+Output.Position=float4(0.0,0.0,0.0,0.0);
+Output.LocalPos=vec3(0.0,0.0,0.0);
+Output.texCoords=vec2(0.0,0.0);
+Output.SurePosition=Output.Position;
+Output.vecColour=vec4(0.0,0.0,0.0,0.0);
+{
+ioblock.BlockData=Output;
+gl_Position=Output.Position;
+}
+}
+
+vec2 vertexPositions[6]={vec2(-0.5f,-0.5f),vec2(-0.5f,-0.5f),vec2(0.5f,-0.5f),vec2(-0.5f,0.5f),vec2(0.5f,0.5f),vec2(0.5f,0.5f)};
+vec2 scale=vec2(1.0,1.0);
+vec3 camRight=cross(vec3(particleDataR[particle_id].velocity.xy,0.0),vec3(0.0,0.0,1.0));
+vec3 camUp=particleDataR[particle_id].velocity;
+vec3 vPos=particleDataR[particle_id].position+normalize(camRight)*vertexPositions[vertex_index].x*scale.x+normalize(camUp)*vertexPositions[vertex_index].y*scale.y;
+float4 pos_local=float4(vPos,1.0);
+Output.Position=mul(g_matWorldViewProj,pos_local);
+Output.LocalPos=pos_local.xyz;
+Output.texCoords=vertexPositions[IN.vertex_id];
+Output.SurePosition=Output.Position;
+Output.vecColour=vec4(1.0-particleDataR[particle_id].age,1.0-particleDataR[particle_id].age,1.0,saturate(particleDataR[particle_id].age))*particleDataR[particle_id].colour;
+{
+ioblock.BlockData=Output;
+gl_Position=Output.Position;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/water_particles_VS_SingleParticle_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles.sl"
+struct VS_OUTPUT
+{
+	vec4 Position;
+	vec2 texCoords;
+	vec3 LocalPos;
+	vec4 vecColour;
+	vec4 SurePosition;
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles_constants.sl"
+layout(std140, binding = 1) uniform cbParticleRenderConstants
+{
+	mat4 g_matWorldViewProj;
+	mat4 g_matInvViewProj;
+	mat4 g_matWorld;
+	vec2 g_UVBase;
+	vec2 g_objectCenter;
+	vec3 g_LocalEye;
+	float hgfdsgfdce;
+};
+#line 81 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/water_particles_constants.sl"
+struct particleData
+{
+	vec3 position;
+	vec3 velocity;
+	float age;
+	float mass;
+	vec4 colour;
+};
+layout(std430, binding = 0) buffer particleDataR_ssbo
+{
+	particleData particleDataR[]; 
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 39 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+#line 43 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+#line 47 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+#line 51 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+#line 55 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+#line 59 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+#line 63 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+#line 67 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+layout(location = 0) out Block
+{
+VS_OUTPUT BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+VS_OUTPUT Output;
+uint vertex_index=typed_mod(IN.vertex_id,6);
+uint particle_id=(IN.vertex_id-vertex_index)/6;
+if(particleDataR[particle_id].age<=0.0)
+{
+Output.Position=float4(0.0,0.0,0.0,0.0);
+Output.LocalPos=vec3(0.0,0.0,0.0);
+Output.texCoords=vec2(0.0,0.0);
+Output.SurePosition=Output.Position;
+Output.vecColour=vec4(0.0,0.0,0.0,0.0);
+{
+ioblock.BlockData=Output;
+gl_Position=Output.Position;
+}
+}
+
+vec2 vertexPositions[6]={vec2(-0.5f,-0.5f),vec2(-0.5f,-0.5f),vec2(0.5f,-0.5f),vec2(-0.5f,0.5f),vec2(0.5f,0.5f),vec2(0.5f,0.5f)};
+vec2 scale=vec2(1.0,1.0);
+vec3 camRight=cross(vec3(particleDataR[particle_id].velocity.xy,0.0),vec3(0.0,0.0,1.0));
+vec3 camUp=particleDataR[particle_id].velocity;
+vec3 vPos=particleDataR[particle_id].position+normalize(camRight)*vertexPositions[vertex_index].x*scale.x+normalize(camUp)*vertexPositions[vertex_index].y*scale.y;
+float4 pos_local=float4(vPos,1.0);
+Output.Position=mul(g_matWorldViewProj,pos_local);
+Output.LocalPos=pos_local.xyz;
+Output.texCoords=vertexPositions[IN.vertex_id];
+Output.SurePosition=Output.Position;
+Output.vecColour=vec4(1.0-particleDataR[particle_id].age,1.0-particleDataR[particle_id].age,1.0,saturate(particleDataR[particle_id].age))*particleDataR[particle_id].colour;
+{
+ioblock.BlockData=Output;
+gl_Position=Output.Position;
+}
+}

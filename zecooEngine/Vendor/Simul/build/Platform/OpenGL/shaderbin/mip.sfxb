@@ -1,0 +1,240 @@
+#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/mip_PS_Mip.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t inputTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+//#line 660 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/mip.sfx"
+vec2 texc=BlockData.texCoords.xy;
+vec4 res=textureLod(sampler2D(inputTexture[1 + 6]),texc.xy,0);
+{returnObject_vec4=res;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/mip_VS_SimpleFullscreen_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/mip.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/mip.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/mip_VS_SimpleFullscreen_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/mip.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/mip.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/mip_VS_SimpleFullscreen_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/mip.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/mip.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+//#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/../OpenGL/sfx_intermediate/mip_VS_SimpleFullscreen_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+struct idOnly
+{
+	flat uint vertex_id;
+};
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+//#line 204 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/mip.sfx"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+//#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/Sfx/mip.sfx"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}

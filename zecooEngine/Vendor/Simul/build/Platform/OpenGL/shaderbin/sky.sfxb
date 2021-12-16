@@ -1,0 +1,5722 @@
+#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_CS_InterpLightTable_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+layout(rgba32f, binding = 0) uniform image2D targetTexture;
+layout(std430, binding = 12) buffer skyBrightnessSB1_ssbo
+{
+	vec4 skyBrightnessSB1[]; 
+};
+layout(std430, binding = 13) buffer skyBrightnessSB2_ssbo
+{
+	vec4 skyBrightnessSB2[]; 
+};
+layout(std430, binding = 1) buffer globalBrightnessRW_ssbo
+{
+	vec4 globalBrightnessRW[]; 
+};
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t sourceTexture[24];
+};
+#line 39 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+#line 43 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+#line 47 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+#line 51 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+#line 55 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+#line 59 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+#line 63 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+#line 67 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 58 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+uvec2 dims;
+ivec2 ivtargetTexture = imageSize(targetTexture);
+dims.x = ivtargetTexture.x;dims.y = ivtargetTexture.y;;
+uvec3 pos=g*1+t;
+if(pos.x>=dims.x||pos.y>=dims.y)return ;
+float alt_texc_x=float(pos.x)/float(dims.x);
+float which_texc=(float(pos.y)+0.5)/float(dims.y);
+vec3 texc_3a=vec3(alt_texc_x,(float(cycled_index)+0.5)/3.0,which_texc);
+vec3 texc_3b=vec3(alt_texc_x,(float((typed_mod((cycled_index+1),uint(3))))+0.5)/3.0,which_texc);
+vec4 colour1=textureLod(sampler3D(sourceTexture[1 + 11]),texc_3a,0);
+vec4 colour2=textureLod(sampler3D(sourceTexture[1 + 11]),texc_3b,0);
+vec4 clr=mix(colour1,colour2,skyInterp);
+imageStore(targetTexture,ivec2(pos.xy),vec4(clr));
+;
+if(pos.x*pos.y==0)
+{
+vec4 b=mix(skyBrightnessSB1[0],skyBrightnessSB2[0],skyInterp);
+float br=max(0.0001,min(10000.0,b.a));
+globalBrightnessRW[0]=vec4(br,0,0,1451);
+}
+
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_CS_LightingQueries_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 48 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+struct LightingQueryResult
+{
+	vec4 pos;
+	vec4 sunlight;
+	vec4 moonlight;
+	vec4 ambient;
+	vec3 sunlight_in_space;
+	flat int valid;
+};
+layout(std430, binding = 2) buffer lightingQueryResults_ssbo
+{
+	LightingQueryResult lightingQueryResults[]; 
+};
+layout(std430, binding = 14) buffer lightingQueryInputs_ssbo
+{
+	vec4 lightingQueryInputs[]; 
+};
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t lightTable2DTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float GetAltTexCoord(float alt_km, float minSunlightAltitudeKm, float fadeAltitudeRangeKm)
+{
+float diff_km=alt_km-minSunlightAltitudeKm;
+float sun_alt_texc=0.5+0.5*saturate(diff_km/fadeAltitudeRangeKm);
+sun_alt_texc-=0.5*saturate(-diff_km/(minSunlightAltitudeKm+1.0));
+return sun_alt_texc;
+}
+layout(local_size_x=32, local_size_y=1, local_size_z=1) in;
+void main()
+{
+uvec3 sub_pos = gl_GlobalInvocationID;
+#line 82 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+if(sub_pos.x>=numQueries)return ;
+uint num=0;
+uint byteStride=0;
+LightingQueryResult res;
+res.pos=vec4(0,0,0,0);
+res.sunlight=vec4(0,0,0,0);
+res.moonlight=vec4(0,0,0,0);
+res.ambient=vec4(0,0,0,0);
+res.sunlight_in_space=vec3(0,0,0);
+res.valid=0;
+res.pos=lightingQueryInputs[sub_pos.x];
+float alt_texc=GetAltTexCoord(res.pos.z/1000.0,minSunlightAltitudeKm,maxFadeAltitudeKm);
+res.sunlight=textureLod(sampler2D(lightTable2DTexture[1 + 9]),vec2(alt_texc,0.5/4.0),0).rgba;
+res.moonlight=textureLod(sampler2D(lightTable2DTexture[1 + 9]),vec2(alt_texc,1.5/4.0),0).rgba;
+res.ambient=textureLod(sampler2D(lightTable2DTexture[1 + 9]),vec2(alt_texc,2.5/4.0),0).rgba;
+res.valid=1;
+lightingQueryResults[sub_pos.x]=res;
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Background_ForwardDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t backgroundTexture[24];
+	uint64_t depthTexture[24];
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+vec4 BackgroundLatLongSphere(uint64_t backgroundTexture[24], vec2 texCoords)
+{
+vec2 clip_pos=vec2(-1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+
+clip_pos.y-=2.0*(1.0-texCoords.y);
+#line 35 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+
+vec3 view=normalize(mul(invViewProj,vec4(clip_pos,1.0,1.0)).xyz);
+float ang=atan(view.y,-view.x);
+float t=ang/(3.1415926536*2.0);
+float t1=fract(t);
+vec2 lat_long_texc=vec2(t1,(0.5-asin(view.z)/3.1415926536));
+float t2=0.5+fract(t-0.5);
+lat_long_texc.x=t1;
+lat_long_texc.x=1.0-lat_long_texc.x;
+vec4 result1=textureLod(sampler2D(backgroundTexture[1 + 6]),lat_long_texc.xy,0);
+return starBrightness*result1;
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 151 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_BackgroundLatLongSphere(posTexVertexOutput IN, bool reverseDepth)
+{
+vec2 depth_texc=viewportCoordToTexRegionCoord(IN.texCoords.xy,viewportToTexRegionScaleBias);
+#line 155 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+
+depth_texc.y=1.0-depth_texc.y;
+#line 157 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+
+float depth=texture(sampler2D(depthTexture[1 + 9]),depth_texc).x;
+if(reverseDepth)
+{
+if(depth!=0.0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+vec4 ret=BackgroundLatLongSphere(backgroundTexture,IN.texCoords.xy);
+return ret;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 179 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 ret=PS_BackgroundLatLongSphere(BlockData,false);
+{returnObject_vec4=ret;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Background_ForwardDepth_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t backgroundTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+vec4 BackgroundLatLongSphere(uint64_t backgroundTexture[24], vec2 texCoords)
+{
+vec2 clip_pos=vec2(-1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+
+clip_pos.y-=2.0*(1.0-texCoords.y);
+#line 35 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+
+vec3 view=normalize(mul(invViewProj,vec4(clip_pos,1.0,1.0)).xyz);
+float ang=atan(view.y,-view.x);
+float t=ang/(3.1415926536*2.0);
+float t1=fract(t);
+vec2 lat_long_texc=vec2(t1,(0.5-asin(view.z)/3.1415926536));
+float t2=0.5+fract(t-0.5);
+lat_long_texc.x=t1;
+lat_long_texc.x=1.0-lat_long_texc.x;
+vec4 result1=textureLod(sampler2D(backgroundTexture[1 + 6]),lat_long_texc.xy,0);
+return starBrightness*result1;
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 184 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+float ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+float depth=texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0)).x;
+return depth;
+}
+#line 195 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_BackgroundLatLongSphere_MSAA(posTexVertexOutput IN, bool reverseDepth)
+{
+vec2 depth_texc=viewportCoordToTexRegionCoord(IN.texCoords.xy,viewportToTexRegionScaleBias);
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+
+depth_texc.y=1.0-depth_texc.y;
+#line 201 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+
+float depth=ms_depth(depth_texc);
+if(reverseDepth)
+{
+if(depth!=0.0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+vec4 ret=BackgroundLatLongSphere(backgroundTexture,IN.texCoords.xy);
+return ret;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 223 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 ret=PS_BackgroundLatLongSphere_MSAA(BlockData,false);
+{returnObject_vec4=ret;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Background_ReverseDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t backgroundTexture[24];
+	uint64_t depthTexture[24];
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+vec4 BackgroundLatLongSphere(uint64_t backgroundTexture[24], vec2 texCoords)
+{
+vec2 clip_pos=vec2(-1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+
+clip_pos.y-=2.0*(1.0-texCoords.y);
+#line 35 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+
+vec3 view=normalize(mul(invViewProj,vec4(clip_pos,1.0,1.0)).xyz);
+float ang=atan(view.y,-view.x);
+float t=ang/(3.1415926536*2.0);
+float t1=fract(t);
+vec2 lat_long_texc=vec2(t1,(0.5-asin(view.z)/3.1415926536));
+float t2=0.5+fract(t-0.5);
+lat_long_texc.x=t1;
+lat_long_texc.x=1.0-lat_long_texc.x;
+vec4 result1=textureLod(sampler2D(backgroundTexture[1 + 6]),lat_long_texc.xy,0);
+return starBrightness*result1;
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 151 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_BackgroundLatLongSphere(posTexVertexOutput IN, bool reverseDepth)
+{
+vec2 depth_texc=viewportCoordToTexRegionCoord(IN.texCoords.xy,viewportToTexRegionScaleBias);
+#line 155 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+
+depth_texc.y=1.0-depth_texc.y;
+#line 157 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+
+float depth=texture(sampler2D(depthTexture[1 + 9]),depth_texc).x;
+if(reverseDepth)
+{
+if(depth!=0.0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+vec4 ret=BackgroundLatLongSphere(backgroundTexture,IN.texCoords.xy);
+return ret;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 173 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 ret=PS_BackgroundLatLongSphere(BlockData,true);
+{returnObject_vec4=ret;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Background_ReverseDepth_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t backgroundTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+vec4 BackgroundLatLongSphere(uint64_t backgroundTexture[24], vec2 texCoords)
+{
+vec2 clip_pos=vec2(-1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+#line 31 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+
+clip_pos.y-=2.0*(1.0-texCoords.y);
+#line 35 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+
+vec3 view=normalize(mul(invViewProj,vec4(clip_pos,1.0,1.0)).xyz);
+float ang=atan(view.y,-view.x);
+float t=ang/(3.1415926536*2.0);
+float t1=fract(t);
+vec2 lat_long_texc=vec2(t1,(0.5-asin(view.z)/3.1415926536));
+float t2=0.5+fract(t-0.5);
+lat_long_texc.x=t1;
+lat_long_texc.x=1.0-lat_long_texc.x;
+vec4 result1=textureLod(sampler2D(backgroundTexture[1 + 6]),lat_long_texc.xy,0);
+return starBrightness*result1;
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 184 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+float ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+float depth=texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0)).x;
+return depth;
+}
+#line 195 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_BackgroundLatLongSphere_MSAA(posTexVertexOutput IN, bool reverseDepth)
+{
+vec2 depth_texc=viewportCoordToTexRegionCoord(IN.texCoords.xy,viewportToTexRegionScaleBias);
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+
+depth_texc.y=1.0-depth_texc.y;
+#line 201 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+
+float depth=ms_depth(depth_texc);
+if(reverseDepth)
+{
+if(depth!=0.0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+vec4 ret=BackgroundLatLongSphere(backgroundTexture,IN.texCoords.xy);
+return ret;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 217 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 ret=PS_BackgroundLatLongSphere_MSAA(BlockData,true);
+{returnObject_vec4=ret;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Colour.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 288 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+{returnObject_vec4=colour;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Fade3DTo2D.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t fadeTexture1[24];
+	uint64_t fadeTexture2[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 254 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec3 texc=vec3(altitudeTexCoord,1.0-BlockData.texCoords.y,BlockData.texCoords.x);
+vec4 colour1=texture(sampler3D(fadeTexture1[1 + 5]),texc);
+vec4 colour2=texture(sampler3D(fadeTexture2[1 + 5]),texc);
+vec4 result=mix(colour1,colour2,skyInterp);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Flare.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t flareTexture[24];
+};
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 547 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec3 res=colour.rgb*texture(sampler2D(flareTexture[1 + 2]),vec2(.5,.5)+0.5*BlockData.tex).rgb;
+vec4 result=vec4(res,1.f);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Planet.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t flareTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+float approx_oren_nayar(float roughness, vec3 view, vec3 normal, vec3 lightDir)
+{
+float roughness2=roughness*roughness;
+vec2 oren_nayar_fraction=roughness2/(vec2(roughness2,roughness2)+vec2(0.33,0.09));
+vec2 oren_nayar=vec2(1,0)+vec2(-0.5,0.45)*oren_nayar_fraction;
+vec2 cos_theta=saturate(vec2(dot(normal,lightDir),dot(normal,view)));
+vec2 cos_theta2=cos_theta*cos_theta;
+float u=saturate((1-cos_theta2.x)*(1-cos_theta2.y));
+float sin_theta=sqrt(u);
+vec3 light_plane=normalize(lightDir-cos_theta.x*normal);
+vec3 view_plane=normalize(view-cos_theta.y*normal);
+float cos_phi=saturate(dot(light_plane,view_plane));
+float diffuse_oren_nayar=cos_phi*sin_theta/max(0.00001,max(cos_theta.x,cos_theta.y));
+float diffuse=cos_theta.x*(oren_nayar.x+oren_nayar.y*diffuse_oren_nayar);
+return diffuse;
+}
+#line 553 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Planet(vec4 result, vec2 tex)
+{
+vec3 normal;
+normal.x=tex.x;
+normal.y=tex.y;
+float l=length(tex);
+if(l>1.0)return vec4(0.0,0.0,0.0,0.0);
+normal.z=-sqrt(1.0-l*l);
+float light=approx_oren_nayar(0.2,vec3(0,0,1.0),normal,lightDir.xyz);
+result.rgb*=colour.rgb;
+result.rgb*=light;
+result.a*=saturate((0.97-l)/0.03);
+return result;
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 572 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=texture(sampler2D(flareTexture[1 + 9]),vec2(0.5,0.5)-0.5*BlockData.tex);
+result=Planet(result,BlockData.tex);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_PlanetUntextured.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+float approx_oren_nayar(float roughness, vec3 view, vec3 normal, vec3 lightDir)
+{
+float roughness2=roughness*roughness;
+vec2 oren_nayar_fraction=roughness2/(vec2(roughness2,roughness2)+vec2(0.33,0.09));
+vec2 oren_nayar=vec2(1,0)+vec2(-0.5,0.45)*oren_nayar_fraction;
+vec2 cos_theta=saturate(vec2(dot(normal,lightDir),dot(normal,view)));
+vec2 cos_theta2=cos_theta*cos_theta;
+float u=saturate((1-cos_theta2.x)*(1-cos_theta2.y));
+float sin_theta=sqrt(u);
+vec3 light_plane=normalize(lightDir-cos_theta.x*normal);
+vec3 view_plane=normalize(view-cos_theta.y*normal);
+float cos_phi=saturate(dot(light_plane,view_plane));
+float diffuse_oren_nayar=cos_phi*sin_theta/max(0.00001,max(cos_theta.x,cos_theta.y));
+float diffuse=cos_theta.x*(oren_nayar.x+oren_nayar.y*diffuse_oren_nayar);
+return diffuse;
+}
+#line 553 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Planet(vec4 result, vec2 tex)
+{
+vec3 normal;
+normal.x=tex.x;
+normal.y=tex.y;
+float l=length(tex);
+if(l>1.0)return vec4(0.0,0.0,0.0,0.0);
+normal.z=-sqrt(1.0-l*l);
+float light=approx_oren_nayar(0.2,vec3(0,0,1.0),normal,lightDir.xyz);
+result.rgb*=colour.rgb;
+result.rgb*=light;
+result.a*=saturate((0.97-l)/0.03);
+return result;
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 649 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=vec4(1.0,1.0,1.0,1.0);
+result=Planet(result,BlockData.tex);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_PlanetUntextured_ForwardDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t depthTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+float approx_oren_nayar(float roughness, vec3 view, vec3 normal, vec3 lightDir)
+{
+float roughness2=roughness*roughness;
+vec2 oren_nayar_fraction=roughness2/(vec2(roughness2,roughness2)+vec2(0.33,0.09));
+vec2 oren_nayar=vec2(1,0)+vec2(-0.5,0.45)*oren_nayar_fraction;
+vec2 cos_theta=saturate(vec2(dot(normal,lightDir),dot(normal,view)));
+vec2 cos_theta2=cos_theta*cos_theta;
+float u=saturate((1-cos_theta2.x)*(1-cos_theta2.y));
+float sin_theta=sqrt(u);
+vec3 light_plane=normalize(lightDir-cos_theta.x*normal);
+vec3 view_plane=normalize(view-cos_theta.y*normal);
+float cos_phi=saturate(dot(light_plane,view_plane));
+float diffuse_oren_nayar=cos_phi*sin_theta/max(0.00001,max(cos_theta.x,cos_theta.y));
+float diffuse=cos_theta.x*(oren_nayar.x+oren_nayar.y*diffuse_oren_nayar);
+return diffuse;
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 553 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Planet(vec4 result, vec2 tex)
+{
+vec3 normal;
+normal.x=tex.x;
+normal.y=tex.y;
+float l=length(tex);
+if(l>1.0)return vec4(0.0,0.0,0.0,0.0);
+normal.z=-sqrt(1.0-l*l);
+float light=approx_oren_nayar(0.2,vec3(0,0,1.0),normal,lightDir.xyz);
+result.rgb*=colour.rgb;
+result.rgb*=light;
+result.a*=saturate((0.97-l)/0.03);
+return result;
+}
+#line 626 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_PlanetUntextured_DepthTexture(svertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+discardUnlessFar(texture(sampler2D(depthTexture[1 + 9]),depth_texc).x,reverseDepth);
+vec4 result=vec4(1.0,1.0,1.0,1.0);
+result=Planet(result,IN.tex);
+return result;
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 642 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_PlanetUntextured_DepthTexture(BlockData,false);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_PlanetUntextured_ForwardDepth_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+float approx_oren_nayar(float roughness, vec3 view, vec3 normal, vec3 lightDir)
+{
+float roughness2=roughness*roughness;
+vec2 oren_nayar_fraction=roughness2/(vec2(roughness2,roughness2)+vec2(0.33,0.09));
+vec2 oren_nayar=vec2(1,0)+vec2(-0.5,0.45)*oren_nayar_fraction;
+vec2 cos_theta=saturate(vec2(dot(normal,lightDir),dot(normal,view)));
+vec2 cos_theta2=cos_theta*cos_theta;
+float u=saturate((1-cos_theta2.x)*(1-cos_theta2.y));
+float sin_theta=sqrt(u);
+vec3 light_plane=normalize(lightDir-cos_theta.x*normal);
+vec3 view_plane=normalize(view-cos_theta.y*normal);
+float cos_phi=saturate(dot(light_plane,view_plane));
+float diffuse_oren_nayar=cos_phi*sin_theta/max(0.00001,max(cos_theta.x,cos_theta.y));
+float diffuse=cos_theta.x*(oren_nayar.x+oren_nayar.y*diffuse_oren_nayar);
+return diffuse;
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 184 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+float ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+float depth=texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0)).x;
+return depth;
+}
+#line 553 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Planet(vec4 result, vec2 tex)
+{
+vec3 normal;
+normal.x=tex.x;
+normal.y=tex.y;
+float l=length(tex);
+if(l>1.0)return vec4(0.0,0.0,0.0,0.0);
+normal.z=-sqrt(1.0-l*l);
+float light=approx_oren_nayar(0.2,vec3(0,0,1.0),normal,lightDir.xyz);
+result.rgb*=colour.rgb;
+result.rgb*=light;
+result.a*=saturate((0.97-l)/0.03);
+return result;
+}
+#line 655 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_PlanetUntextured_DepthTexture_MSAA(svertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+float depth=ms_depth(depth_texc);
+discardUnlessFar(depth,reverseDepth);
+vec4 result=vec4(1.0,1.0,1.0,1.0);
+result=Planet(result,IN.tex);
+return result;
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 672 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_PlanetUntextured_DepthTexture_MSAA(BlockData,false);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_PlanetUntextured_ReverseDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t depthTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+float approx_oren_nayar(float roughness, vec3 view, vec3 normal, vec3 lightDir)
+{
+float roughness2=roughness*roughness;
+vec2 oren_nayar_fraction=roughness2/(vec2(roughness2,roughness2)+vec2(0.33,0.09));
+vec2 oren_nayar=vec2(1,0)+vec2(-0.5,0.45)*oren_nayar_fraction;
+vec2 cos_theta=saturate(vec2(dot(normal,lightDir),dot(normal,view)));
+vec2 cos_theta2=cos_theta*cos_theta;
+float u=saturate((1-cos_theta2.x)*(1-cos_theta2.y));
+float sin_theta=sqrt(u);
+vec3 light_plane=normalize(lightDir-cos_theta.x*normal);
+vec3 view_plane=normalize(view-cos_theta.y*normal);
+float cos_phi=saturate(dot(light_plane,view_plane));
+float diffuse_oren_nayar=cos_phi*sin_theta/max(0.00001,max(cos_theta.x,cos_theta.y));
+float diffuse=cos_theta.x*(oren_nayar.x+oren_nayar.y*diffuse_oren_nayar);
+return diffuse;
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 553 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Planet(vec4 result, vec2 tex)
+{
+vec3 normal;
+normal.x=tex.x;
+normal.y=tex.y;
+float l=length(tex);
+if(l>1.0)return vec4(0.0,0.0,0.0,0.0);
+normal.z=-sqrt(1.0-l*l);
+float light=approx_oren_nayar(0.2,vec3(0,0,1.0),normal,lightDir.xyz);
+result.rgb*=colour.rgb;
+result.rgb*=light;
+result.a*=saturate((0.97-l)/0.03);
+return result;
+}
+#line 626 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_PlanetUntextured_DepthTexture(svertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+discardUnlessFar(texture(sampler2D(depthTexture[1 + 9]),depth_texc).x,reverseDepth);
+vec4 result=vec4(1.0,1.0,1.0,1.0);
+result=Planet(result,IN.tex);
+return result;
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 637 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_PlanetUntextured_DepthTexture(BlockData,true);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_PlanetUntextured_ReverseDepth_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+float approx_oren_nayar(float roughness, vec3 view, vec3 normal, vec3 lightDir)
+{
+float roughness2=roughness*roughness;
+vec2 oren_nayar_fraction=roughness2/(vec2(roughness2,roughness2)+vec2(0.33,0.09));
+vec2 oren_nayar=vec2(1,0)+vec2(-0.5,0.45)*oren_nayar_fraction;
+vec2 cos_theta=saturate(vec2(dot(normal,lightDir),dot(normal,view)));
+vec2 cos_theta2=cos_theta*cos_theta;
+float u=saturate((1-cos_theta2.x)*(1-cos_theta2.y));
+float sin_theta=sqrt(u);
+vec3 light_plane=normalize(lightDir-cos_theta.x*normal);
+vec3 view_plane=normalize(view-cos_theta.y*normal);
+float cos_phi=saturate(dot(light_plane,view_plane));
+float diffuse_oren_nayar=cos_phi*sin_theta/max(0.00001,max(cos_theta.x,cos_theta.y));
+float diffuse=cos_theta.x*(oren_nayar.x+oren_nayar.y*diffuse_oren_nayar);
+return diffuse;
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 184 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+float ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+float depth=texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0)).x;
+return depth;
+}
+#line 553 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Planet(vec4 result, vec2 tex)
+{
+vec3 normal;
+normal.x=tex.x;
+normal.y=tex.y;
+float l=length(tex);
+if(l>1.0)return vec4(0.0,0.0,0.0,0.0);
+normal.z=-sqrt(1.0-l*l);
+float light=approx_oren_nayar(0.2,vec3(0,0,1.0),normal,lightDir.xyz);
+result.rgb*=colour.rgb;
+result.rgb*=light;
+result.a*=saturate((0.97-l)/0.03);
+return result;
+}
+#line 655 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_PlanetUntextured_DepthTexture_MSAA(svertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+float depth=ms_depth(depth_texc);
+discardUnlessFar(depth,reverseDepth);
+vec4 result=vec4(1.0,1.0,1.0,1.0);
+result=Planet(result,IN.tex);
+return result;
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 667 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_PlanetUntextured_DepthTexture_MSAA(BlockData,true);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Planet_ForwardDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t depthTexture[24];
+	uint64_t flareTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+float approx_oren_nayar(float roughness, vec3 view, vec3 normal, vec3 lightDir)
+{
+float roughness2=roughness*roughness;
+vec2 oren_nayar_fraction=roughness2/(vec2(roughness2,roughness2)+vec2(0.33,0.09));
+vec2 oren_nayar=vec2(1,0)+vec2(-0.5,0.45)*oren_nayar_fraction;
+vec2 cos_theta=saturate(vec2(dot(normal,lightDir),dot(normal,view)));
+vec2 cos_theta2=cos_theta*cos_theta;
+float u=saturate((1-cos_theta2.x)*(1-cos_theta2.y));
+float sin_theta=sqrt(u);
+vec3 light_plane=normalize(lightDir-cos_theta.x*normal);
+vec3 view_plane=normalize(view-cos_theta.y*normal);
+float cos_phi=saturate(dot(light_plane,view_plane));
+float diffuse_oren_nayar=cos_phi*sin_theta/max(0.00001,max(cos_theta.x,cos_theta.y));
+float diffuse=cos_theta.x*(oren_nayar.x+oren_nayar.y*diffuse_oren_nayar);
+return diffuse;
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 553 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Planet(vec4 result, vec2 tex)
+{
+vec3 normal;
+normal.x=tex.x;
+normal.y=tex.y;
+float l=length(tex);
+if(l>1.0)return vec4(0.0,0.0,0.0,0.0);
+normal.z=-sqrt(1.0-l*l);
+float light=approx_oren_nayar(0.2,vec3(0,0,1.0),normal,lightDir.xyz);
+result.rgb*=colour.rgb;
+result.rgb*=light;
+result.a*=saturate((0.97-l)/0.03);
+return result;
+}
+#line 578 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_Planet_DepthTexture(svertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+float depth=texture(sampler2D(depthTexture[1 + 9]),depth_texc).x;
+discardUnlessFar(depth,reverseDepth);
+vec4 result=texture(sampler2D(flareTexture[1 + 9]),vec2(0.5,0.5)-0.5*IN.tex);
+result=Planet(result,IN.tex);
+return result;
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 596 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_Planet_DepthTexture(BlockData,false);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Planet_ForwardDepth_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t depthTextureMS[24];
+	uint64_t flareTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+float approx_oren_nayar(float roughness, vec3 view, vec3 normal, vec3 lightDir)
+{
+float roughness2=roughness*roughness;
+vec2 oren_nayar_fraction=roughness2/(vec2(roughness2,roughness2)+vec2(0.33,0.09));
+vec2 oren_nayar=vec2(1,0)+vec2(-0.5,0.45)*oren_nayar_fraction;
+vec2 cos_theta=saturate(vec2(dot(normal,lightDir),dot(normal,view)));
+vec2 cos_theta2=cos_theta*cos_theta;
+float u=saturate((1-cos_theta2.x)*(1-cos_theta2.y));
+float sin_theta=sqrt(u);
+vec3 light_plane=normalize(lightDir-cos_theta.x*normal);
+vec3 view_plane=normalize(view-cos_theta.y*normal);
+float cos_phi=saturate(dot(light_plane,view_plane));
+float diffuse_oren_nayar=cos_phi*sin_theta/max(0.00001,max(cos_theta.x,cos_theta.y));
+float diffuse=cos_theta.x*(oren_nayar.x+oren_nayar.y*diffuse_oren_nayar);
+return diffuse;
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 184 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+float ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+float depth=texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0)).x;
+return depth;
+}
+#line 553 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Planet(vec4 result, vec2 tex)
+{
+vec3 normal;
+normal.x=tex.x;
+normal.y=tex.y;
+float l=length(tex);
+if(l>1.0)return vec4(0.0,0.0,0.0,0.0);
+normal.z=-sqrt(1.0-l*l);
+float light=approx_oren_nayar(0.2,vec3(0,0,1.0),normal,lightDir.xyz);
+result.rgb*=colour.rgb;
+result.rgb*=light;
+result.a*=saturate((0.97-l)/0.03);
+return result;
+}
+#line 602 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_Planet_DepthTexture_MSAA(svertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+float depth=ms_depth(depth_texc);
+discardUnlessFar(depth,reverseDepth);
+vec4 result=texture(sampler2D(flareTexture[1 + 9]),vec2(0.5,0.5)-0.5*IN.tex);
+result=Planet(result,IN.tex);
+return result;
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 620 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_Planet_DepthTexture_MSAA(BlockData,false);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Planet_ReverseDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t depthTexture[24];
+	uint64_t flareTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+float approx_oren_nayar(float roughness, vec3 view, vec3 normal, vec3 lightDir)
+{
+float roughness2=roughness*roughness;
+vec2 oren_nayar_fraction=roughness2/(vec2(roughness2,roughness2)+vec2(0.33,0.09));
+vec2 oren_nayar=vec2(1,0)+vec2(-0.5,0.45)*oren_nayar_fraction;
+vec2 cos_theta=saturate(vec2(dot(normal,lightDir),dot(normal,view)));
+vec2 cos_theta2=cos_theta*cos_theta;
+float u=saturate((1-cos_theta2.x)*(1-cos_theta2.y));
+float sin_theta=sqrt(u);
+vec3 light_plane=normalize(lightDir-cos_theta.x*normal);
+vec3 view_plane=normalize(view-cos_theta.y*normal);
+float cos_phi=saturate(dot(light_plane,view_plane));
+float diffuse_oren_nayar=cos_phi*sin_theta/max(0.00001,max(cos_theta.x,cos_theta.y));
+float diffuse=cos_theta.x*(oren_nayar.x+oren_nayar.y*diffuse_oren_nayar);
+return diffuse;
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 553 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Planet(vec4 result, vec2 tex)
+{
+vec3 normal;
+normal.x=tex.x;
+normal.y=tex.y;
+float l=length(tex);
+if(l>1.0)return vec4(0.0,0.0,0.0,0.0);
+normal.z=-sqrt(1.0-l*l);
+float light=approx_oren_nayar(0.2,vec3(0,0,1.0),normal,lightDir.xyz);
+result.rgb*=colour.rgb;
+result.rgb*=light;
+result.a*=saturate((0.97-l)/0.03);
+return result;
+}
+#line 578 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_Planet_DepthTexture(svertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+float depth=texture(sampler2D(depthTexture[1 + 9]),depth_texc).x;
+discardUnlessFar(depth,reverseDepth);
+vec4 result=texture(sampler2D(flareTexture[1 + 9]),vec2(0.5,0.5)-0.5*IN.tex);
+result=Planet(result,IN.tex);
+return result;
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 591 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_Planet_DepthTexture(BlockData,true);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Planet_ReverseDepth_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t depthTextureMS[24];
+	uint64_t flareTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky.sl"
+float approx_oren_nayar(float roughness, vec3 view, vec3 normal, vec3 lightDir)
+{
+float roughness2=roughness*roughness;
+vec2 oren_nayar_fraction=roughness2/(vec2(roughness2,roughness2)+vec2(0.33,0.09));
+vec2 oren_nayar=vec2(1,0)+vec2(-0.5,0.45)*oren_nayar_fraction;
+vec2 cos_theta=saturate(vec2(dot(normal,lightDir),dot(normal,view)));
+vec2 cos_theta2=cos_theta*cos_theta;
+float u=saturate((1-cos_theta2.x)*(1-cos_theta2.y));
+float sin_theta=sqrt(u);
+vec3 light_plane=normalize(lightDir-cos_theta.x*normal);
+vec3 view_plane=normalize(view-cos_theta.y*normal);
+float cos_phi=saturate(dot(light_plane,view_plane));
+float diffuse_oren_nayar=cos_phi*sin_theta/max(0.00001,max(cos_theta.x,cos_theta.y));
+float diffuse=cos_theta.x*(oren_nayar.x+oren_nayar.y*diffuse_oren_nayar);
+return diffuse;
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 184 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+float ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+float depth=texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0)).x;
+return depth;
+}
+#line 553 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Planet(vec4 result, vec2 tex)
+{
+vec3 normal;
+normal.x=tex.x;
+normal.y=tex.y;
+float l=length(tex);
+if(l>1.0)return vec4(0.0,0.0,0.0,0.0);
+normal.z=-sqrt(1.0-l*l);
+float light=approx_oren_nayar(0.2,vec3(0,0,1.0),normal,lightDir.xyz);
+result.rgb*=colour.rgb;
+result.rgb*=light;
+result.a*=saturate((0.97-l)/0.03);
+return result;
+}
+#line 602 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_Planet_DepthTexture_MSAA(svertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+float depth=ms_depth(depth_texc);
+discardUnlessFar(depth,reverseDepth);
+vec4 result=texture(sampler2D(flareTexture[1 + 9]),vec2(0.5,0.5)-0.5*IN.tex);
+result=Planet(result,IN.tex);
+return result;
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 615 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_Planet_DepthTexture_MSAA(BlockData,true);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Show2D.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t inscTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 273 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 colour1=texture(sampler2D(inscTexture[1 + 9]),BlockData.texCoords.xy);
+colour1.a=0.0;
+{returnObject_vec4=colour1;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Show2DLightTable.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t lightTable2DTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 313 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec2 texc=vec2(BlockData.texCoords.y,BlockData.texCoords.x);
+vec4 result=textureLod(sampler2D(lightTable2DTexture[1 + 11]),texc,0);
+result=vec4(result.rgb,1);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Show3DLightTable.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t fadeTexture1[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 306 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=texture(sampler3D(fadeTexture1[1 + 11]),vec3(BlockData.texCoords.y,(float(cycled_index)+.5)/3.0,BlockData.texCoords.x));
+result=vec4(result.rgb,1);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_ShowFadeCrossSection.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t fadeTexture1[24];
+	uint64_t fadeTexture2[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 263 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec3 texc=vec3(altitudeTexCoord,1.0-BlockData.texCoords.y,BlockData.texCoords.x);
+vec4 colour1=texture(sampler3D(fadeTexture1[1 + 5]),texc);
+vec4 colour2=texture(sampler3D(fadeTexture2[1 + 5]),texc);
+vec4 result=mix(colour1,colour2,skyInterp);
+result.a=1.0;
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_ShowFadeTable.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t inscTexture[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 280 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=texture(sampler2D(inscTexture[1 + 9]),BlockData.texCoords.xy);
+result.rb+=overlayAlpha*result.a;
+result=vec4(result.rgb,0.0);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_ShowFadeTexture.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t fadeTexture1[24];
+};
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 299 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=textureLod(sampler3D(fadeTexture1[1 + 5]),vec3(altitudeTexCoord,BlockData.texCoords.yx),0);
+result=vec4(result.rgb,1);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_ShowIlluminationBuffer.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t inscTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 131 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/illumination.sl"
+vec4 ShowIlluminationBuffer(uint64_t illTexture[24], vec2 texCoords)
+{
+if(texCoords.x<0.5)
+{
+texCoords.x*=2.0;
+vec4 nf=textureLod(sampler2D(illTexture[1 + 11]),texCoords,0);
+return saturate(vec4(nf.zw,0.0,1.0));
+}
+else
+
+{
+texCoords.x=2.0*(texCoords.x-0.5);
+vec2 texc=vec2(0.5,texCoords.y);
+vec4 nf=textureLod(sampler2D(illTexture[1 + 11]),texc,0);
+vec4 result=vec4(0,1.0,0,0);
+if(texCoords.x>=nf.x&&texCoords.x<=nf.y)result.r=1.0;
+if(texCoords.x>=nf.z&&texCoords.x<=nf.w)result.g=0.0;
+return vec4(result.rgb,1);
+}
+
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 293 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=ShowIlluminationBuffer(inscTexture,BlockData.texCoords);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Stars.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 367 ""
+struct starsVertexOutput
+{
+	vec4 hPosition;
+	vec4 clip_pos;
+	vec4 texCoord;
+};
+layout(location = 0) in Block
+{
+starsVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+starsVertexOutput BlockData=ioblock.BlockData;
+#line 425 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec3 ocolour=vec3(1.0,1.0,1.0)*(starBrightness*BlockData.texCoord.z);
+vec4 result=vec4(ocolour,1.0);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Stars_ForwardDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 367 ""
+struct starsVertexOutput
+{
+	vec4 hPosition;
+	vec4 clip_pos;
+	vec4 texCoord;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t depthTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 397 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_StarsDepth(starsVertexOutput IN, bool reverseDepth, float depth)
+{
+discardUnlessFar(depth,reverseDepth);
+vec3 ocolour=vec3(1.0,1.0,1.0)*(starBrightness*IN.texCoord.z);
+float alpha=saturate((1.0-length(IN.texCoord))*1.0);
+vec4 result=vec4(ocolour*alpha,0.0);
+return result;
+}
+#line 406 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_StarsDepthTex(starsVertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+float depth=textureLod(sampler2D(depthTexture[1 + 9]),depth_texc.xy,0).x;
+return PS_StarsDepth(IN,reverseDepth,depth);
+}
+layout(location = 0) in Block
+{
+starsVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+starsVertexOutput BlockData=ioblock.BlockData;
+#line 438 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_StarsDepthTex(BlockData,false);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Stars_ForwardDepth_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 367 ""
+struct starsVertexOutput
+{
+	vec4 hPosition;
+	vec4 clip_pos;
+	vec4 texCoord;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 184 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+float ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+float depth=texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0)).x;
+return depth;
+}
+#line 397 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_StarsDepth(starsVertexOutput IN, bool reverseDepth, float depth)
+{
+discardUnlessFar(depth,reverseDepth);
+vec3 ocolour=vec3(1.0,1.0,1.0)*(starBrightness*IN.texCoord.z);
+float alpha=saturate((1.0-length(IN.texCoord))*1.0);
+vec4 result=vec4(ocolour*alpha,0.0);
+return result;
+}
+#line 415 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_StarsDepthTex_MSAA(starsVertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+float depth=ms_depth(depth_texc);
+return PS_StarsDepth(IN,reverseDepth,depth);
+}
+layout(location = 0) in Block
+{
+starsVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+starsVertexOutput BlockData=ioblock.BlockData;
+#line 451 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_StarsDepthTex_MSAA(BlockData,false);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Stars_ReverseDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 367 ""
+struct starsVertexOutput
+{
+	vec4 hPosition;
+	vec4 clip_pos;
+	vec4 texCoord;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t depthTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 397 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_StarsDepth(starsVertexOutput IN, bool reverseDepth, float depth)
+{
+discardUnlessFar(depth,reverseDepth);
+vec3 ocolour=vec3(1.0,1.0,1.0)*(starBrightness*IN.texCoord.z);
+float alpha=saturate((1.0-length(IN.texCoord))*1.0);
+vec4 result=vec4(ocolour*alpha,0.0);
+return result;
+}
+#line 406 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_StarsDepthTex(starsVertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+float depth=textureLod(sampler2D(depthTexture[1 + 9]),depth_texc.xy,0).x;
+return PS_StarsDepth(IN,reverseDepth,depth);
+}
+layout(location = 0) in Block
+{
+starsVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+starsVertexOutput BlockData=ioblock.BlockData;
+#line 432 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_StarsDepthTex(BlockData,true);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Stars_ReverseDepth_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 367 ""
+struct starsVertexOutput
+{
+	vec4 hPosition;
+	vec4 clip_pos;
+	vec4 texCoord;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 184 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+float ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+float depth=texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0)).x;
+return depth;
+}
+#line 397 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_StarsDepth(starsVertexOutput IN, bool reverseDepth, float depth)
+{
+discardUnlessFar(depth,reverseDepth);
+vec3 ocolour=vec3(1.0,1.0,1.0)*(starBrightness*IN.texCoord.z);
+float alpha=saturate((1.0-length(IN.texCoord))*1.0);
+vec4 result=vec4(ocolour*alpha,0.0);
+return result;
+}
+#line 415 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_StarsDepthTex_MSAA(starsVertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+float depth=ms_depth(depth_texc);
+return PS_StarsDepth(IN,reverseDepth,depth);
+}
+layout(location = 0) in Block
+{
+starsVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+starsVertexOutput BlockData=ioblock.BlockData;
+#line 445 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_StarsDepthTex_MSAA(BlockData,true);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Sun.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t lossTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 456 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Sun(svertexOutput IN)
+{
+float r=length(IN.tex);
+if(r>glowRadiusMultiple)discard;
+float brightness=step(r,1.0)*sunBrightness;
+brightness*=saturate((0.97-r)/0.03);
+float sine=0.0;
+vec4 loss_lookup=textureLod(sampler2D(lossTexture[1 + 9]),vec2(1.0,min(0.4,0.5*(1.0-sine))),0);
+float most_loss=min(min(loss_lookup.r,loss_lookup.g),loss_lookup.b);
+float to_zero=1.0/most_loss*saturate((glowRadiusMultiple-r)/(glowRadiusMultiple-1.0));
+brightness=to_zero*max(brightness,glowBrightness/pow(max(1.0,r),4.0));
+vec4 result=vec4(brightness*colour.rgb,1.0);
+return result;
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 475 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+{returnObject_vec4=Sun(BlockData);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_SunGaussian.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 525 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+float r=4.0*length(BlockData.tex);
+if(r>4.0)discard;
+float brightness=1.0;
+if(r>1.0)discard;
+vec4 result=vec4(brightness*colour.rgb*colour.a,1.0);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_SunQuery.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 538 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+float r=2.0*length(BlockData.tex);
+if(r>1.0)discard;
+vec4 result=vec4(0.0,1.0,0.0,1.0);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Sun_ForwardDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t lossTexture[24];
+	uint64_t depthTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 456 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Sun(svertexOutput IN)
+{
+float r=length(IN.tex);
+if(r>glowRadiusMultiple)discard;
+float brightness=step(r,1.0)*sunBrightness;
+brightness*=saturate((0.97-r)/0.03);
+float sine=0.0;
+vec4 loss_lookup=textureLod(sampler2D(lossTexture[1 + 9]),vec2(1.0,min(0.4,0.5*(1.0-sine))),0);
+float most_loss=min(min(loss_lookup.r,loss_lookup.g),loss_lookup.b);
+float to_zero=1.0/most_loss*saturate((glowRadiusMultiple-r)/(glowRadiusMultiple-1.0));
+brightness=to_zero*max(brightness,glowBrightness/pow(max(1.0,r),4.0));
+vec4 result=vec4(brightness*colour.rgb,1.0);
+return result;
+}
+#line 479 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_SunDepthTexture(svertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+float depth=textureLod(sampler2D(depthTexture[1 + 9]),depth_texc.xy,0).x;
+discardUnlessFar(depth,reverseDepth);
+return Sun(IN);
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 496 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_SunDepthTexture(BlockData,false);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Sun_ForwardDepth_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t lossTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 184 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+float ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+float depth=texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0)).x;
+return depth;
+}
+#line 456 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Sun(svertexOutput IN)
+{
+float r=length(IN.tex);
+if(r>glowRadiusMultiple)discard;
+float brightness=step(r,1.0)*sunBrightness;
+brightness*=saturate((0.97-r)/0.03);
+float sine=0.0;
+vec4 loss_lookup=textureLod(sampler2D(lossTexture[1 + 9]),vec2(1.0,min(0.4,0.5*(1.0-sine))),0);
+float most_loss=min(min(loss_lookup.r,loss_lookup.g),loss_lookup.b);
+float to_zero=1.0/most_loss*saturate((glowRadiusMultiple-r)/(glowRadiusMultiple-1.0));
+brightness=to_zero*max(brightness,glowBrightness/pow(max(1.0,r),4.0));
+vec4 result=vec4(brightness*colour.rgb,1.0);
+return result;
+}
+#line 502 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_SunDepthTexture_MSAA(svertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+float depth=ms_depth(depth_texc);
+discardUnlessFar(depth,reverseDepth);
+return Sun(IN);
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 519 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_SunDepthTexture_MSAA(BlockData,false);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Sun_ReverseDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t lossTexture[24];
+	uint64_t depthTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 456 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Sun(svertexOutput IN)
+{
+float r=length(IN.tex);
+if(r>glowRadiusMultiple)discard;
+float brightness=step(r,1.0)*sunBrightness;
+brightness*=saturate((0.97-r)/0.03);
+float sine=0.0;
+vec4 loss_lookup=textureLod(sampler2D(lossTexture[1 + 9]),vec2(1.0,min(0.4,0.5*(1.0-sine))),0);
+float most_loss=min(min(loss_lookup.r,loss_lookup.g),loss_lookup.b);
+float to_zero=1.0/most_loss*saturate((glowRadiusMultiple-r)/(glowRadiusMultiple-1.0));
+brightness=to_zero*max(brightness,glowBrightness/pow(max(1.0,r),4.0));
+vec4 result=vec4(brightness*colour.rgb,1.0);
+return result;
+}
+#line 479 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_SunDepthTexture(svertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+float depth=textureLod(sampler2D(depthTexture[1 + 9]),depth_texc.xy,0).x;
+discardUnlessFar(depth,reverseDepth);
+return Sun(IN);
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 490 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_SunDepthTexture(BlockData,true);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_PS_Sun_ReverseDepth_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t lossTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 87 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+void discardUnlessFar(float depth, bool reverseDepth)
+{
+if(reverseDepth)
+{
+if(depth>0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 184 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+float ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+float depth=texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0)).x;
+return depth;
+}
+#line 456 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 Sun(svertexOutput IN)
+{
+float r=length(IN.tex);
+if(r>glowRadiusMultiple)discard;
+float brightness=step(r,1.0)*sunBrightness;
+brightness*=saturate((0.97-r)/0.03);
+float sine=0.0;
+vec4 loss_lookup=textureLod(sampler2D(lossTexture[1 + 9]),vec2(1.0,min(0.4,0.5*(1.0-sine))),0);
+float most_loss=min(min(loss_lookup.r,loss_lookup.g),loss_lookup.b);
+float to_zero=1.0/most_loss*saturate((glowRadiusMultiple-r)/(glowRadiusMultiple-1.0));
+brightness=to_zero*max(brightness,glowBrightness/pow(max(1.0,r),4.0));
+vec4 result=vec4(brightness*colour.rgb,1.0);
+return result;
+}
+#line 502 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 PS_SunDepthTexture_MSAA(svertexOutput IN, bool reverseDepth)
+{
+vec2 viewportTexCoords=0.5*(vec2(1.0,1.0)+(IN.clip_pos.xy/IN.clip_pos.w));
+viewportTexCoords.y=1.0-viewportTexCoords.y;
+vec2 depth_texc=viewportCoordToTexRegionCoord(viewportTexCoords.xy,viewportToTexRegionScaleBias);
+float depth=ms_depth(depth_texc);
+discardUnlessFar(depth,reverseDepth);
+return Sun(IN);
+}
+layout(location = 0) in Block
+{
+svertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+svertexOutput BlockData=ioblock.BlockData;
+#line 513 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+vec4 result=PS_SunDepthTexture_MSAA(BlockData,true);
+{returnObject_vec4=result;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_Fade3DTo2D_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 229 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+posTexVertexOutput OUT;
+vec2 poss[4]={{1.0,0.0},{1.0,1.0},{0.0,0.0},{0.0,1.0},};
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(vec2(-1.0,-1.0)+2.0*pos,1.0,1.0);
+OUT.texCoords=pos;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_Fade3DTo2D_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 229 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+posTexVertexOutput OUT;
+vec2 poss[4]={{1.0,0.0},{1.0,1.0},{0.0,0.0},{0.0,1.0},};
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(vec2(-1.0,-1.0)+2.0*pos,1.0,1.0);
+OUT.texCoords=pos;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_ShowFade_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/debug_constants.sl"
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+#line 145 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput VS_ScreenQuad(idOnly IN, vec4 rect)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,0.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(0.0,0.0);
+poss[3]=vec2(0.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(rect.xy+rect.zw*pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=pos;
+#line 158 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 160 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 249 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+{
+ioblock.BlockData=VS_ScreenQuad(IN,rect);
+gl_Position=VS_ScreenQuad(IN,rect).hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_ShowFade_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/debug_constants.sl"
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+#line 145 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput VS_ScreenQuad(idOnly IN, vec4 rect)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,0.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(0.0,0.0);
+poss[3]=vec2(0.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(rect.xy+rect.zw*pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=pos;
+#line 158 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 160 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 249 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+{
+ioblock.BlockData=VS_ScreenQuad(IN,rect);
+gl_Position=VS_ScreenQuad(IN,rect).hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_SimpleFullscreen_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 119 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+#line 132 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 134 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_SimpleFullscreen_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 119 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+#line 132 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 134 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_Stars_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std430, binding = 11) buffer starsSB_ssbo
+{
+	vec4 starsSB[]; 
+};
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 367 ""
+struct starsVertexOutput
+{
+	vec4 hPosition;
+	vec4 clip_pos;
+	vec4 texCoord;
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+starsVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 370 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+starsVertexOutput OUT;
+uint star_num=IN.vertex_id/3;
+uint vert_id=IN.vertex_id-star_num*3;
+vec4 star=starsSB[star_num];
+OUT.hPosition=mul(worldViewProj,vec4(star.xyz,1.0));
+OUT.clip_pos=OUT.hPosition.xyzw;
+OUT.texCoord=vec4(0.0,0.0,0.0,0.0);
+OUT.texCoord.z=star.w;
+if(OUT.clip_pos.z<0)OUT.texCoord=vec4(0.0,0.0,0.0,0.0);
+vec2 sz=OUT.clip_pos.w*minimumPixelSize;
+vec2 g_positions[3]={vec2(0.0,2.0),vec2(-1.74,-1.0),vec2(1.74,-1.0),};
+OUT.texCoord.xy=g_positions[vert_id];
+OUT.hPosition+=vec4(OUT.texCoord.xy*sz,0,0);
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_Stars_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std430, binding = 11) buffer starsSB_ssbo
+{
+	vec4 starsSB[]; 
+};
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 367 ""
+struct starsVertexOutput
+{
+	vec4 hPosition;
+	vec4 clip_pos;
+	vec4 texCoord;
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+starsVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 370 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+starsVertexOutput OUT;
+uint star_num=IN.vertex_id/3;
+uint vert_id=IN.vertex_id-star_num*3;
+vec4 star=starsSB[star_num];
+OUT.hPosition=mul(worldViewProj,vec4(star.xyz,1.0));
+OUT.clip_pos=OUT.hPosition.xyzw;
+OUT.texCoord=vec4(0.0,0.0,0.0,0.0);
+OUT.texCoord.z=star.w;
+if(OUT.clip_pos.z<0)OUT.texCoord=vec4(0.0,0.0,0.0,0.0);
+vec2 sz=OUT.clip_pos.w*minimumPixelSize;
+vec2 g_positions[3]={vec2(0.0,2.0),vec2(-1.74,-1.0),vec2(1.74,-1.0),};
+OUT.texCoord.xy=g_positions[vert_id];
+OUT.hPosition+=vec4(OUT.texCoord.xy*sz,0,0);
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_Sun_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 323 ""
+struct indexVertexInput
+{
+	flat uint vertex_id;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+svertexOutput BlockData;
+} ioblock;
+void main()
+{
+indexVertexInput IN;
+IN.vertex_id=gl_VertexID;
+#line 333 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+svertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+uint vid=min(uint(3),IN.vertex_id);
+vec3 pos=vec3(poss[vid],1.0/glowRadiusMultiple/tan(radiusRadians));
+OUT.hPosition=mul(worldViewProj,vec4(pos,1.0));
+OUT.hPosition.z=isForwardDepth*OUT.hPosition.w;
+OUT.tex=glowRadiusMultiple*pos.xy;
+OUT.clip_pos=OUT.hPosition.xyzw;
+if(OUT.clip_pos.z<0)OUT.clip_pos.z=0;
+if(OUT.clip_pos.z>OUT.clip_pos.w)OUT.clip_pos.z=OUT.clip_pos.w;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_Sun_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 323 ""
+struct indexVertexInput
+{
+	flat uint vertex_id;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+svertexOutput BlockData;
+} ioblock;
+void main()
+{
+indexVertexInput IN;
+IN.vertex_id=gl_VertexID;
+#line 333 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+svertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+uint vid=min(uint(3),IN.vertex_id);
+vec3 pos=vec3(poss[vid],1.0/glowRadiusMultiple/tan(radiusRadians));
+OUT.hPosition=mul(worldViewProj,vec4(pos,1.0));
+OUT.hPosition.z=isForwardDepth*OUT.hPosition.w;
+OUT.tex=glowRadiusMultiple*pos.xy;
+OUT.clip_pos=OUT.hPosition.xyzw;
+if(OUT.clip_pos.z<0)OUT.clip_pos.z=0;
+if(OUT.clip_pos.z>OUT.clip_pos.w)OUT.clip_pos.z=OUT.clip_pos.w;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_Fade3DTo2D_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 229 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+posTexVertexOutput OUT;
+vec2 poss[4]={{1.0,0.0},{1.0,1.0},{0.0,0.0},{0.0,1.0},};
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(vec2(-1.0,-1.0)+2.0*pos,1.0,1.0);
+OUT.texCoords=pos;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_Fade3DTo2D_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 229 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+posTexVertexOutput OUT;
+vec2 poss[4]={{1.0,0.0},{1.0,1.0},{0.0,0.0},{0.0,1.0},};
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(vec2(-1.0,-1.0)+2.0*pos,1.0,1.0);
+OUT.texCoords=pos;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_ShowFade_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/debug_constants.sl"
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+#line 145 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput VS_ScreenQuad(idOnly IN, vec4 rect)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,0.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(0.0,0.0);
+poss[3]=vec2(0.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(rect.xy+rect.zw*pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=pos;
+#line 158 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 160 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 249 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+{
+ioblock.BlockData=VS_ScreenQuad(IN,rect);
+gl_Position=VS_ScreenQuad(IN,rect).hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_ShowFade_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/debug_constants.sl"
+layout(std140, binding = 7) uniform DebugConstants
+{
+	mat4 debugWorldViewProj;
+	vec4 rect;
+	vec4 multiplier;
+	vec4 quaternion;
+	uint latitudes;
+	uint longitudes;
+	float radius;
+	float sideview;
+	vec4 viewport;
+	vec4 debugColour;
+	vec4 debugDepthToLinFadeDistParams;
+	vec4 debugTanHalfFov;
+	uvec4 texSize;
+	uvec2 queryPos;
+	float debugGamma;
+	float debugDepth;
+	float displayLod;
+	float displayLevel;
+	vec2 dc_pad1;
+};
+#line 145 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput VS_ScreenQuad(idOnly IN, vec4 rect)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,0.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(0.0,0.0);
+poss[3]=vec2(0.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(rect.xy+rect.zw*pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=pos;
+#line 158 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 160 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 249 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+{
+ioblock.BlockData=VS_ScreenQuad(IN,rect);
+gl_Position=VS_ScreenQuad(IN,rect).hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_Stars_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std430, binding = 11) buffer starsSB_ssbo
+{
+	vec4 starsSB[]; 
+};
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 367 ""
+struct starsVertexOutput
+{
+	vec4 hPosition;
+	vec4 clip_pos;
+	vec4 texCoord;
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+starsVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 370 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+starsVertexOutput OUT;
+uint star_num=IN.vertex_id/3;
+uint vert_id=IN.vertex_id-star_num*3;
+vec4 star=starsSB[star_num];
+OUT.hPosition=mul(worldViewProj,vec4(star.xyz,1.0));
+OUT.clip_pos=OUT.hPosition.xyzw;
+OUT.texCoord=vec4(0.0,0.0,0.0,0.0);
+OUT.texCoord.z=star.w;
+if(OUT.clip_pos.z<0)OUT.texCoord=vec4(0.0,0.0,0.0,0.0);
+vec2 sz=OUT.clip_pos.w*minimumPixelSize;
+vec2 g_positions[3]={vec2(0.0,2.0),vec2(-1.74,-1.0),vec2(1.74,-1.0),};
+OUT.texCoord.xy=g_positions[vert_id];
+OUT.hPosition+=vec4(OUT.texCoord.xy*sz,0,0);
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_Stars_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+layout(std430, binding = 11) buffer starsSB_ssbo
+{
+	vec4 starsSB[]; 
+};
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 367 ""
+struct starsVertexOutput
+{
+	vec4 hPosition;
+	vec4 clip_pos;
+	vec4 texCoord;
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+starsVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 370 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+starsVertexOutput OUT;
+uint star_num=IN.vertex_id/3;
+uint vert_id=IN.vertex_id-star_num*3;
+vec4 star=starsSB[star_num];
+OUT.hPosition=mul(worldViewProj,vec4(star.xyz,1.0));
+OUT.clip_pos=OUT.hPosition.xyzw;
+OUT.texCoord=vec4(0.0,0.0,0.0,0.0);
+OUT.texCoord.z=star.w;
+if(OUT.clip_pos.z<0)OUT.texCoord=vec4(0.0,0.0,0.0,0.0);
+vec2 sz=OUT.clip_pos.w*minimumPixelSize;
+vec2 g_positions[3]={vec2(0.0,2.0),vec2(-1.74,-1.0),vec2(1.74,-1.0),};
+OUT.texCoord.xy=g_positions[vert_id];
+OUT.hPosition+=vec4(OUT.texCoord.xy*sz,0,0);
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_Sun_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 323 ""
+struct indexVertexInput
+{
+	flat uint vertex_id;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+svertexOutput BlockData;
+} ioblock;
+void main()
+{
+indexVertexInput IN;
+IN.vertex_id=gl_VertexID;
+#line 333 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+svertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+uint vid=min(uint(3),IN.vertex_id);
+vec3 pos=vec3(poss[vid],1.0/glowRadiusMultiple/tan(radiusRadians));
+OUT.hPosition=mul(worldViewProj,vec4(pos,1.0));
+OUT.hPosition.z=isForwardDepth*OUT.hPosition.w;
+OUT.tex=glowRadiusMultiple*pos.xy;
+OUT.clip_pos=OUT.hPosition.xyzw;
+if(OUT.clip_pos.z<0)OUT.clip_pos.z=0;
+if(OUT.clip_pos.z>OUT.clip_pos.w)OUT.clip_pos.z=OUT.clip_pos.w;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/sky_VS_Sun_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/sky_constants.sl"
+layout(std140, binding = 10) uniform SkyConstants
+{
+	mat4 worldViewProj;
+	mat4 proj;
+	float altitudeTexCoord;
+	float hazeEccentricity;
+	float skyInterp;
+	float starBrightness;
+	mat4 invViewProj;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 eyePosition;
+	vec4 lightDir;
+	vec4 mieRayleighRatio;
+	vec4 colour;
+	float radiusRadians;
+	float isForwardDepth;
+	float glowRadiusMultiple;
+	uint numQueries;
+	uvec3 threadOffset;
+	float maxFadeDistanceKm;
+	float maxFadeAltitudeKm;
+	float minSunlightAltitudeKm;
+	uint cycled_index;
+	float overlayAlpha;
+	vec2 minimumPixelSize;
+	float sunBrightness;
+	float glowBrightness;
+};
+#line 323 ""
+struct indexVertexInput
+{
+	flat uint vertex_id;
+};
+#line 330 ""
+struct svertexOutput
+{
+	vec4 hPosition;
+	vec2 tex;
+	vec4 clip_pos;
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+svertexOutput BlockData;
+} ioblock;
+void main()
+{
+indexVertexInput IN;
+IN.vertex_id=gl_VertexID;
+#line 333 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/sky.sfx"
+svertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+uint vid=min(uint(3),IN.vertex_id);
+vec3 pos=vec3(poss[vid],1.0/glowRadiusMultiple/tan(radiusRadians));
+OUT.hPosition=mul(worldViewProj,vec4(pos,1.0));
+OUT.hPosition.z=isForwardDepth*OUT.hPosition.w;
+OUT.tex=glowRadiusMultiple*pos.xy;
+OUT.clip_pos=OUT.hPosition.xyzw;
+if(OUT.clip_pos.z<0)OUT.clip_pos.z=0;
+if(OUT.clip_pos.z>OUT.clip_pos.w)OUT.clip_pos.z=OUT.clip_pos.w;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}

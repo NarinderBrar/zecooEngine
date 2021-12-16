@@ -1,0 +1,4497 @@
+#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_Direct_ForwardDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t sourceDepthTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples(uint64_t sourceDepthTexture[24], vec4 depthWind, vec2 sourceTexCoords, vec2 frustum_clip_pos, vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, int j, out vec4 result)
+{
+vec2 texCoords=sourceTexCoords+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+
+{
+vec2 offs=texelRange*offsets[i];
+vec2 texc=saturate(1.01*(texCoords+.6*offs))/1.01;
+texc*=depthWind.zw;
+texc+=depthWind.xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos.xy,depthInterpretationStruct,tanHalfFov);
+if(dist.x<thr.x)continue;
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 230 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+vec4 GetFrustumClipPos(uvec3 idx)
+{
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos/=frustum_clip_pos.w;
+return frustum_clip_pos;
+}
+#line 488 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void Direct(uvec3 idx, bool reverseDepth)
+{
+vec4 frustum_clip_pos=GetFrustumClipPos(idx);
+vec2 sourceTexCoords=0.5*(frustum_clip_pos.xy+vec2(1.0,1.0));
+sourceTexCoords.y=1.0-sourceTexCoords.y;
+DepthInterpretationStruct dis;
+dis.depthToLinFadeDistParams=depthToLinFadeDistParams;
+dis.reverseDepth=reverseDepth;
+vec4 res=vec4(0,0,0,0);
+bool any_result=GetStochasticSamples(sourceDepthTexture,depthWindow[0],sourceTexCoords,frustum_clip_pos.xy,texelRange,dis,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,0,res);
+vec4 lin=depthToFadeDistance(res,frustum_clip_pos.xy,dis,tanHalfFov);
+imageStore(targetTexture,ivec3(idx),vec4(vec4(1.0,0.0000001,0.0000001,0.0000001)));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 514 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+Direct(pos,false);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_Direct_NoDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t sourceDepthTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples(uint64_t sourceDepthTexture[24], vec4 depthWind, vec2 sourceTexCoords, vec2 frustum_clip_pos, vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, int j, out vec4 result)
+{
+vec2 texCoords=sourceTexCoords+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+
+{
+vec2 offs=texelRange*offsets[i];
+vec2 texc=saturate(1.01*(texCoords+.6*offs))/1.01;
+texc*=depthWind.zw;
+texc+=depthWind.xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos.xy,depthInterpretationStruct,tanHalfFov);
+if(dist.x<thr.x)continue;
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 230 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+vec4 GetFrustumClipPos(uvec3 idx)
+{
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos/=frustum_clip_pos.w;
+return frustum_clip_pos;
+}
+#line 488 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void Direct(uvec3 idx, bool reverseDepth)
+{
+vec4 frustum_clip_pos=GetFrustumClipPos(idx);
+vec2 sourceTexCoords=0.5*(frustum_clip_pos.xy+vec2(1.0,1.0));
+sourceTexCoords.y=1.0-sourceTexCoords.y;
+DepthInterpretationStruct dis;
+dis.depthToLinFadeDistParams=depthToLinFadeDistParams;
+dis.reverseDepth=reverseDepth;
+vec4 res=vec4(0,0,0,0);
+bool any_result=GetStochasticSamples(sourceDepthTexture,depthWindow[0],sourceTexCoords,frustum_clip_pos.xy,texelRange,dis,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,0,res);
+vec4 lin=depthToFadeDistance(res,frustum_clip_pos.xy,dis,tanHalfFov);
+imageStore(targetTexture,ivec3(idx),vec4(vec4(1.0,0.0000001,0.0000001,0.0000001)));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 523 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+Direct(pos,false);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_Direct_ReverseDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t sourceDepthTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples(uint64_t sourceDepthTexture[24], vec4 depthWind, vec2 sourceTexCoords, vec2 frustum_clip_pos, vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, int j, out vec4 result)
+{
+vec2 texCoords=sourceTexCoords+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+
+{
+vec2 offs=texelRange*offsets[i];
+vec2 texc=saturate(1.01*(texCoords+.6*offs))/1.01;
+texc*=depthWind.zw;
+texc+=depthWind.xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos.xy,depthInterpretationStruct,tanHalfFov);
+if(dist.x<thr.x)continue;
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 230 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+vec4 GetFrustumClipPos(uvec3 idx)
+{
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos/=frustum_clip_pos.w;
+return frustum_clip_pos;
+}
+#line 488 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void Direct(uvec3 idx, bool reverseDepth)
+{
+vec4 frustum_clip_pos=GetFrustumClipPos(idx);
+vec2 sourceTexCoords=0.5*(frustum_clip_pos.xy+vec2(1.0,1.0));
+sourceTexCoords.y=1.0-sourceTexCoords.y;
+DepthInterpretationStruct dis;
+dis.depthToLinFadeDistParams=depthToLinFadeDistParams;
+dis.reverseDepth=reverseDepth;
+vec4 res=vec4(0,0,0,0);
+bool any_result=GetStochasticSamples(sourceDepthTexture,depthWindow[0],sourceTexCoords,frustum_clip_pos.xy,texelRange,dis,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,0,res);
+vec4 lin=depthToFadeDistance(res,frustum_clip_pos.xy,dis,tanHalfFov);
+imageStore(targetTexture,ivec3(idx),vec4(vec4(1.0,0.0000001,0.0000001,0.0000001)));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 505 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+Direct(pos,true);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_DownscaleStochastic_ForwardDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(rgba8, binding = 1) uniform image2DArray nextUpdateTexture;
+layout(rgba32f, binding = 2) uniform image2DArray targetTexture2;
+layout(rgba32f, binding = 3) uniform image2DArray targetTexture3;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t sourceDepthTexture[24];
+	uint64_t sourceTexture1[24];
+	uint64_t updateTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples(uint64_t sourceDepthTexture[24], vec4 depthWind, vec2 sourceTexCoords, vec2 frustum_clip_pos, vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, int j, out vec4 result)
+{
+vec2 texCoords=sourceTexCoords+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+
+{
+vec2 offs=texelRange*offsets[i];
+vec2 texc=saturate(1.01*(texCoords+.6*offs))/1.01;
+texc*=depthWind.zw;
+texc+=depthWind.xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos.xy,depthInterpretationStruct,tanHalfFov);
+if(dist.x<thr.x)continue;
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 244 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void DownscaleStochastic(uvec3 idx, bool depth, bool reverseDepth)
+{
+if(idx.x<targetRange[idx.z].x||idx.x>=targetRange[idx.z].z||idx.y<targetRange[idx.z].y||idx.y>=targetRange[idx.z].w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+vec4 u=texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0);
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos/=frustum_clip_pos.w;
+vec2 sourceTexCoords=0.5*(frustum_clip_pos.xy+vec2(1.0,1.0));
+sourceTexCoords.y=1.0-sourceTexCoords.y;
+vec4 clipRange=frustumClipRange;
+if(frustum_clip_pos.z<0.0)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+if(frustum_clip_pos.z<0.0||frustum_clip_pos.x<clipRange.x||frustum_clip_pos.x>clipRange.z||frustum_clip_pos.y<clipRange.y||frustum_clip_pos.y>clipRange.w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+float oldDepthValid=u.b;
+if(depth)
+{
+DepthInterpretationStruct ds;
+ds.depthToLinFadeDistParams=depthToLinFadeDistParams;
+ds.reverseDepth=reverseDepth;
+vec4 res=vec4(0,0,0,0);
+bool any_result;
+any_result=GetStochasticSamples(sourceDepthTexture,depthWindow[0],sourceTexCoords,frustum_clip_pos.xy,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,0,res);
+imageStore(targetTexture,ivec3(idx),vec4(res));
+vec4 oldAggregateDepth=texelFetch(sampler2DArray(sourceTexture1[0]),ivec3(idx).xyz,0);
+oldDepthValid=u.b*step((res.x-oldAggregateDepth.x),0.01)*step(oldAggregateDepth.y-res.y,0.01);
+if(u.b==0)
+{
+imageStore(targetTexture2,ivec3(idx),vec4(res));
+imageStore(targetTexture3,ivec3(idx),vec4(res));
+}
+
+}
+
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(u.b,oldDepthValid,1.0,0.0)));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 541 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+DownscaleStochastic(pos,true,false);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_DownscaleStochastic_MSAA_ForwardDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(rgba8, binding = 1) uniform image2DArray nextUpdateTexture;
+layout(rgba32f, binding = 2) uniform image2DArray targetTexture2;
+layout(rgba32f, binding = 3) uniform image2DArray targetTexture3;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t sourceMSDepthTexture[24];
+	uint64_t sourceTexture1[24];
+	uint64_t updateTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 78 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples_MSAA(uint64_t sourceDepthTextureMS[24], vec4 depthWind, vec2 sourceTexCoords, vec2 frustum_clip_pos, vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, int j, out vec4 result)
+{
+vec2 texCoords=sourceTexCoords+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+
+{
+vec2 offs=texelRange*offsets[i];
+vec2 texc=saturate(1.01*(texCoords+.6*offs))/1.01;
+texc*=vec2(depthWind.zw);
+texc+=vec2(depthWind.xy);
+uvec2 tex_pos=uvec2(texc*source_dims+vec2(0.5,0.5));
+vec2 d=texelFetch(sampler2DMS(sourceDepthTextureMS[0]),ivec2(tex_pos),int(0)).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos.xy,depthInterpretationStruct,tanHalfFov);
+if(dist.x<thr.x)continue;
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+if(!any_result)fn=vec4(1.0,1.0,1.0,1.0);
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 309 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void DownscaleStochastic_MSAA(uvec3 idx, bool depth, bool reverseDepth)
+{
+if(idx.x<targetRange[idx.z].x||idx.x>=targetRange[idx.z].z||idx.y<targetRange[idx.z].y||idx.y>=targetRange[idx.z].w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+vec4 u=texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0);
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos/=frustum_clip_pos.w;
+vec2 sourceTexCoords=0.5*(frustum_clip_pos.xy+vec2(1.0,1.0));
+sourceTexCoords.y=1.0-sourceTexCoords.y;
+vec4 clipRange=frustumClipRange;
+if(frustum_clip_pos.z<0.0)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+if(frustum_clip_pos.z<0.0||frustum_clip_pos.x<clipRange.x||frustum_clip_pos.x>clipRange.z||frustum_clip_pos.y<clipRange.y||frustum_clip_pos.y>clipRange.w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+float oldDepthValid=u.b;
+if(depth)
+{
+DepthInterpretationStruct ds;
+ds.depthToLinFadeDistParams=depthToLinFadeDistParams;
+ds.reverseDepth=reverseDepth;
+vec4 res=vec4(0,0,0,0);
+bool any_result;
+any_result=GetStochasticSamples_MSAA(sourceMSDepthTexture,depthWindow[0],sourceTexCoords,frustum_clip_pos.xy,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,0,res);
+imageStore(targetTexture,ivec3(idx),vec4(res));
+vec4 oldAggregateDepth=texelFetch(sampler2DArray(sourceTexture1[0]),ivec3(idx).xyz,0);
+oldDepthValid=u.b*step((res.x-oldAggregateDepth.x),0.01)*step(oldAggregateDepth.y-res.y,0.01);
+if(u.b==0)
+{
+imageStore(targetTexture2,ivec3(idx),vec4(res));
+imageStore(targetTexture3,ivec3(idx),vec4(res));
+}
+
+}
+
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(u.b,oldDepthValid,1.0,0.0)));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 561 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+DownscaleStochastic_MSAA(pos,true,false);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_DownscaleStochastic_MSAA_ReverseDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(rgba8, binding = 1) uniform image2DArray nextUpdateTexture;
+layout(rgba32f, binding = 2) uniform image2DArray targetTexture2;
+layout(rgba32f, binding = 3) uniform image2DArray targetTexture3;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t sourceMSDepthTexture[24];
+	uint64_t sourceTexture1[24];
+	uint64_t updateTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 78 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples_MSAA(uint64_t sourceDepthTextureMS[24], vec4 depthWind, vec2 sourceTexCoords, vec2 frustum_clip_pos, vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, int j, out vec4 result)
+{
+vec2 texCoords=sourceTexCoords+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+
+{
+vec2 offs=texelRange*offsets[i];
+vec2 texc=saturate(1.01*(texCoords+.6*offs))/1.01;
+texc*=vec2(depthWind.zw);
+texc+=vec2(depthWind.xy);
+uvec2 tex_pos=uvec2(texc*source_dims+vec2(0.5,0.5));
+vec2 d=texelFetch(sampler2DMS(sourceDepthTextureMS[0]),ivec2(tex_pos),int(0)).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos.xy,depthInterpretationStruct,tanHalfFov);
+if(dist.x<thr.x)continue;
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+if(!any_result)fn=vec4(1.0,1.0,1.0,1.0);
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 309 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void DownscaleStochastic_MSAA(uvec3 idx, bool depth, bool reverseDepth)
+{
+if(idx.x<targetRange[idx.z].x||idx.x>=targetRange[idx.z].z||idx.y<targetRange[idx.z].y||idx.y>=targetRange[idx.z].w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+vec4 u=texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0);
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos/=frustum_clip_pos.w;
+vec2 sourceTexCoords=0.5*(frustum_clip_pos.xy+vec2(1.0,1.0));
+sourceTexCoords.y=1.0-sourceTexCoords.y;
+vec4 clipRange=frustumClipRange;
+if(frustum_clip_pos.z<0.0)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+if(frustum_clip_pos.z<0.0||frustum_clip_pos.x<clipRange.x||frustum_clip_pos.x>clipRange.z||frustum_clip_pos.y<clipRange.y||frustum_clip_pos.y>clipRange.w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+float oldDepthValid=u.b;
+if(depth)
+{
+DepthInterpretationStruct ds;
+ds.depthToLinFadeDistParams=depthToLinFadeDistParams;
+ds.reverseDepth=reverseDepth;
+vec4 res=vec4(0,0,0,0);
+bool any_result;
+any_result=GetStochasticSamples_MSAA(sourceMSDepthTexture,depthWindow[0],sourceTexCoords,frustum_clip_pos.xy,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,0,res);
+imageStore(targetTexture,ivec3(idx),vec4(res));
+vec4 oldAggregateDepth=texelFetch(sampler2DArray(sourceTexture1[0]),ivec3(idx).xyz,0);
+oldDepthValid=u.b*step((res.x-oldAggregateDepth.x),0.01)*step(oldAggregateDepth.y-res.y,0.01);
+if(u.b==0)
+{
+imageStore(targetTexture2,ivec3(idx),vec4(res));
+imageStore(targetTexture3,ivec3(idx),vec4(res));
+}
+
+}
+
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(u.b,oldDepthValid,1.0,0.0)));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 550 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+DownscaleStochastic_MSAA(pos,true,true);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_DownscaleStochastic_NoDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(rgba8, binding = 1) uniform image2DArray nextUpdateTexture;
+layout(rgba32f, binding = 2) uniform image2DArray targetTexture2;
+layout(rgba32f, binding = 3) uniform image2DArray targetTexture3;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t sourceDepthTexture[24];
+	uint64_t sourceTexture1[24];
+	uint64_t updateTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples(uint64_t sourceDepthTexture[24], vec4 depthWind, vec2 sourceTexCoords, vec2 frustum_clip_pos, vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, int j, out vec4 result)
+{
+vec2 texCoords=sourceTexCoords+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+
+{
+vec2 offs=texelRange*offsets[i];
+vec2 texc=saturate(1.01*(texCoords+.6*offs))/1.01;
+texc*=depthWind.zw;
+texc+=depthWind.xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos.xy,depthInterpretationStruct,tanHalfFov);
+if(dist.x<thr.x)continue;
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 244 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void DownscaleStochastic(uvec3 idx, bool depth, bool reverseDepth)
+{
+if(idx.x<targetRange[idx.z].x||idx.x>=targetRange[idx.z].z||idx.y<targetRange[idx.z].y||idx.y>=targetRange[idx.z].w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+vec4 u=texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0);
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos/=frustum_clip_pos.w;
+vec2 sourceTexCoords=0.5*(frustum_clip_pos.xy+vec2(1.0,1.0));
+sourceTexCoords.y=1.0-sourceTexCoords.y;
+vec4 clipRange=frustumClipRange;
+if(frustum_clip_pos.z<0.0)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+if(frustum_clip_pos.z<0.0||frustum_clip_pos.x<clipRange.x||frustum_clip_pos.x>clipRange.z||frustum_clip_pos.y<clipRange.y||frustum_clip_pos.y>clipRange.w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+float oldDepthValid=u.b;
+if(depth)
+{
+DepthInterpretationStruct ds;
+ds.depthToLinFadeDistParams=depthToLinFadeDistParams;
+ds.reverseDepth=reverseDepth;
+vec4 res=vec4(0,0,0,0);
+bool any_result;
+any_result=GetStochasticSamples(sourceDepthTexture,depthWindow[0],sourceTexCoords,frustum_clip_pos.xy,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,0,res);
+imageStore(targetTexture,ivec3(idx),vec4(res));
+vec4 oldAggregateDepth=texelFetch(sampler2DArray(sourceTexture1[0]),ivec3(idx).xyz,0);
+oldDepthValid=u.b*step((res.x-oldAggregateDepth.x),0.01)*step(oldAggregateDepth.y-res.y,0.01);
+if(u.b==0)
+{
+imageStore(targetTexture2,ivec3(idx),vec4(res));
+imageStore(targetTexture3,ivec3(idx),vec4(res));
+}
+
+}
+
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(u.b,oldDepthValid,1.0,0.0)));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 570 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+DownscaleStochastic(pos,false,false);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_DownscaleStochastic_ReverseDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(rgba8, binding = 1) uniform image2DArray nextUpdateTexture;
+layout(rgba32f, binding = 2) uniform image2DArray targetTexture2;
+layout(rgba32f, binding = 3) uniform image2DArray targetTexture3;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t sourceDepthTexture[24];
+	uint64_t sourceTexture1[24];
+	uint64_t updateTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples(uint64_t sourceDepthTexture[24], vec4 depthWind, vec2 sourceTexCoords, vec2 frustum_clip_pos, vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, int j, out vec4 result)
+{
+vec2 texCoords=sourceTexCoords+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+
+{
+vec2 offs=texelRange*offsets[i];
+vec2 texc=saturate(1.01*(texCoords+.6*offs))/1.01;
+texc*=depthWind.zw;
+texc+=depthWind.xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos.xy,depthInterpretationStruct,tanHalfFov);
+if(dist.x<thr.x)continue;
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 244 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void DownscaleStochastic(uvec3 idx, bool depth, bool reverseDepth)
+{
+if(idx.x<targetRange[idx.z].x||idx.x>=targetRange[idx.z].z||idx.y<targetRange[idx.z].y||idx.y>=targetRange[idx.z].w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+vec4 u=texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0);
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos/=frustum_clip_pos.w;
+vec2 sourceTexCoords=0.5*(frustum_clip_pos.xy+vec2(1.0,1.0));
+sourceTexCoords.y=1.0-sourceTexCoords.y;
+vec4 clipRange=frustumClipRange;
+if(frustum_clip_pos.z<0.0)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+if(frustum_clip_pos.z<0.0||frustum_clip_pos.x<clipRange.x||frustum_clip_pos.x>clipRange.z||frustum_clip_pos.y<clipRange.y||frustum_clip_pos.y>clipRange.w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+float oldDepthValid=u.b;
+if(depth)
+{
+DepthInterpretationStruct ds;
+ds.depthToLinFadeDistParams=depthToLinFadeDistParams;
+ds.reverseDepth=reverseDepth;
+vec4 res=vec4(0,0,0,0);
+bool any_result;
+any_result=GetStochasticSamples(sourceDepthTexture,depthWindow[0],sourceTexCoords,frustum_clip_pos.xy,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,0,res);
+imageStore(targetTexture,ivec3(idx),vec4(res));
+vec4 oldAggregateDepth=texelFetch(sampler2DArray(sourceTexture1[0]),ivec3(idx).xyz,0);
+oldDepthValid=u.b*step((res.x-oldAggregateDepth.x),0.01)*step(oldAggregateDepth.y-res.y,0.01);
+if(u.b==0)
+{
+imageStore(targetTexture2,ivec3(idx),vec4(res));
+imageStore(targetTexture3,ivec3(idx),vec4(res));
+}
+
+}
+
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(u.b,oldDepthValid,1.0,0.0)));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 532 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+DownscaleStochastic(pos,true,true);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_DownscaleStochastic_twoEyes_ForwardDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(rgba8, binding = 1) uniform image2DArray nextUpdateTexture;
+layout(rgba32f, binding = 2) uniform image2DArray targetTexture2;
+layout(rgba32f, binding = 3) uniform image2DArray targetTexture3;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t sourceMSDepthTexture[24];
+	uint64_t sourceDepthTexture[24];
+	uint64_t sourceTexture1[24];
+	uint64_t updateTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples(uint64_t sourceDepthTexture[24], vec4 depthWind, vec2 sourceTexCoords, vec2 frustum_clip_pos, vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, int j, out vec4 result)
+{
+vec2 texCoords=sourceTexCoords+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+
+{
+vec2 offs=texelRange*offsets[i];
+vec2 texc=saturate(1.01*(texCoords+.6*offs))/1.01;
+texc*=depthWind.zw;
+texc+=depthWind.xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos.xy,depthInterpretationStruct,tanHalfFov);
+if(dist.x<thr.x)continue;
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples_twoEyes(uint64_t sourceDepthTexture[24], vec2 sourceTexCoords[2], vec4 frustum_clip_pos[2], vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, out vec4 result)
+{
+vec2 texCoords[2];
+texCoords[0]=sourceTexCoords[0]+.3*texelRange*stochasticOffset;
+texCoords[1]=sourceTexCoords[1]+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+vec2 offs=texelRange*offsets[i];
+for(int j=0;j<2;j++)
+{
+vec2 texc=saturate(1.01*(texCoords[j]+.6*offs))/1.01;
+texc*=depthWindow[j].zw;
+texc+=depthWindow[j].xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos[j].xy,depthInterpretationStruct,tanHalfFov);
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 182 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples_twoEyes_MSAA(uint64_t sourceDepthTextureMS[24], vec2 sourceTexCoords[2], vec4 frustum_clip_pos[2], vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, out vec4 result)
+{
+vec2 texCoords[2];
+texCoords[0]=sourceTexCoords[0]+.3*texelRange*stochasticOffset;
+texCoords[1]=sourceTexCoords[1]+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+vec2 offs=vec2(texelRange*offsets[i]);
+for(int j=0;j<2;j++)
+{
+vec2 texc=saturate(1.01*(texCoords[j]+.6*offs))/1.01;
+texc*=depthWindow[j].zw;
+texc+=depthWindow[j].xy;
+uvec2 tex_pos=uvec2(texc*source_dims+vec2(0.5,0.5));
+vec2 d=texelFetch(sampler2DMS(sourceDepthTextureMS[0]),ivec2(tex_pos),int(0)).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos[j].xy,depthInterpretationStruct,tanHalfFov);
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 374 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void DownscaleStochastic_twoEyes(uvec3 idx, bool depth, bool reverseDepth, bool msaa)
+{
+if(idx.x<targetRange[idx.z].x||idx.x>=targetRange[idx.z].z||idx.y<targetRange[idx.z].y||idx.y>=targetRange[idx.z].w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+vec4 u=texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0);
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos[2];
+vec2 sourceTexCoords[2];
+frustum_clip_pos[0]=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos[0]/=frustum_clip_pos[0].w;
+sourceTexCoords[0]=0.5*(frustum_clip_pos[0].xy+vec2(1.0,1.0));
+sourceTexCoords[0].y=1.0-sourceTexCoords[0].y;
+frustum_clip_pos[1]=mul(viewProj_alternateEye,vec4(view,1.0));
+frustum_clip_pos[1]/=frustum_clip_pos[1].w;
+sourceTexCoords[1]=0.5*(frustum_clip_pos[1].xy+vec2(1.0,1.0));
+sourceTexCoords[1].y=1.0-sourceTexCoords[1].y;
+vec4 clipRange=frustumClipRange;
+bool invalid0=frustum_clip_pos[0].z<0.0||frustum_clip_pos[0].x<clipRange.x||frustum_clip_pos[0].x>clipRange.z||frustum_clip_pos[0].y<clipRange.y||frustum_clip_pos[0].y>clipRange.w;
+bool invalid1=frustum_clip_pos[1].z<0.0||frustum_clip_pos[1].x<clipRange.x||frustum_clip_pos[1].x>clipRange.z||frustum_clip_pos[1].y<clipRange.y||frustum_clip_pos[1].y>clipRange.w;
+if(invalid0&&invalid1)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+float oldDepthValid=u.b;
+if(depth)
+{
+DepthInterpretationStruct ds;
+ds.depthToLinFadeDistParams=depthToLinFadeDistParams;
+ds.reverseDepth=reverseDepth;
+vec4 res=vec4(0,0,0,0);
+bool any_result=false;
+if(!invalid0&&!invalid1)
+{
+if(msaa)any_result=GetStochasticSamples_twoEyes_MSAA(sourceMSDepthTexture,sourceTexCoords,frustum_clip_pos,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,res);else
+any_result=GetStochasticSamples_twoEyes(sourceDepthTexture,sourceTexCoords,frustum_clip_pos,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,res);
+}
+else
+
+{
+vec2 sourct;
+vec4 frustum_clip;
+vec4 depthw;
+int j=0;
+if(!invalid1)
+{
+j=1;
+}
+
+sourct=sourceTexCoords[j];
+frustum_clip=frustum_clip_pos[j];
+depthw=depthWindow[j];
+any_result=GetStochasticSamples(sourceDepthTexture,depthw,sourct,frustum_clip.xy,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,j,res);
+}
+
+if(!any_result)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+imageStore(targetTexture,ivec3(idx),vec4(res));
+vec4 oldAggregateDepth=texelFetch(sampler2DArray(sourceTexture1[0]),ivec3(idx).xyz,0);
+oldDepthValid=u.b*step((res.x-oldAggregateDepth.x),0.01)*step(oldAggregateDepth.y-res.y,0.01);
+if(u.b==0)
+{
+imageStore(targetTexture2,ivec3(idx),vec4(res));
+imageStore(targetTexture3,ivec3(idx),vec4(res));
+}
+
+}
+
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(u.b,oldDepthValid,1.0,0.0)));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 592 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+DownscaleStochastic_twoEyes(pos,true,false,false);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_DownscaleStochastic_twoEyes_MSAA_ForwardDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(rgba8, binding = 1) uniform image2DArray nextUpdateTexture;
+layout(rgba32f, binding = 2) uniform image2DArray targetTexture2;
+layout(rgba32f, binding = 3) uniform image2DArray targetTexture3;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t sourceMSDepthTexture[24];
+	uint64_t sourceDepthTexture[24];
+	uint64_t sourceTexture1[24];
+	uint64_t updateTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples(uint64_t sourceDepthTexture[24], vec4 depthWind, vec2 sourceTexCoords, vec2 frustum_clip_pos, vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, int j, out vec4 result)
+{
+vec2 texCoords=sourceTexCoords+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+
+{
+vec2 offs=texelRange*offsets[i];
+vec2 texc=saturate(1.01*(texCoords+.6*offs))/1.01;
+texc*=depthWind.zw;
+texc+=depthWind.xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos.xy,depthInterpretationStruct,tanHalfFov);
+if(dist.x<thr.x)continue;
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples_twoEyes(uint64_t sourceDepthTexture[24], vec2 sourceTexCoords[2], vec4 frustum_clip_pos[2], vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, out vec4 result)
+{
+vec2 texCoords[2];
+texCoords[0]=sourceTexCoords[0]+.3*texelRange*stochasticOffset;
+texCoords[1]=sourceTexCoords[1]+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+vec2 offs=texelRange*offsets[i];
+for(int j=0;j<2;j++)
+{
+vec2 texc=saturate(1.01*(texCoords[j]+.6*offs))/1.01;
+texc*=depthWindow[j].zw;
+texc+=depthWindow[j].xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos[j].xy,depthInterpretationStruct,tanHalfFov);
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 182 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples_twoEyes_MSAA(uint64_t sourceDepthTextureMS[24], vec2 sourceTexCoords[2], vec4 frustum_clip_pos[2], vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, out vec4 result)
+{
+vec2 texCoords[2];
+texCoords[0]=sourceTexCoords[0]+.3*texelRange*stochasticOffset;
+texCoords[1]=sourceTexCoords[1]+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+vec2 offs=vec2(texelRange*offsets[i]);
+for(int j=0;j<2;j++)
+{
+vec2 texc=saturate(1.01*(texCoords[j]+.6*offs))/1.01;
+texc*=depthWindow[j].zw;
+texc+=depthWindow[j].xy;
+uvec2 tex_pos=uvec2(texc*source_dims+vec2(0.5,0.5));
+vec2 d=texelFetch(sampler2DMS(sourceDepthTextureMS[0]),ivec2(tex_pos),int(0)).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos[j].xy,depthInterpretationStruct,tanHalfFov);
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 374 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void DownscaleStochastic_twoEyes(uvec3 idx, bool depth, bool reverseDepth, bool msaa)
+{
+if(idx.x<targetRange[idx.z].x||idx.x>=targetRange[idx.z].z||idx.y<targetRange[idx.z].y||idx.y>=targetRange[idx.z].w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+vec4 u=texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0);
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos[2];
+vec2 sourceTexCoords[2];
+frustum_clip_pos[0]=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos[0]/=frustum_clip_pos[0].w;
+sourceTexCoords[0]=0.5*(frustum_clip_pos[0].xy+vec2(1.0,1.0));
+sourceTexCoords[0].y=1.0-sourceTexCoords[0].y;
+frustum_clip_pos[1]=mul(viewProj_alternateEye,vec4(view,1.0));
+frustum_clip_pos[1]/=frustum_clip_pos[1].w;
+sourceTexCoords[1]=0.5*(frustum_clip_pos[1].xy+vec2(1.0,1.0));
+sourceTexCoords[1].y=1.0-sourceTexCoords[1].y;
+vec4 clipRange=frustumClipRange;
+bool invalid0=frustum_clip_pos[0].z<0.0||frustum_clip_pos[0].x<clipRange.x||frustum_clip_pos[0].x>clipRange.z||frustum_clip_pos[0].y<clipRange.y||frustum_clip_pos[0].y>clipRange.w;
+bool invalid1=frustum_clip_pos[1].z<0.0||frustum_clip_pos[1].x<clipRange.x||frustum_clip_pos[1].x>clipRange.z||frustum_clip_pos[1].y<clipRange.y||frustum_clip_pos[1].y>clipRange.w;
+if(invalid0&&invalid1)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+float oldDepthValid=u.b;
+if(depth)
+{
+DepthInterpretationStruct ds;
+ds.depthToLinFadeDistParams=depthToLinFadeDistParams;
+ds.reverseDepth=reverseDepth;
+vec4 res=vec4(0,0,0,0);
+bool any_result=false;
+if(!invalid0&&!invalid1)
+{
+if(msaa)any_result=GetStochasticSamples_twoEyes_MSAA(sourceMSDepthTexture,sourceTexCoords,frustum_clip_pos,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,res);else
+any_result=GetStochasticSamples_twoEyes(sourceDepthTexture,sourceTexCoords,frustum_clip_pos,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,res);
+}
+else
+
+{
+vec2 sourct;
+vec4 frustum_clip;
+vec4 depthw;
+int j=0;
+if(!invalid1)
+{
+j=1;
+}
+
+sourct=sourceTexCoords[j];
+frustum_clip=frustum_clip_pos[j];
+depthw=depthWindow[j];
+any_result=GetStochasticSamples(sourceDepthTexture,depthw,sourct,frustum_clip.xy,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,j,res);
+}
+
+if(!any_result)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+imageStore(targetTexture,ivec3(idx),vec4(res));
+vec4 oldAggregateDepth=texelFetch(sampler2DArray(sourceTexture1[0]),ivec3(idx).xyz,0);
+oldDepthValid=u.b*step((res.x-oldAggregateDepth.x),0.01)*step(oldAggregateDepth.y-res.y,0.01);
+if(u.b==0)
+{
+imageStore(targetTexture2,ivec3(idx),vec4(res));
+imageStore(targetTexture3,ivec3(idx),vec4(res));
+}
+
+}
+
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(u.b,oldDepthValid,1.0,0.0)));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 621 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+DownscaleStochastic_twoEyes(pos,true,false,true);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_DownscaleStochastic_twoEyes_MSAA_ReverseDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(rgba8, binding = 1) uniform image2DArray nextUpdateTexture;
+layout(rgba32f, binding = 2) uniform image2DArray targetTexture2;
+layout(rgba32f, binding = 3) uniform image2DArray targetTexture3;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t sourceMSDepthTexture[24];
+	uint64_t sourceDepthTexture[24];
+	uint64_t sourceTexture1[24];
+	uint64_t updateTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples(uint64_t sourceDepthTexture[24], vec4 depthWind, vec2 sourceTexCoords, vec2 frustum_clip_pos, vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, int j, out vec4 result)
+{
+vec2 texCoords=sourceTexCoords+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+
+{
+vec2 offs=texelRange*offsets[i];
+vec2 texc=saturate(1.01*(texCoords+.6*offs))/1.01;
+texc*=depthWind.zw;
+texc+=depthWind.xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos.xy,depthInterpretationStruct,tanHalfFov);
+if(dist.x<thr.x)continue;
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples_twoEyes(uint64_t sourceDepthTexture[24], vec2 sourceTexCoords[2], vec4 frustum_clip_pos[2], vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, out vec4 result)
+{
+vec2 texCoords[2];
+texCoords[0]=sourceTexCoords[0]+.3*texelRange*stochasticOffset;
+texCoords[1]=sourceTexCoords[1]+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+vec2 offs=texelRange*offsets[i];
+for(int j=0;j<2;j++)
+{
+vec2 texc=saturate(1.01*(texCoords[j]+.6*offs))/1.01;
+texc*=depthWindow[j].zw;
+texc+=depthWindow[j].xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos[j].xy,depthInterpretationStruct,tanHalfFov);
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 182 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples_twoEyes_MSAA(uint64_t sourceDepthTextureMS[24], vec2 sourceTexCoords[2], vec4 frustum_clip_pos[2], vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, out vec4 result)
+{
+vec2 texCoords[2];
+texCoords[0]=sourceTexCoords[0]+.3*texelRange*stochasticOffset;
+texCoords[1]=sourceTexCoords[1]+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+vec2 offs=vec2(texelRange*offsets[i]);
+for(int j=0;j<2;j++)
+{
+vec2 texc=saturate(1.01*(texCoords[j]+.6*offs))/1.01;
+texc*=depthWindow[j].zw;
+texc+=depthWindow[j].xy;
+uvec2 tex_pos=uvec2(texc*source_dims+vec2(0.5,0.5));
+vec2 d=texelFetch(sampler2DMS(sourceDepthTextureMS[0]),ivec2(tex_pos),int(0)).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos[j].xy,depthInterpretationStruct,tanHalfFov);
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 374 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void DownscaleStochastic_twoEyes(uvec3 idx, bool depth, bool reverseDepth, bool msaa)
+{
+if(idx.x<targetRange[idx.z].x||idx.x>=targetRange[idx.z].z||idx.y<targetRange[idx.z].y||idx.y>=targetRange[idx.z].w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+vec4 u=texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0);
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos[2];
+vec2 sourceTexCoords[2];
+frustum_clip_pos[0]=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos[0]/=frustum_clip_pos[0].w;
+sourceTexCoords[0]=0.5*(frustum_clip_pos[0].xy+vec2(1.0,1.0));
+sourceTexCoords[0].y=1.0-sourceTexCoords[0].y;
+frustum_clip_pos[1]=mul(viewProj_alternateEye,vec4(view,1.0));
+frustum_clip_pos[1]/=frustum_clip_pos[1].w;
+sourceTexCoords[1]=0.5*(frustum_clip_pos[1].xy+vec2(1.0,1.0));
+sourceTexCoords[1].y=1.0-sourceTexCoords[1].y;
+vec4 clipRange=frustumClipRange;
+bool invalid0=frustum_clip_pos[0].z<0.0||frustum_clip_pos[0].x<clipRange.x||frustum_clip_pos[0].x>clipRange.z||frustum_clip_pos[0].y<clipRange.y||frustum_clip_pos[0].y>clipRange.w;
+bool invalid1=frustum_clip_pos[1].z<0.0||frustum_clip_pos[1].x<clipRange.x||frustum_clip_pos[1].x>clipRange.z||frustum_clip_pos[1].y<clipRange.y||frustum_clip_pos[1].y>clipRange.w;
+if(invalid0&&invalid1)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+float oldDepthValid=u.b;
+if(depth)
+{
+DepthInterpretationStruct ds;
+ds.depthToLinFadeDistParams=depthToLinFadeDistParams;
+ds.reverseDepth=reverseDepth;
+vec4 res=vec4(0,0,0,0);
+bool any_result=false;
+if(!invalid0&&!invalid1)
+{
+if(msaa)any_result=GetStochasticSamples_twoEyes_MSAA(sourceMSDepthTexture,sourceTexCoords,frustum_clip_pos,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,res);else
+any_result=GetStochasticSamples_twoEyes(sourceDepthTexture,sourceTexCoords,frustum_clip_pos,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,res);
+}
+else
+
+{
+vec2 sourct;
+vec4 frustum_clip;
+vec4 depthw;
+int j=0;
+if(!invalid1)
+{
+j=1;
+}
+
+sourct=sourceTexCoords[j];
+frustum_clip=frustum_clip_pos[j];
+depthw=depthWindow[j];
+any_result=GetStochasticSamples(sourceDepthTexture,depthw,sourct,frustum_clip.xy,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,j,res);
+}
+
+if(!any_result)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+imageStore(targetTexture,ivec3(idx),vec4(res));
+vec4 oldAggregateDepth=texelFetch(sampler2DArray(sourceTexture1[0]),ivec3(idx).xyz,0);
+oldDepthValid=u.b*step((res.x-oldAggregateDepth.x),0.01)*step(oldAggregateDepth.y-res.y,0.01);
+if(u.b==0)
+{
+imageStore(targetTexture2,ivec3(idx),vec4(res));
+imageStore(targetTexture3,ivec3(idx),vec4(res));
+}
+
+}
+
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(u.b,oldDepthValid,1.0,0.0)));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 610 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+DownscaleStochastic_twoEyes(pos,true,true,true);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_DownscaleStochastic_twoEyes_NoDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(rgba8, binding = 1) uniform image2DArray nextUpdateTexture;
+layout(rgba32f, binding = 2) uniform image2DArray targetTexture2;
+layout(rgba32f, binding = 3) uniform image2DArray targetTexture3;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t sourceMSDepthTexture[24];
+	uint64_t sourceDepthTexture[24];
+	uint64_t sourceTexture1[24];
+	uint64_t updateTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples(uint64_t sourceDepthTexture[24], vec4 depthWind, vec2 sourceTexCoords, vec2 frustum_clip_pos, vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, int j, out vec4 result)
+{
+vec2 texCoords=sourceTexCoords+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+
+{
+vec2 offs=texelRange*offsets[i];
+vec2 texc=saturate(1.01*(texCoords+.6*offs))/1.01;
+texc*=depthWind.zw;
+texc+=depthWind.xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos.xy,depthInterpretationStruct,tanHalfFov);
+if(dist.x<thr.x)continue;
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples_twoEyes(uint64_t sourceDepthTexture[24], vec2 sourceTexCoords[2], vec4 frustum_clip_pos[2], vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, out vec4 result)
+{
+vec2 texCoords[2];
+texCoords[0]=sourceTexCoords[0]+.3*texelRange*stochasticOffset;
+texCoords[1]=sourceTexCoords[1]+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+vec2 offs=texelRange*offsets[i];
+for(int j=0;j<2;j++)
+{
+vec2 texc=saturate(1.01*(texCoords[j]+.6*offs))/1.01;
+texc*=depthWindow[j].zw;
+texc+=depthWindow[j].xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos[j].xy,depthInterpretationStruct,tanHalfFov);
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 182 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples_twoEyes_MSAA(uint64_t sourceDepthTextureMS[24], vec2 sourceTexCoords[2], vec4 frustum_clip_pos[2], vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, out vec4 result)
+{
+vec2 texCoords[2];
+texCoords[0]=sourceTexCoords[0]+.3*texelRange*stochasticOffset;
+texCoords[1]=sourceTexCoords[1]+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+vec2 offs=vec2(texelRange*offsets[i]);
+for(int j=0;j<2;j++)
+{
+vec2 texc=saturate(1.01*(texCoords[j]+.6*offs))/1.01;
+texc*=depthWindow[j].zw;
+texc+=depthWindow[j].xy;
+uvec2 tex_pos=uvec2(texc*source_dims+vec2(0.5,0.5));
+vec2 d=texelFetch(sampler2DMS(sourceDepthTextureMS[0]),ivec2(tex_pos),int(0)).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos[j].xy,depthInterpretationStruct,tanHalfFov);
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 374 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void DownscaleStochastic_twoEyes(uvec3 idx, bool depth, bool reverseDepth, bool msaa)
+{
+if(idx.x<targetRange[idx.z].x||idx.x>=targetRange[idx.z].z||idx.y<targetRange[idx.z].y||idx.y>=targetRange[idx.z].w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+vec4 u=texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0);
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos[2];
+vec2 sourceTexCoords[2];
+frustum_clip_pos[0]=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos[0]/=frustum_clip_pos[0].w;
+sourceTexCoords[0]=0.5*(frustum_clip_pos[0].xy+vec2(1.0,1.0));
+sourceTexCoords[0].y=1.0-sourceTexCoords[0].y;
+frustum_clip_pos[1]=mul(viewProj_alternateEye,vec4(view,1.0));
+frustum_clip_pos[1]/=frustum_clip_pos[1].w;
+sourceTexCoords[1]=0.5*(frustum_clip_pos[1].xy+vec2(1.0,1.0));
+sourceTexCoords[1].y=1.0-sourceTexCoords[1].y;
+vec4 clipRange=frustumClipRange;
+bool invalid0=frustum_clip_pos[0].z<0.0||frustum_clip_pos[0].x<clipRange.x||frustum_clip_pos[0].x>clipRange.z||frustum_clip_pos[0].y<clipRange.y||frustum_clip_pos[0].y>clipRange.w;
+bool invalid1=frustum_clip_pos[1].z<0.0||frustum_clip_pos[1].x<clipRange.x||frustum_clip_pos[1].x>clipRange.z||frustum_clip_pos[1].y<clipRange.y||frustum_clip_pos[1].y>clipRange.w;
+if(invalid0&&invalid1)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+float oldDepthValid=u.b;
+if(depth)
+{
+DepthInterpretationStruct ds;
+ds.depthToLinFadeDistParams=depthToLinFadeDistParams;
+ds.reverseDepth=reverseDepth;
+vec4 res=vec4(0,0,0,0);
+bool any_result=false;
+if(!invalid0&&!invalid1)
+{
+if(msaa)any_result=GetStochasticSamples_twoEyes_MSAA(sourceMSDepthTexture,sourceTexCoords,frustum_clip_pos,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,res);else
+any_result=GetStochasticSamples_twoEyes(sourceDepthTexture,sourceTexCoords,frustum_clip_pos,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,res);
+}
+else
+
+{
+vec2 sourct;
+vec4 frustum_clip;
+vec4 depthw;
+int j=0;
+if(!invalid1)
+{
+j=1;
+}
+
+sourct=sourceTexCoords[j];
+frustum_clip=frustum_clip_pos[j];
+depthw=depthWindow[j];
+any_result=GetStochasticSamples(sourceDepthTexture,depthw,sourct,frustum_clip.xy,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,j,res);
+}
+
+if(!any_result)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+imageStore(targetTexture,ivec3(idx),vec4(res));
+vec4 oldAggregateDepth=texelFetch(sampler2DArray(sourceTexture1[0]),ivec3(idx).xyz,0);
+oldDepthValid=u.b*step((res.x-oldAggregateDepth.x),0.01)*step(oldAggregateDepth.y-res.y,0.01);
+if(u.b==0)
+{
+imageStore(targetTexture2,ivec3(idx),vec4(res));
+imageStore(targetTexture3,ivec3(idx),vec4(res));
+}
+
+}
+
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(u.b,oldDepthValid,1.0,0.0)));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 601 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+DownscaleStochastic_twoEyes(pos,false,false,false);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_DownscaleStochastic_twoEyes_ReverseDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(rgba8, binding = 1) uniform image2DArray nextUpdateTexture;
+layout(rgba32f, binding = 2) uniform image2DArray targetTexture2;
+layout(rgba32f, binding = 3) uniform image2DArray targetTexture3;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t sourceMSDepthTexture[24];
+	uint64_t sourceDepthTexture[24];
+	uint64_t sourceTexture1[24];
+	uint64_t updateTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples(uint64_t sourceDepthTexture[24], vec4 depthWind, vec2 sourceTexCoords, vec2 frustum_clip_pos, vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, int j, out vec4 result)
+{
+vec2 texCoords=sourceTexCoords+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+
+{
+vec2 offs=texelRange*offsets[i];
+vec2 texc=saturate(1.01*(texCoords+.6*offs))/1.01;
+texc*=depthWind.zw;
+texc+=depthWind.xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos.xy,depthInterpretationStruct,tanHalfFov);
+if(dist.x<thr.x)continue;
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples_twoEyes(uint64_t sourceDepthTexture[24], vec2 sourceTexCoords[2], vec4 frustum_clip_pos[2], vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, out vec4 result)
+{
+vec2 texCoords[2];
+texCoords[0]=sourceTexCoords[0]+.3*texelRange*stochasticOffset;
+texCoords[1]=sourceTexCoords[1]+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+vec2 offs=texelRange*offsets[i];
+for(int j=0;j<2;j++)
+{
+vec2 texc=saturate(1.01*(texCoords[j]+.6*offs))/1.01;
+texc*=depthWindow[j].zw;
+texc+=depthWindow[j].xy;
+vec2 d=textureLod(sampler2D(sourceDepthTexture[1 + 11]),texc,0).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+else
+
+{
+if(d.x<=0.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos[j].xy,depthInterpretationStruct,tanHalfFov);
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 182 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+bool GetStochasticSamples_twoEyes_MSAA(uint64_t sourceDepthTextureMS[24], vec2 sourceTexCoords[2], vec4 frustum_clip_pos[2], vec2 texelRange, DepthInterpretationStruct depthInterpretationStruct, vec4 tanHalfFov, float nearThresholdDepth, vec2 stochasticOffset, uvec2 scale, out vec4 result)
+{
+vec2 texCoords[2];
+texCoords[0]=sourceTexCoords[0]+.3*texelRange*stochasticOffset;
+texCoords[1]=sourceTexCoords[1]+.3*texelRange*stochasticOffset;
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec2 offsets[3];
+offsets[0]=vec2(-0.4,0.3);
+offsets[1]=vec2(0.4,0.3);
+offsets[2]=vec2(0.0,-0.5);
+bool any_result=false;
+for(int i=0;i<3;i++)
+{
+vec2 offs=vec2(texelRange*offsets[i]);
+for(int j=0;j<2;j++)
+{
+vec2 texc=saturate(1.01*(texCoords[j]+.6*offs))/1.01;
+texc*=depthWindow[j].zw;
+texc+=depthWindow[j].xy;
+uvec2 tex_pos=uvec2(texc*source_dims+vec2(0.5,0.5));
+vec2 d=texelFetch(sampler2DMS(sourceDepthTextureMS[0]),ivec2(tex_pos),int(0)).xx;
+if(depthInterpretationStruct.reverseDepth)
+{
+if(d.x>=1.0)continue;
+}
+
+vec2 dist=depthToFadeDistance(d,frustum_clip_pos[j].xy,depthInterpretationStruct,tanHalfFov);
+float s=saturate((dist.x)/thr.x);
+fn.yw=min(fn.yw,vec2((1.0-s),0.0)+dist);
+fn.xz=max(fn.xz,dist);
+any_result=true;
+}
+
+}
+
+result=saturate(fn.xyzw);
+return any_result;
+}
+#line 374 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void DownscaleStochastic_twoEyes(uvec3 idx, bool depth, bool reverseDepth, bool msaa)
+{
+if(idx.x<targetRange[idx.z].x||idx.x>=targetRange[idx.z].z||idx.y<targetRange[idx.z].y||idx.y>=targetRange[idx.z].w)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+vec4 u=texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0);
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos[2];
+vec2 sourceTexCoords[2];
+frustum_clip_pos[0]=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos[0]/=frustum_clip_pos[0].w;
+sourceTexCoords[0]=0.5*(frustum_clip_pos[0].xy+vec2(1.0,1.0));
+sourceTexCoords[0].y=1.0-sourceTexCoords[0].y;
+frustum_clip_pos[1]=mul(viewProj_alternateEye,vec4(view,1.0));
+frustum_clip_pos[1]/=frustum_clip_pos[1].w;
+sourceTexCoords[1]=0.5*(frustum_clip_pos[1].xy+vec2(1.0,1.0));
+sourceTexCoords[1].y=1.0-sourceTexCoords[1].y;
+vec4 clipRange=frustumClipRange;
+bool invalid0=frustum_clip_pos[0].z<0.0||frustum_clip_pos[0].x<clipRange.x||frustum_clip_pos[0].x>clipRange.z||frustum_clip_pos[0].y<clipRange.y||frustum_clip_pos[0].y>clipRange.w;
+bool invalid1=frustum_clip_pos[1].z<0.0||frustum_clip_pos[1].x<clipRange.x||frustum_clip_pos[1].x>clipRange.z||frustum_clip_pos[1].y<clipRange.y||frustum_clip_pos[1].y>clipRange.w;
+if(invalid0&&invalid1)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+float oldDepthValid=u.b;
+if(depth)
+{
+DepthInterpretationStruct ds;
+ds.depthToLinFadeDistParams=depthToLinFadeDistParams;
+ds.reverseDepth=reverseDepth;
+vec4 res=vec4(0,0,0,0);
+bool any_result=false;
+if(!invalid0&&!invalid1)
+{
+if(msaa)any_result=GetStochasticSamples_twoEyes_MSAA(sourceMSDepthTexture,sourceTexCoords,frustum_clip_pos,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,res);else
+any_result=GetStochasticSamples_twoEyes(sourceDepthTexture,sourceTexCoords,frustum_clip_pos,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,res);
+}
+else
+
+{
+vec2 sourct;
+vec4 frustum_clip;
+vec4 depthw;
+int j=0;
+if(!invalid1)
+{
+j=1;
+}
+
+sourct=sourceTexCoords[j];
+frustum_clip=frustum_clip_pos[j];
+depthw=depthWindow[j];
+any_result=GetStochasticSamples(sourceDepthTexture,depthw,sourct,frustum_clip.xy,texelRange,ds,tanHalfFov,nearThresholdDepth,stochasticOffset,scale,j,res);
+}
+
+if(!any_result)
+{
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(0,0,0,0)));
+return ;
+}
+
+imageStore(targetTexture,ivec3(idx),vec4(res));
+vec4 oldAggregateDepth=texelFetch(sampler2DArray(sourceTexture1[0]),ivec3(idx).xyz,0);
+oldDepthValid=u.b*step((res.x-oldAggregateDepth.x),0.01)*step(oldAggregateDepth.y-res.y,0.01);
+if(u.b==0)
+{
+imageStore(targetTexture2,ivec3(idx),vec4(res));
+imageStore(targetTexture3,ivec3(idx),vec4(res));
+}
+
+}
+
+imageStore(nextUpdateTexture,ivec3(idx),vec4(vec4(u.b,oldDepthValid,1.0,0.0)));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 581 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+DownscaleStochastic_twoEyes(pos,true,true,false);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_MinMax_ForwardDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+
+
+
+
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t previousCombinedTexture[24];
+	uint64_t sourceTexture1[24];
+	uint64_t sourceTexture2[24];
+	uint64_t sourceTexture3[24];
+	uint64_t updateTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 230 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+vec4 GetFrustumClipPos(uvec3 idx)
+{
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos/=frustum_clip_pos.w;
+return frustum_clip_pos;
+}
+#line 629 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void MinMax(uvec3 idx, bool reverseDepth)
+{
+vec2 texCoords=vec2(idx.xy)/vec2(target_dims);
+vec4 frustum_clip_pos=GetFrustumClipPos(idx);
+vec2 sourceTexCoords=0.5*(frustum_clip_pos.xy+vec2(1.0,1.0));
+sourceTexCoords.y=1.0-sourceTexCoords.y;
+vec4 clipRange=frustumClipRange;
+if(texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0).b==0.0)return ;
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec4 fn1=texelFetch(sampler2DArray(sourceTexture1[0]),ivec3(idx).xyz,0);
+vec4 fn2=texelFetch(sampler2DArray(sourceTexture2[0]),ivec3(idx).xyz,0);
+vec4 fn3=texelFetch(sampler2DArray(sourceTexture3[0]),ivec3(idx).xyz,0);
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+fn.yw=min(fn.yw,fn1.yw);
+fn.xz=max(fn.xz,fn1.xz);
+if(texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0).r>=1.0)
+{
+fn.yw=min(fn.yw,fn2.yw);
+fn.xz=max(fn.xz,fn2.xz);
+fn.yw=min(fn.yw,fn3.yw);
+fn.xz=max(fn.xz,fn3.xz);
+}
+
+fn.z=nearThresholdDist;
+vec4 res=saturate(fn);
+if(texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0).g<1)
+{
+imageStore(targetTexture,ivec3(idx),vec4(res));
+return ;
+}
+
+vec4 old_res=texelFetch(sampler2DArray(previousCombinedTexture[0]),ivec3(idx).xyz,0);
+res=blend*res+(1.0-blend)*old_res;
+imageStore(targetTexture,ivec3(idx),vec4(res));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 678 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+if(pos.x<targetRange[Z].x||pos.x>=targetRange[Z].z||pos.y<targetRange[Z].y||pos.y>=targetRange[Z].w)
+{
+return ;
+}
+
+MinMax(pos,false);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/mixed_resolution_CS_MinMax_ReverseDepth_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 34 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/mixed_resolution_constants.sl"
+layout(std140, binding = 11) uniform MixedResolutionConstants
+{
+	uvec4 cubeIndex[8];
+	uvec4 drawRange[8];
+	uvec4 targetRange[8];
+	mat4 invViewProj[8];
+	mat4 viewProj;
+	mat4 viewProj_alternateEye;
+	mat4 projUNUSED;
+	vec4 frustumClipRange;
+	vec4 depthToLinFadeDistParams;
+	vec4 tanHalfFov;
+	uvec2 source_dims;
+	uvec2 max_dims;
+	uvec2 target_dims;
+	uvec2 source_offsetUNUSED;
+	uvec2 scale;
+	vec2 texelRange;
+	vec4 depthWindow[2];
+	vec2 stochasticOffset;
+	float blend;
+	float padUNUSED;
+	float nearThresholdDepth;
+	float nearThresholdDist;
+	vec2 padding;
+};
+
+
+
+
+
+layout(rgba32f, binding = 0) uniform image2DArray targetTexture;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t previousCombinedTexture[24];
+	uint64_t sourceTexture1[24];
+	uint64_t sourceTexture2[24];
+	uint64_t sourceTexture3[24];
+	uint64_t updateTexture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 230 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+vec4 GetFrustumClipPos(uvec3 idx)
+{
+vec2 texCoords=(vec2(idx.xy)+vec2(0.5,0.5))/vec2(target_dims);
+vec4 clip_pos=vec4(-1.0,1.0,1.0,1.0);
+clip_pos.x+=2.0*texCoords.x;
+clip_pos.y-=2.0*texCoords.y;
+vec3 view=-normalize(mul(invViewProj[idx.z],clip_pos).xyz);
+vec4 frustum_clip_pos=mul(viewProj,vec4(view,1.0));
+frustum_clip_pos/=frustum_clip_pos.w;
+return frustum_clip_pos;
+}
+#line 629 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+void MinMax(uvec3 idx, bool reverseDepth)
+{
+vec2 texCoords=vec2(idx.xy)/vec2(target_dims);
+vec4 frustum_clip_pos=GetFrustumClipPos(idx);
+vec2 sourceTexCoords=0.5*(frustum_clip_pos.xy+vec2(1.0,1.0));
+sourceTexCoords.y=1.0-sourceTexCoords.y;
+vec4 clipRange=frustumClipRange;
+if(texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0).b==0.0)return ;
+vec2 thr=vec2(nearThresholdDist,nearThresholdDist);
+vec4 fn1=texelFetch(sampler2DArray(sourceTexture1[0]),ivec3(idx).xyz,0);
+vec4 fn2=texelFetch(sampler2DArray(sourceTexture2[0]),ivec3(idx).xyz,0);
+vec4 fn3=texelFetch(sampler2DArray(sourceTexture3[0]),ivec3(idx).xyz,0);
+vec4 fn=vec4(0.0,1.0,0.0,1.0);
+fn.yw=min(fn.yw,fn1.yw);
+fn.xz=max(fn.xz,fn1.xz);
+if(texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0).r>=1.0)
+{
+fn.yw=min(fn.yw,fn2.yw);
+fn.xz=max(fn.xz,fn2.xz);
+fn.yw=min(fn.yw,fn3.yw);
+fn.xz=max(fn.xz,fn3.xz);
+}
+
+fn.z=nearThresholdDist;
+vec4 res=saturate(fn);
+if(texelFetch(sampler2DArray(updateTexture[0]),ivec3(idx).xyz,0).g<1)
+{
+imageStore(targetTexture,ivec3(idx),vec4(res));
+return ;
+}
+
+vec4 old_res=texelFetch(sampler2DArray(previousCombinedTexture[0]),ivec3(idx).xyz,0);
+res=blend*res+(1.0-blend)*old_res;
+imageStore(targetTexture,ivec3(idx),vec4(res));
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 691 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/mixed_resolution.sfx"
+uvec2 idx=uvec2(g.xy*8+t.xy);
+uint Z=cubeIndex[g.z+t.z].x;
+uvec3 pos=uvec3(drawRange[Z].xy+idx,Z);
+if(pos.x<targetRange[Z].x||pos.x>=targetRange[Z].z||pos.y<targetRange[Z].y||pos.y>=targetRange[Z].w)
+{
+return ;
+}
+
+MinMax(pos,true);
+}

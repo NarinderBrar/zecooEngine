@@ -1,0 +1,21 @@
+cmake_minimum_required(VERSION 3.14)
+
+include_directories( ../.. )
+
+file(GLOB CMAKE
+    "*.cmake"
+)
+
+file(GLOB SOURCES
+    "*.cpp"
+)
+
+file(GLOB HEADERS
+    "*.h"
+)
+
+add_static_library( SimulTerrain SOURCES ${SOURCES} ${HEADERS} ${CMAKE})
+
+add_dynamic_library(SimulTerrain SOURCES ${SOURCES} ${HEADERS} ${CMAKE}
+	DEFINITIONS SIMUL_TERRAIN_DLL=1
+	LINK SimulSky_MD SimulCrossPlatform_MD)

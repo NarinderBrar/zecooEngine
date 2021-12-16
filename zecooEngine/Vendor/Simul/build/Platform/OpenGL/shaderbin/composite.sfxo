@@ -1,0 +1,587 @@
+SFX:OpenGL
+constant_buffer CompositingConstants 12
+constant_buffer DebugConstants 7
+texture depthTexture 2d read_only 5 single
+texture depthTextureMS 2dms read_only 6 single
+texture glowTexture 2d read_only 7 single
+texture godraysVolumeTexture 3d read_only 11 single
+texture imageCubeArrayTex cubemap read_only 2 array
+texture imageTexture 2d read_only 0 single
+texture imageTextureMS 2dms read_only 1 single
+texture inscatterVolumeTexture 3d read_only 10 single
+texture lightpassTexture cubemap read_only 4 single
+texture loss2dTexture 2d read_only 9 single
+texture nearFarTexture cubemap read_only 3 single
+SamplerState clampSamplerState 9,LINEAR,CLAMP,CLAMP,CLAMP,0,
+SamplerState cmcSamplerState 5,LINEAR,CLAMP,MIRROR,CLAMP,0,
+SamplerState cubeSamplerState 4,LINEAR,MIRROR,MIRROR,MIRROR,0,
+SamplerState samplerStateNearest 11,POINT,CLAMP,CLAMP,CLAMP,0,
+SamplerState samplerStateNearestWrap 14,POINT,WRAP,WRAP,WRAP,0,
+SamplerState wccSamplerState 1,LINEAR,WRAP,CLAMP,CLAMP,0,
+SamplerState wmcSamplerState 2,LINEAR,WRAP,MIRROR,CLAMP,0,
+SamplerState wwcSamplerState 7,LINEAR,WRAP,WRAP,CLAMP,0,
+RasterizerState RenderNoCull (false,CULL_NONE,0,0,false,FILL_SOLID,true,false,false,0)
+BlendState AlphaBlend false,(true,true),1,1,4,5,4,5,()
+BlendState CompositeBlend false,(true),1,1,1,13,0,1,(7,7)
+BlendState CubemapCompositeBlend false,(true),1,1,1,13,4,5,(7,7)
+BlendState DontBlend false,(false,false),1,1,4,5,4,5,()
+BlendState NoBlend false,(false),1,1,4,5,4,5,()
+DepthStencilState DisableDepth false,0,4
+group 
+{
+	technique blur
+	{
+		pass p0
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: AlphaBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_SimpleFullscreen_vv.glsl(main) inline:(0x4a387,0x63a), t:(), u:(), b:(), z:(), c:(), s:()
+						pixel: composite_PS_Blur.glsl(main) inline:(0x46c9,0xa5c), t:(0), u:(), b:(), z:(), c:(12), s:(9)
+		}
+	}
+	technique cubemap_to_screenspace
+	{
+		pass p0
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: DontBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_SimpleFullscreen_vv.glsl(main) inline:(0x4a387,0x63a), t:(), u:(), b:(), z:(), c:(), s:()
+						pixel: composite_PS_CubemapToScreenspace.glsl(main) inline:(0x3f672,0xb28), t:(3), u:(), b:(), z:(), c:(12), s:(4)
+		}
+	}
+	technique cubemap_to_screenspace_visibility
+	{
+		pass p0
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: DontBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_SimpleFullscreen_vv.glsl(main) inline:(0x4a387,0x63a), t:(), u:(), b:(), z:(), c:(), s:()
+						pixel: composite_PS_CubemapToScreenspaceVisibility.glsl(main) inline:(0x4019a,0xbdb), t:(2,3), u:(), b:(), z:(), c:(12), s:(4)
+		}
+	}
+	technique exposure_gamma
+	{
+		pass main
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: NoBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_SimpleFullscreen_vv.glsl(main) inline:(0x4a387,0x63a), t:(), u:(), b:(), z:(), c:(), s:()
+						pixel: composite_ExposureGammaPS.glsl(main) inline:(0x104e,0x785), t:(0), u:(), b:(), z:(), c:(12), s:(11)
+		}
+		pass msaa
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: NoBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_SimpleFullscreen_vv.glsl(main) inline:(0x4a387,0x63a), t:(), u:(), b:(), z:(), c:(), s:()
+						pixel: composite_ExposureGammaPS_MSAA.glsl(main) inline:(0x17d3,0x973), t:(1), u:(), b:(), z:(), c:(12), s:()
+		}
+	}
+	technique glow_exposure_gamma
+	{
+		pass main
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: NoBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_SimpleFullscreen_vv.glsl(main) inline:(0x4a387,0x63a), t:(), u:(), b:(), z:(), c:(), s:()
+						pixel: composite_GlowExposureGammaPS.glsl(main) inline:(0x2146,0xd69), t:(0,7), u:(), b:(), z:(), c:(12), s:(11)
+		}
+		pass msaa
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: NoBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_SimpleFullscreen_vv.glsl(main) inline:(0x4a387,0x63a), t:(), u:(), b:(), z:(), c:(), s:()
+						pixel: composite_GlowExposureGammaPS_MSAA.glsl(main) inline:(0x2eaf,0xf52), t:(1,7), u:(), b:(), z:(), c:(12), s:()
+		}
+	}
+	technique infra_red
+	{
+		pass main
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: NoBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_SimpleFullscreen_vv.glsl(main) inline:(0x4a387,0x63a), t:(), u:(), b:(), z:(), c:(), s:()
+						pixel: composite_PS_InfraRed.glsl(main) inline:(0x40d75,0x806), t:(0), u:(), b:(), z:(), c:(12), s:(9)
+		}
+		pass msaa
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: NoBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_SimpleFullscreen_vv.glsl(main) inline:(0x4a387,0x63a), t:(), u:(), b:(), z:(), c:(), s:()
+						pixel: composite_PS_InfraRed_MSAA.glsl(main) inline:(0x4157b,0x9f5), t:(1), u:(), b:(), z:(), c:(12), s:()
+		}
+	}
+	technique show_depth
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: NoBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_Debug2DVS_vv.glsl(main) inline:(0x0,0x827), t:(), u:(), b:(), z:(), c:(7), s:()
+						pixel: composite_ShowDepthPS_ForwardDepth.glsl(main) inline:(0x4286b,0x14b7), t:(5), u:(), b:(), z:(), c:(12), s:(9)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: NoBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_Debug2DVS_vv.glsl(main) inline:(0x0,0x827), t:(), u:(), b:(), z:(), c:(7), s:()
+						pixel: composite_ShowDepthPS_ReverseDepth.glsl(main) inline:(0x43d22,0x14b6), t:(5), u:(), b:(), z:(), c:(12), s:(9)
+		}
+	}
+	technique show_scattering_volume
+	{
+		pass p0
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: NoBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_Debug2DVS_vv.glsl(main) inline:(0x0,0x827), t:(), u:(), b:(), z:(), c:(7), s:()
+						pixel: composite_PS_ShowScatteringVolume.glsl(main) inline:(0x41f70,0x4aa), t:(10), u:(), b:(), z:(), c:(), s:(7)
+		}
+	}
+	technique show_volume
+	{
+		pass p0
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: DontBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_Debug2DVS_vv.glsl(main) inline:(0x0,0x827), t:(), u:(), b:(), z:(), c:(7), s:()
+						pixel: composite_PS_ShowVolume.glsl(main) inline:(0x4241a,0x451), t:(10), u:(), b:(), z:(), c:(), s:(11)
+		}
+	}
+	technique simul_glow
+	{
+		pass p0
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: DontBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_SimpleFullscreen_vv.glsl(main) inline:(0x4a387,0x63a), t:(), u:(), b:(), z:(), c:(), s:()
+						pixel: composite_GlowPS.glsl(main) inline:(0x3e01,0x8c8), t:(0), u:(), b:(), z:(), c:(12), s:(9)
+		}
+	}
+	technique textured
+	{
+		pass p0
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: DontBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_Debug2DVS_vv.glsl(main) inline:(0x0,0x827), t:(), u:(), b:(), z:(), c:(7), s:()
+						pixel: composite_TexturedPS.glsl(main) inline:(0x451d8,0x347), t:(), u:(), b:(), z:(), c:(), s:()
+		}
+	}
+}
+group composite_atmospherics
+{
+	technique cubemap
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CubemapCompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_Cubemap_ForwardDepth.glsl(main) inline:(0x5125,0x224d), t:(2,3,4,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CubemapCompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_Cubemap_ReverseDepth.glsl(main) inline:(0x7372,0x224c), t:(2,3,4,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5)
+		}
+	}
+	technique main
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ForwardDepth.glsl(main) inline:(0x95be,0x2aab), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ReverseDepth.glsl(main) inline:(0x2a0ba,0x2aaa), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+	}
+	technique main_with_godrays
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ForwardDepth_Godrays.glsl(main) inline:(0xc069,0x2ab2), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ReverseDepth_Godrays.glsl(main) inline:(0x2cb64,0x2ab1), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+	}
+	technique main_with_lightpass
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ForwardDepth_Lightpass.glsl(main) inline:(0x115d7,0x2ab4), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ReverseDepth_Lightpass.glsl(main) inline:(0x320d0,0x2ab3), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+	}
+	technique main_with_lightpass_godrays
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ForwardDepth_Lightpass_Godrays.glsl(main) inline:(0x1408b,0x2abb), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ReverseDepth_Lightpass_Godrays.glsl(main) inline:(0x34b83,0x2aba), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+	}
+	technique msaa
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_MSAA_ForwardDepth.glsl(main) inline:(0x1eb7e,0x2d4b), t:(2,3,4,6,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_MSAA_ReverseDepth.glsl(main) inline:(0x27370,0x2d4a), t:(2,3,4,6,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5)
+		}
+	}
+	technique msaa_with_lightpass
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_MSAA_LightPass_ForwardDepth.glsl(main) inline:(0x218c9,0x2d54), t:(2,3,4,6,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_MSAA_LightPass_ReverseDepth.glsl(main) inline:(0x2461d,0x2d53), t:(2,3,4,6,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5)
+		}
+	}
+}
+group composite_atmospherics_near_interp
+{
+	technique cubemap
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CubemapCompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_Cubemap_ForwardDepth.glsl(main) inline:(0x5125,0x224d), t:(2,3,4,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CubemapCompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_Cubemap_ReverseDepth.glsl(main) inline:(0x7372,0x224c), t:(2,3,4,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5)
+		}
+	}
+	technique main
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ForwardDepth_NearInterp.glsl(main) inline:(0x1c0c9,0x2ab5), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ReverseDepth_NearInterp.glsl(main) inline:(0x3cbbe,0x2ab4), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+	}
+	technique main_with_godrays
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ForwardDepth_Godrays_NearInterp.glsl(main) inline:(0xeb1b,0x2abc), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ReverseDepth_Godrays_NearInterp.glsl(main) inline:(0x2f615,0x2abb), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+	}
+	technique main_with_lightpass
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ForwardDepth_Lightpass_NearInterp.glsl(main) inline:(0x1960b,0x2abe), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ReverseDepth_Lightpass_NearInterp.glsl(main) inline:(0x3a101,0x2abd), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+	}
+	technique main_with_lightpass_godrays
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ForwardDepth_Lightpass_Godrays_NearInterp.glsl(main) inline:(0x16b46,0x2ac5), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_ReverseDepth_Lightpass_Godrays_NearInterp.glsl(main) inline:(0x3763d,0x2ac4), t:(2,3,4,5,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5,14)
+		}
+	}
+	technique msaa
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_MSAA_ForwardDepth.glsl(main) inline:(0x1eb7e,0x2d4b), t:(2,3,4,6,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_MSAA_ReverseDepth.glsl(main) inline:(0x27370,0x2d4a), t:(2,3,4,6,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5)
+		}
+	}
+	technique msaa_with_lightpass
+	{
+		pass forward_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_MSAA_LightPass_ForwardDepth.glsl(main) inline:(0x218c9,0x2d54), t:(2,3,4,6,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5)
+		}
+		pass reverse_depth
+		{
+			rasterizer: RenderNoCull
+			depthstencil: DisableDepth 0
+			blend: CompositeBlend (0,0,0,0) 4294967295
+			layout:
+			{
+			}
+			vertex: composite_VS_Composite_vv.glsl(main) inline:(0x4828d,0xa43), t:(), u:(), b:(), z:(), c:(12), s:()
+						pixel: composite_PS_CompositeAtmospherics_MSAA_LightPass_ReverseDepth.glsl(main) inline:(0x2461d,0x2d53), t:(2,3,4,6,9,10,11), u:(), b:(), z:(), c:(12), s:(1,2,4,5)
+		}
+	}
+}
+ 

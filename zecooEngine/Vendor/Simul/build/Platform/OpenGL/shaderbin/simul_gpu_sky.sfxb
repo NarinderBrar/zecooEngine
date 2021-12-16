@@ -1,0 +1,1377 @@
+#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_gpu_sky_CS_BlendColour3D_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+
+layout(rgba32f, binding = 0) uniform image3D targetTexture;
+#line 60 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/gpu_sky_constants.sl"
+layout(std140, binding = 8) uniform GpuSkyConstants
+{
+	vec2 texSize;
+	vec2 tableSize;
+	uvec3 threadOffset;
+	float emissivity;
+	vec3 zenith;
+	float distanceKm;
+	vec3 horizon;
+	float brightnessPower;
+	float texelOffset;
+	float prevDistanceKm;
+	float maxOutputAltKm;
+	float planetRadiusKm;
+	float maxDensityAltKm;
+	float hazeBaseHeightKm;
+	float hazeScaleHeightKm;
+	float seaLevelTemperatureK;
+	vec3 rayleigh;
+	float atmosphereThicknessKm;
+	vec3 hazeMie;
+	float XovercastRangeKmX;
+	vec3 ozone;
+	float sunRadiusRadians;
+	vec3 sunIrradiance;
+	float maxDistanceKm;
+	vec3 lightDir;
+	float hazeEccentricity;
+	vec3 starlight;
+	float previousZCoord;
+	vec3 mieRayleighRatio;
+	float minOutputAltKm;
+	vec4 yRange;
+	float texCoordZ;
+	float blendToColours;
+	float interpColours;
+	float sun_start_alt_km;
+	uvec3 targetSize;
+	int numMoons;
+	vec4 moonIrradianceFactor[10];
+	vec4 directionToMoon[10];
+};
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t colourTexture[24];
+	uint64_t colourTexture2[24];
+};
+layout(local_size_x=4, local_size_y=4, local_size_z=4) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 57 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_gpu_sky.sfx"
+uvec3 sub_pos=g*4+t;
+if(sub_pos.x>=targetSize.x||sub_pos.y>=targetSize.y||sub_pos.z>=targetSize.z)return ;
+vec3 texc=vec3(sub_pos.zyx)/vec3(targetSize.zyx);
+vec4 c1=textureLod(sampler3D(colourTexture[1 + 9]),texc,0);
+vec4 c2=textureLod(sampler3D(colourTexture2[1 + 9]),texc,0);
+vec4 c=mix(c1,c2,interpColours);
+imageStore(targetTexture,ivec3(sub_pos),vec4(c));
+;
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_gpu_sky_CS_Insc_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+
+
+layout(rgba32f, binding = 0) uniform image3D targetTexture;
+#line 60 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/gpu_sky_constants.sl"
+layout(std140, binding = 8) uniform GpuSkyConstants
+{
+	vec2 texSize;
+	vec2 tableSize;
+	uvec3 threadOffset;
+	float emissivity;
+	vec3 zenith;
+	float distanceKm;
+	vec3 horizon;
+	float brightnessPower;
+	float texelOffset;
+	float prevDistanceKm;
+	float maxOutputAltKm;
+	float planetRadiusKm;
+	float maxDensityAltKm;
+	float hazeBaseHeightKm;
+	float hazeScaleHeightKm;
+	float seaLevelTemperatureK;
+	vec3 rayleigh;
+	float atmosphereThicknessKm;
+	vec3 hazeMie;
+	float XovercastRangeKmX;
+	vec3 ozone;
+	float sunRadiusRadians;
+	vec3 sunIrradiance;
+	float maxDistanceKm;
+	vec3 lightDir;
+	float hazeEccentricity;
+	vec3 starlight;
+	float previousZCoord;
+	vec3 mieRayleighRatio;
+	float minOutputAltKm;
+	vec4 yRange;
+	float texCoordZ;
+	float blendToColours;
+	float interpColours;
+	float sun_start_alt_km;
+	uvec3 targetSize;
+	int numMoons;
+	vec4 moonIrradianceFactor[10];
+	vec4 directionToMoon[10];
+};
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t density_texture[24];
+	uint64_t loss_texture[24];
+	uint64_t optical_depth_texture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+ivec3 LinearThreadToPos2D(int linear_pos, ivec3 dims)
+{
+int yy=int(float(linear_pos)/float(dims.x));
+int xx=linear_pos-yy*int(dims.x);
+return ivec3(xx,yy,0);
+}
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float texcToAltKm(float texc, float minOutputAltKm, float maxOutputAltKm)
+{
+return minOutputAltKm+texc*texc*(maxOutputAltKm-minOutputAltKm);
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getHazeFactorAtAltitude(float alt_km)
+{
+if(alt_km<hazeBaseHeightKm)alt_km=hazeBaseHeightKm;
+float val=exp((hazeBaseHeightKm-alt_km)/hazeScaleHeightKm);
+return val;
+}
+#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getHazeOpticalLength(float sine_elevation, float h_km)
+{
+float R=planetRadiusKm;
+float Rh=R+h_km;
+float RH=R+hazeBaseHeightKm;
+float c=sqrt(1.0-sine_elevation*sine_elevation);
+float u=RH*RH-Rh*Rh*c*c;
+float U=R*R-Rh*Rh*c*c;
+float haze_opt_len=0.0;
+if(sine_elevation<0&&u>0)haze_opt_len=2.0*sqrt(u);
+float Rmin=Rh*c;
+if(sine_elevation>0.0)Rmin=Rh;
+if(sine_elevation<0.0&&u>0.0)Rmin=RH;
+float h1=Rh-RH;
+float h2=Rmin-RH;
+float s=sine_elevation;
+float n=hazeScaleHeightKm;
+if(s<0.0)haze_opt_len+=n/s*(saturate(exp(-h1/n))-saturate(exp(-h2/n)));
+if(s<0.0)s*=-1.0;
+if(s<0.01)s=0.01;
+haze_opt_len+=n/s*(exp(-abs(h2)/n));
+return haze_opt_len;
+}
+#line 91 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float GetOpticalDepth(uint64_t density_texture[24], float max_altitude_km, float alt_km, vec3 dir)
+{
+float total=0;
+float RH=planetRadiusKm+atmosphereThicknessKm;
+float Rh=planetRadiusKm+max(0.0,alt_km);
+float cosine=-dir.z;
+float b=-2*Rh*cosine;
+float c=Rh*Rh-RH*RH;
+float U=max(0.0,b*b-4.0*c);
+float distance_to_edge=0.5*(-b+sqrt(U));
+int Steps=16;
+float step_=distance_to_edge/float(Steps);
+float d=step_/2.0;
+for(int i=0;i<Steps;i++)
+{
+float Ra=sqrt(Rh*Rh+d*d-2*Rh*d*cosine);
+float new_alt_km=Ra-planetRadiusKm;
+float dens_here=textureLod(sampler2D(density_texture[1 + 9]),vec2(new_alt_km/max_altitude_km,new_alt_km/max_altitude_km),0).x;
+total+=dens_here*step_;
+d+=step_;
+}
+
+return max(0.0,total);
+}
+#line 120 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+vec4 getSunlightFactor2(uint64_t optical_depth_texture[24], uint64_t density_texture[24], float max_altitude_km, float alt_km, vec3 lightDir)
+{
+float sine=clamp(lightDir.z,-1.0,1.0);
+float angle=asin(sine);
+vec2 table_texc=vec2(0.5+0.5*sine,alt_km/maxDensityAltKm);
+table_texc+=vec2(texelOffset/tableSize.x,texelOffset/tableSize.y);
+vec4 lookup=textureLod(sampler2D(optical_depth_texture[1 + 9]),table_texc,0);
+float opt_depth_km=GetOpticalDepth(density_texture,max_altitude_km,alt_km,lightDir);
+float vis=1;
+float ozone_length=lookup.w;
+float haze_opt_len=getHazeOpticalLength(sine,alt_km);
+vec4 factor=vec4(vis,vis,vis,vis);
+factor.rgb*=exp(-rayleigh*opt_depth_km-hazeMie*haze_opt_len-ozone*ozone_length);
+return saturate(factor);
+}
+#line 139 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+vec4 getSunlightFactor3(uint64_t optical_depth_texture[24], uint64_t density_texture[24], float max_altitude_km, float alt_km, vec3 lightDir, float planetRadiusKm, float radiusRadians)
+{
+if(lightDir.z>0.707)return getSunlightFactor2(optical_depth_texture,density_texture,max_altitude_km,alt_km,lightDir);
+vec3 side=normalize(cross(lightDir,vec3(0,0,1.0)));
+float sine=clamp(lightDir.z,-1.0,1.0);
+float elevation=asin(sine);
+vec4 result=vec4(0,0,0,0);
+for(int i=0;i<17;i++)
+{
+float new_elev=elevation+float(i-8)/8.0*radiusRadians;
+vec3 new_dir=vec3(lightDir.xy,sin(new_elev));
+new_dir.xy=normalize(new_dir.xy);
+new_dir.xy*=sqrt(1.0-(new_dir.z*new_dir.z));
+float vis=1.0;
+float horizon_rads=-acos(min(planetRadiusKm/(planetRadiusKm+alt_km),1.0));
+float above_horizon_rads=(elevation-horizon_rads);
+if(above_horizon_rads<-radiusRadians)vis=0;
+if(radiusRadians!=0)
+{
+if(above_horizon_rads<radiusRadians)
+{
+float h=clamp(above_horizon_rads/radiusRadians,-1.0,1.0);
+float a=acos(abs(h));
+float c=(a-abs(h*sin(a)))/3.1415926536;
+if(h>=0)vis=1.0-c;else
+vis=c;
+}
+
+}
+
+vec4 fac=getSunlightFactor2(optical_depth_texture,density_texture,max_altitude_km,alt_km,new_dir)*vis;
+result+=fac/17.0;
+}
+
+return result;
+}
+#line 181 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getShortestDistanceToAltitude(float sine_elevation, float start_h_km, float finish_h_km)
+{
+float RH=planetRadiusKm+finish_h_km;
+float Rh=planetRadiusKm+start_h_km;
+float cosine=-sine_elevation;
+float b=-2.0*Rh*cosine;
+float c=Rh*Rh-RH*RH;
+float b24c=b*b-4*c;
+if(b24c<0)return -1.0;
+float dist;
+float s=sqrt(b24c);
+dist=0.5*(-b+s);
+return dist;
+}
+#line 200 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getDistanceToSpace(float sine_elevation, float h_km)
+{
+return getShortestDistanceToAltitude(sine_elevation,h_km,maxDensityAltKm);
+}
+#line 174 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_gpu_sky.sfx"
+vec4 CalcInscatter(ivec3 pos, float multiplier, bool store)
+{
+vec2 texc=(pos.xy+vec2(0.5,0.5))/vec2(targetSize.xy);
+vec4 previous_insc=vec4(0.0,0.0,0.0,0.0);
+float sin_e=max(-1.0,min(1.0,1.0-2.0*(texc.y*texSize.y-texelOffset)/(texSize.y-1.0)));
+float cos_e=sqrt(1.0-sin_e*sin_e);
+float altTexc=(texc.x*texSize.x-texelOffset)/max(texSize.x-1.0,1.0);
+float viewAltKm=texcToAltKm(altTexc,minOutputAltKm,maxOutputAltKm);
+float spaceDistKm=getDistanceToSpace(sin_e,viewAltKm);
+float prevDist_km=0.0;
+vec3 mie_factor=vec3(1.0,1.0,1.0);
+vec4 store_insc=vec4(0.0,0.0,0.0,0.0);
+if(store)
+{
+imageStore(targetTexture,ivec3(uvec3(pos.xy,0)),vec4(vec4(0.0,0.0,0.0,0.0)));
+;
+}
+
+for(uint i=1;i<64;i++)
+{
+if(i>=targetSize.z)break;
+uvec3 idx=uvec3(pos.xy,i);
+float zPosition=pow(float(i)/(float(targetSize.z)-1.0),2.0);
+vec3 previous_loss=texelFetch(sampler3D(loss_texture[0]),ivec3(ivec4(uvec3(pos.xy,i-1),0)).xyz,int(ivec4(uvec3(pos.xy,i-1),0).w)).rgb;
+float dist_km=zPosition*maxDistanceKm;
+if(i==targetSize.z-1)dist_km=1000.0;
+float maxd=min(spaceDistKm,dist_km);
+float mind=min(spaceDistKm,prevDist_km);
+float dist=0.5*(mind+maxd);
+float stepLengthKm=max(0.0,maxd-mind);
+float y=planetRadiusKm+viewAltKm+dist*sin_e;
+float x=dist*cos_e;
+float r=sqrt(x*x+y*y);
+float alt_km=r-planetRadiusKm;
+float dens_texc=(alt_km/maxDensityAltKm*(tableSize.x-1.0)+texelOffset)/tableSize.x;
+vec4 lookups=textureLod(sampler2D(density_texture[1 + 9]),vec2(dens_texc,0.5),0);
+float dens_factor=lookups.x;
+float ozone_factor=lookups.y;
+float haze_factor=getHazeFactorAtAltitude(alt_km);
+vec4 light=multiplier*getSunlightFactor3(optical_depth_texture,density_texture,maxDensityAltKm,alt_km,lightDir,planetRadiusKm,0.000001);
+for(int j=0;j<numMoons;j++)light+=vec4(multiplier*moonIrradianceFactor[j].rgb,1.0)*getSunlightFactor3(optical_depth_texture,density_texture,maxDensityAltKm,alt_km,directionToMoon[j].xyz,planetRadiusKm,0.000001);
+light.rgb*=sunIrradiance;
+light.rgb*=0.0596831;
+vec4 insc=light;
+vec3 extinction=dens_factor*rayleigh+haze_factor*hazeMie;
+vec3 loss;
+loss=exp(-extinction*stepLengthKm);
+insc.rgb*=vec3(1.0,1.0,1.0)-loss;
+mie_factor*=exp(-insc.w*stepLengthKm*haze_factor*hazeMie);
+insc.rgb*=previous_loss.rgb;
+insc.rgb+=previous_insc.rgb;
+insc.w=saturate((1.0-mie_factor.x)/(1.0-previous_loss.x+0.0001f));
+vec3 ctexc=(vec3(idx)+vec3(0.5,0.5,0.5))/vec3(targetSize.xyz);
+vec3 insc_colour=mix((vec3(0,0,0)),mix(horizon,zenith,saturate(sin_e)),1.0-previous_loss.r);
+store_insc=mix(insc,vec4(insc_colour,insc.a),blendToColours);
+if(store)
+{
+imageStore(targetTexture,ivec3(idx),vec4(store_insc));
+;
+}
+
+prevDist_km=dist_km;
+previous_insc=insc;
+}
+
+return store_insc;
+}
+layout(local_size_x=8, local_size_y=1, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 280 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_gpu_sky.sfx"
+ivec3 sub_pos=ivec3(g)*ivec3(8,1,1)+ivec3(t);
+int linear_pos=int(sub_pos.x)+int(threadOffset.x);
+ivec3 pos=LinearThreadToPos2D(linear_pos,ivec3(targetSize));
+if(pos.x<0||pos.y<0||(pos.x)>=targetSize.x||(pos.y)>=targetSize.y)return ;
+CalcInscatter(pos,1.0,true);
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_gpu_sky_CS_LightTable_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+
+
+layout(rgba32f, binding = 0) uniform image3D targetTexture;
+layout(std430, binding = 1) buffer skyBrightnessRW_ssbo
+{
+	vec4 skyBrightnessRW[]; 
+};
+#line 60 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/gpu_sky_constants.sl"
+layout(std140, binding = 8) uniform GpuSkyConstants
+{
+	vec2 texSize;
+	vec2 tableSize;
+	uvec3 threadOffset;
+	float emissivity;
+	vec3 zenith;
+	float distanceKm;
+	vec3 horizon;
+	float brightnessPower;
+	float texelOffset;
+	float prevDistanceKm;
+	float maxOutputAltKm;
+	float planetRadiusKm;
+	float maxDensityAltKm;
+	float hazeBaseHeightKm;
+	float hazeScaleHeightKm;
+	float seaLevelTemperatureK;
+	vec3 rayleigh;
+	float atmosphereThicknessKm;
+	vec3 hazeMie;
+	float XovercastRangeKmX;
+	vec3 ozone;
+	float sunRadiusRadians;
+	vec3 sunIrradiance;
+	float maxDistanceKm;
+	vec3 lightDir;
+	float hazeEccentricity;
+	vec3 starlight;
+	float previousZCoord;
+	vec3 mieRayleighRatio;
+	float minOutputAltKm;
+	vec4 yRange;
+	float texCoordZ;
+	float blendToColours;
+	float interpColours;
+	float sun_start_alt_km;
+	uvec3 targetSize;
+	int numMoons;
+	vec4 moonIrradianceFactor[10];
+	vec4 directionToMoon[10];
+};
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t density_texture[24];
+	uint64_t insc_texture[24];
+	uint64_t optical_depth_texture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_inscatter_fns.sl"
+float CalcRayleighBeta(float cos0)
+{
+return (1.0+cos0*cos0);
+}
+#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_inscatter_fns.sl"
+float HenyeyGreenstein(float g, float cos0)
+{
+float g2=g*g;
+float u=1.0+g2-2.0*g*cos0;
+return (1.0-g2)*pow(u,-1.5)/(4.0*3.1415926536);
+}
+#line 39 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_inscatter_fns.sl"
+vec3 PrecalculatedInscatterFunction(vec4 inscatter_factor, float BetaRayleigh, float BetaMie, vec3 mieRayleighRatio)
+{
+vec3 mr=mieRayleighRatio.xyz;
+vec3 BetaTotal=(BetaRayleigh+BetaMie*mr)/(vec3(1.0,1.0,1.0)+mr);
+vec3 colour=BetaTotal*inscatter_factor.rgb;
+return colour;
+}
+#line 47 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_inscatter_fns.sl"
+vec3 InscatterFunction(vec4 inscatter_factor, float hazeEccentricity, float cos0, vec3 mieRayleighRatio)
+{
+float BetaRayleigh=CalcRayleighBeta(cos0);
+float BetaMie=HenyeyGreenstein(hazeEccentricity,cos0);
+return PrecalculatedInscatterFunction(inscatter_factor,BetaRayleigh,BetaMie,mieRayleighRatio);
+}
+#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getHazeOpticalLength(float sine_elevation, float h_km)
+{
+float R=planetRadiusKm;
+float Rh=R+h_km;
+float RH=R+hazeBaseHeightKm;
+float c=sqrt(1.0-sine_elevation*sine_elevation);
+float u=RH*RH-Rh*Rh*c*c;
+float U=R*R-Rh*Rh*c*c;
+float haze_opt_len=0.0;
+if(sine_elevation<0&&u>0)haze_opt_len=2.0*sqrt(u);
+float Rmin=Rh*c;
+if(sine_elevation>0.0)Rmin=Rh;
+if(sine_elevation<0.0&&u>0.0)Rmin=RH;
+float h1=Rh-RH;
+float h2=Rmin-RH;
+float s=sine_elevation;
+float n=hazeScaleHeightKm;
+if(s<0.0)haze_opt_len+=n/s*(saturate(exp(-h1/n))-saturate(exp(-h2/n)));
+if(s<0.0)s*=-1.0;
+if(s<0.01)s=0.01;
+haze_opt_len+=n/s*(exp(-abs(h2)/n));
+return haze_opt_len;
+}
+#line 91 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float GetOpticalDepth(uint64_t density_texture[24], float max_altitude_km, float alt_km, vec3 dir)
+{
+float total=0;
+float RH=planetRadiusKm+atmosphereThicknessKm;
+float Rh=planetRadiusKm+max(0.0,alt_km);
+float cosine=-dir.z;
+float b=-2*Rh*cosine;
+float c=Rh*Rh-RH*RH;
+float U=max(0.0,b*b-4.0*c);
+float distance_to_edge=0.5*(-b+sqrt(U));
+int Steps=16;
+float step_=distance_to_edge/float(Steps);
+float d=step_/2.0;
+for(int i=0;i<Steps;i++)
+{
+float Ra=sqrt(Rh*Rh+d*d-2*Rh*d*cosine);
+float new_alt_km=Ra-planetRadiusKm;
+float dens_here=textureLod(sampler2D(density_texture[1 + 9]),vec2(new_alt_km/max_altitude_km,new_alt_km/max_altitude_km),0).x;
+total+=dens_here*step_;
+d+=step_;
+}
+
+return max(0.0,total);
+}
+#line 120 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+vec4 getSunlightFactor2(uint64_t optical_depth_texture[24], uint64_t density_texture[24], float max_altitude_km, float alt_km, vec3 lightDir)
+{
+float sine=clamp(lightDir.z,-1.0,1.0);
+float angle=asin(sine);
+vec2 table_texc=vec2(0.5+0.5*sine,alt_km/maxDensityAltKm);
+table_texc+=vec2(texelOffset/tableSize.x,texelOffset/tableSize.y);
+vec4 lookup=textureLod(sampler2D(optical_depth_texture[1 + 9]),table_texc,0);
+float opt_depth_km=GetOpticalDepth(density_texture,max_altitude_km,alt_km,lightDir);
+float vis=1;
+float ozone_length=lookup.w;
+float haze_opt_len=getHazeOpticalLength(sine,alt_km);
+vec4 factor=vec4(vis,vis,vis,vis);
+factor.rgb*=exp(-rayleigh*opt_depth_km-hazeMie*haze_opt_len-ozone*ozone_length);
+return saturate(factor);
+}
+#line 139 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+vec4 getSunlightFactor3(uint64_t optical_depth_texture[24], uint64_t density_texture[24], float max_altitude_km, float alt_km, vec3 lightDir, float planetRadiusKm, float radiusRadians)
+{
+if(lightDir.z>0.707)return getSunlightFactor2(optical_depth_texture,density_texture,max_altitude_km,alt_km,lightDir);
+vec3 side=normalize(cross(lightDir,vec3(0,0,1.0)));
+float sine=clamp(lightDir.z,-1.0,1.0);
+float elevation=asin(sine);
+vec4 result=vec4(0,0,0,0);
+for(int i=0;i<17;i++)
+{
+float new_elev=elevation+float(i-8)/8.0*radiusRadians;
+vec3 new_dir=vec3(lightDir.xy,sin(new_elev));
+new_dir.xy=normalize(new_dir.xy);
+new_dir.xy*=sqrt(1.0-(new_dir.z*new_dir.z));
+float vis=1.0;
+float horizon_rads=-acos(min(planetRadiusKm/(planetRadiusKm+alt_km),1.0));
+float above_horizon_rads=(elevation-horizon_rads);
+if(above_horizon_rads<-radiusRadians)vis=0;
+if(radiusRadians!=0)
+{
+if(above_horizon_rads<radiusRadians)
+{
+float h=clamp(above_horizon_rads/radiusRadians,-1.0,1.0);
+float a=acos(abs(h));
+float c=(a-abs(h*sin(a)))/3.1415926536;
+if(h>=0)vis=1.0-c;else
+vis=c;
+}
+
+}
+
+vec4 fac=getSunlightFactor2(optical_depth_texture,density_texture,max_altitude_km,alt_km,new_dir)*vis;
+result+=fac/17.0;
+}
+
+return result;
+}
+#line 286 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+vec3 getSkylight(float alt_km, uint64_t insc_texture[24])
+{
+vec4 insc=textureLod(sampler3D(insc_texture[1 + 9]),vec3(sqrt(alt_km/maxOutputAltKm),0.0,1.0),0);
+vec3 skylight=InscatterFunction(insc,hazeEccentricity,0.0,mieRayleighRatio);
+return skylight;
+}
+layout(local_size_x=8, local_size_y=1, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 128 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_gpu_sky.sfx"
+uvec3 sub_pos=g*8+t;
+uvec3 pos=sub_pos+threadOffset;
+float alt_texc=float(pos.x)/float(targetSize.x);
+float alt_km=(alt_texc/0.5)*(sun_start_alt_km+1.0)-1.0;
+if(alt_texc>=0.5)alt_km=mix(sun_start_alt_km,maxOutputAltKm,2.0*alt_texc-1.0);
+vec4 sun_irr=skyBrightnessRW[0].a*vec4(sunIrradiance,1.0);
+vec4 sunlight=sun_irr*getSunlightFactor3(optical_depth_texture,density_texture,maxDensityAltKm,alt_km,lightDir,planetRadiusKm,sunRadiusRadians)*smoothstep(-.15,0.0,alt_km);
+vec4 moonlight=vec4(0,0,0,0);
+for(int i=0;i<numMoons;i++)
+{
+moonlight+=sun_irr*getSunlightFactor3(optical_depth_texture,density_texture,maxDensityAltKm,alt_km,directionToMoon[i].xyz,planetRadiusKm,directionToMoon[i].w)*vec4(moonIrradianceFactor[i].rgb,1.0);
+}
+
+vec4 ambientLight=vec4(getSkylight(alt_km,insc_texture),1.0);
+uvec3 pos_sun=uvec3(pos.xy,0);
+imageStore(targetTexture,ivec3(pos_sun),vec4(sunlight));
+;
+uvec3 pos_moon=uvec3(pos.xy,1);
+imageStore(targetTexture,ivec3(pos_moon),vec4(moonlight));
+;
+uvec3 pos_amb=uvec3(pos.xy,2);
+imageStore(targetTexture,ivec3(pos_amb),vec4(ambientLight));
+;
+uvec3 pos_both=uvec3(pos.xy,3);
+vec4 both=sunlight+moonlight;
+imageStore(targetTexture,ivec3(pos_both),vec4(both));
+;
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_gpu_sky_CS_Loss_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+layout(rgba32f, binding = 0) uniform image3D targetTexture;
+#line 60 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/gpu_sky_constants.sl"
+layout(std140, binding = 8) uniform GpuSkyConstants
+{
+	vec2 texSize;
+	vec2 tableSize;
+	uvec3 threadOffset;
+	float emissivity;
+	vec3 zenith;
+	float distanceKm;
+	vec3 horizon;
+	float brightnessPower;
+	float texelOffset;
+	float prevDistanceKm;
+	float maxOutputAltKm;
+	float planetRadiusKm;
+	float maxDensityAltKm;
+	float hazeBaseHeightKm;
+	float hazeScaleHeightKm;
+	float seaLevelTemperatureK;
+	vec3 rayleigh;
+	float atmosphereThicknessKm;
+	vec3 hazeMie;
+	float XovercastRangeKmX;
+	vec3 ozone;
+	float sunRadiusRadians;
+	vec3 sunIrradiance;
+	float maxDistanceKm;
+	vec3 lightDir;
+	float hazeEccentricity;
+	vec3 starlight;
+	float previousZCoord;
+	vec3 mieRayleighRatio;
+	float minOutputAltKm;
+	vec4 yRange;
+	float texCoordZ;
+	float blendToColours;
+	float interpColours;
+	float sun_start_alt_km;
+	uvec3 targetSize;
+	int numMoons;
+	vec4 moonIrradianceFactor[10];
+	vec4 directionToMoon[10];
+};
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t density_texture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+ivec3 LinearThreadToPos2D(int linear_pos, ivec3 dims)
+{
+int yy=int(float(linear_pos)/float(dims.x));
+int xx=linear_pos-yy*int(dims.x);
+return ivec3(xx,yy,0);
+}
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float texcToAltKm(float texc, float minOutputAltKm, float maxOutputAltKm)
+{
+return minOutputAltKm+texc*texc*(maxOutputAltKm-minOutputAltKm);
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getHazeFactorAtAltitude(float alt_km)
+{
+if(alt_km<hazeBaseHeightKm)alt_km=hazeBaseHeightKm;
+float val=exp((hazeBaseHeightKm-alt_km)/hazeScaleHeightKm);
+return val;
+}
+#line 181 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getShortestDistanceToAltitude(float sine_elevation, float start_h_km, float finish_h_km)
+{
+float RH=planetRadiusKm+finish_h_km;
+float Rh=planetRadiusKm+start_h_km;
+float cosine=-sine_elevation;
+float b=-2.0*Rh*cosine;
+float c=Rh*Rh-RH*RH;
+float b24c=b*b-4*c;
+if(b24c<0)return -1.0;
+float dist;
+float s=sqrt(b24c);
+dist=0.5*(-b+s);
+return dist;
+}
+#line 200 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getDistanceToSpace(float sine_elevation, float h_km)
+{
+return getShortestDistanceToAltitude(sine_elevation,h_km,maxDensityAltKm);
+}
+layout(local_size_x=8, local_size_y=1, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 71 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_gpu_sky.sfx"
+uvec3 dims;
+uvec3 sub_pos=uvec3(8*g.x,g.y,g.z)+t;
+ivec3 ivtargetTexture = imageSize(targetTexture);
+dims.x = ivtargetTexture.x;dims.y = ivtargetTexture.y;dims.z = ivtargetTexture.z;;
+uint linear_pos=(sub_pos.x+threadOffset.x);
+ivec3 pos=LinearThreadToPos2D(int(linear_pos),ivec3(dims));
+if((pos.x)>=targetSize.x||(pos.y)>=targetSize.y)return ;
+imageStore(targetTexture,ivec3(pos),vec4(vec4(1.0,0.0,0.0,1.0)));
+;
+vec2 texc=(pos.xy+vec2(0.5,0.5))/vec2(targetSize.xy);
+vec4 previous_loss=vec4(1.0,1.0,1.0,1.0);
+float sin_e=max(-1.0,min(1.0,1.0-2.0*(texc.y*texSize.y-texelOffset)/(texSize.y-1.0)));
+float cos_e=sqrt(1.0-sin_e*sin_e);
+float altTexc=(texc.x*texSize.x-texelOffset)/max(texSize.x-1.0,1.0);
+float viewAltKm=texcToAltKm(altTexc,minOutputAltKm,maxOutputAltKm);
+float spaceDistKm=getDistanceToSpace(sin_e,viewAltKm);
+float prevDist_km=0.0;
+for(uint i=0;i<targetSize.z;i++)
+{
+uvec3 idx=uvec3(pos.xy,i);
+float zPosition=pow(float(i)/(float(targetSize.z)-1.0),2.0);
+float dist_km=zPosition*maxDistanceKm;
+if(i==targetSize.z-1)dist_km=12000.0;
+float maxd=min(spaceDistKm,dist_km);
+float mind=min(spaceDistKm,prevDist_km);
+float dist=0.5*(mind+maxd);
+float stepLengthKm=max(0.0,maxd-mind);
+float y=planetRadiusKm+viewAltKm+dist*sin_e;
+float x=dist*cos_e;
+float r=sqrt(x*x+y*y);
+float alt_km=r-planetRadiusKm;
+float dens_texc=saturate((alt_km/maxDensityAltKm*(tableSize.x-1.0)+texelOffset)/tableSize.x);
+vec4 lookups=textureLod(sampler2D(density_texture[1 + 9]),vec2(dens_texc,.5),0);
+float dens_factor=lookups.x;
+float ozone_factor=lookups.y;
+float haze_factor=getHazeFactorAtAltitude(alt_km);
+vec3 extinction=dens_factor*rayleigh+haze_factor*hazeMie+ozone*ozone_factor;
+vec4 loss;
+loss.rgb=exp(-extinction*stepLengthKm);
+loss.a=(loss.r+loss.g+loss.b)/3.0;
+loss*=previous_loss;
+imageStore(targetTexture,ivec3(idx),vec4(vec4(loss.rgb,1.0)));
+;
+prevDist_km=dist_km;
+previous_loss=loss;
+}
+
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_gpu_sky_CS_Skyl_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+
+
+
+layout(rgba32f, binding = 0) uniform image3D targetTexture;
+layout(std430, binding = 1) buffer skyBrightnessRW_ssbo
+{
+	vec4 skyBrightnessRW[]; 
+};
+#line 60 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/gpu_sky_constants.sl"
+layout(std140, binding = 8) uniform GpuSkyConstants
+{
+	vec2 texSize;
+	vec2 tableSize;
+	uvec3 threadOffset;
+	float emissivity;
+	vec3 zenith;
+	float distanceKm;
+	vec3 horizon;
+	float brightnessPower;
+	float texelOffset;
+	float prevDistanceKm;
+	float maxOutputAltKm;
+	float planetRadiusKm;
+	float maxDensityAltKm;
+	float hazeBaseHeightKm;
+	float hazeScaleHeightKm;
+	float seaLevelTemperatureK;
+	vec3 rayleigh;
+	float atmosphereThicknessKm;
+	vec3 hazeMie;
+	float XovercastRangeKmX;
+	vec3 ozone;
+	float sunRadiusRadians;
+	vec3 sunIrradiance;
+	float maxDistanceKm;
+	vec3 lightDir;
+	float hazeEccentricity;
+	vec3 starlight;
+	float previousZCoord;
+	vec3 mieRayleighRatio;
+	float minOutputAltKm;
+	vec4 yRange;
+	float texCoordZ;
+	float blendToColours;
+	float interpColours;
+	float sun_start_alt_km;
+	uvec3 targetSize;
+	int numMoons;
+	vec4 moonIrradianceFactor[10];
+	vec4 directionToMoon[10];
+};
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t density_texture[24];
+	uint64_t loss_texture[24];
+	uint64_t insc_texture[24];
+	uint64_t blackbody_texture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 27 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_inscatter_fns.sl"
+float CalcRayleighBeta(float cos0)
+{
+return (1.0+cos0*cos0);
+}
+#line 32 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_inscatter_fns.sl"
+float HenyeyGreenstein(float g, float cos0)
+{
+float g2=g*g;
+float u=1.0+g2-2.0*g*cos0;
+return (1.0-g2)*pow(u,-1.5)/(4.0*3.1415926536);
+}
+#line 39 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_inscatter_fns.sl"
+vec3 PrecalculatedInscatterFunction(vec4 inscatter_factor, float BetaRayleigh, float BetaMie, vec3 mieRayleighRatio)
+{
+vec3 mr=mieRayleighRatio.xyz;
+vec3 BetaTotal=(BetaRayleigh+BetaMie*mr)/(vec3(1.0,1.0,1.0)+mr);
+vec3 colour=BetaTotal*inscatter_factor.rgb;
+return colour;
+}
+#line 47 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_inscatter_fns.sl"
+vec3 InscatterFunction(vec4 inscatter_factor, float hazeEccentricity, float cos0, vec3 mieRayleighRatio)
+{
+float BetaRayleigh=CalcRayleighBeta(cos0);
+float BetaMie=HenyeyGreenstein(hazeEccentricity,cos0);
+return PrecalculatedInscatterFunction(inscatter_factor,BetaRayleigh,BetaMie,mieRayleighRatio);
+}
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+ivec3 LinearThreadToPos2D(int linear_pos, ivec3 dims)
+{
+int yy=int(float(linear_pos)/float(dims.x));
+int xx=linear_pos-yy*int(dims.x);
+return ivec3(xx,yy,0);
+}
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float texcToAltKm(float texc, float minOutputAltKm, float maxOutputAltKm)
+{
+return minOutputAltKm+texc*texc*(maxOutputAltKm-minOutputAltKm);
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getHazeFactorAtAltitude(float alt_km)
+{
+if(alt_km<hazeBaseHeightKm)alt_km=hazeBaseHeightKm;
+float val=exp((hazeBaseHeightKm-alt_km)/hazeScaleHeightKm);
+return val;
+}
+#line 181 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getShortestDistanceToAltitude(float sine_elevation, float start_h_km, float finish_h_km)
+{
+float RH=planetRadiusKm+finish_h_km;
+float Rh=planetRadiusKm+start_h_km;
+float cosine=-sine_elevation;
+float b=-2.0*Rh*cosine;
+float c=Rh*Rh-RH*RH;
+float b24c=b*b-4*c;
+if(b24c<0)return -1.0;
+float dist;
+float s=sqrt(b24c);
+dist=0.5*(-b+s);
+return dist;
+}
+#line 200 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getDistanceToSpace(float sine_elevation, float h_km)
+{
+return getShortestDistanceToAltitude(sine_elevation,h_km,maxDensityAltKm);
+}
+#line 286 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+vec3 getSkylight(float alt_km, uint64_t insc_texture[24])
+{
+vec4 insc=textureLod(sampler3D(insc_texture[1 + 9]),vec3(sqrt(alt_km/maxOutputAltKm),0.0,1.0),0);
+vec3 skylight=InscatterFunction(insc,hazeEccentricity,0.0,mieRayleighRatio);
+return skylight;
+}
+#line 311 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+vec4 Skyl(uint64_t insc_texture[24], uint64_t density_texture[24], uint64_t blackbody_texture[24], vec3 previous_loss, vec4 previous_skyl, float maxDensityAltKm, float spaceDistKm, float viewAltKm, float dist_km, float prevDist_km, float sin_e, float cos_e, float multiplier)
+{
+float maxd=min(spaceDistKm,dist_km);
+float mind=min(spaceDistKm,prevDist_km);
+float dist=0.5*(mind+maxd);
+float stepLengthKm=max(0.0,maxd-mind);
+float y=planetRadiusKm+viewAltKm+dist*sin_e;
+float x=dist*cos_e;
+float r=sqrt(x*x+y*y);
+float alt_km=r-planetRadiusKm;
+float dens_texc=(alt_km/maxDensityAltKm*(tableSize.x-1.0)+texelOffset)/tableSize.x;
+vec4 lookups=textureLod(sampler2D(density_texture[1 + 11]),vec2(dens_texc,0.5),0);
+float dens_factor=lookups.x;
+float ozone_factor=lookups.y;
+float haze_factor=getHazeFactorAtAltitude(alt_km);
+vec4 light=vec4(multiplier*starlight+getSkylight(alt_km,insc_texture),0.0);
+vec4 skyl=light;
+vec3 extinction=dens_factor*rayleigh+haze_factor*hazeMie;
+vec3 total_ext=extinction+ozone*ozone_factor;
+vec3 loss=exp(-extinction*stepLengthKm);
+skyl.rgb*=vec3(1.0,1.0,1.0)-loss;
+float mie_factor=exp(-skyl.w*stepLengthKm*haze_factor*hazeMie.x);
+skyl.w=saturate((1.0-mie_factor)/(1.0-total_ext.x+0.0001));
+#line 348 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+
+skyl.rgb*=previous_loss.rgb;
+skyl.rgb+=previous_skyl.rgb;
+float lossw=1.0;
+skyl.w=lossw*(1.0-previous_skyl.w)*skyl.w+previous_skyl.w;
+return skyl;
+}
+layout(local_size_x=8, local_size_y=1, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 299 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_gpu_sky.sfx"
+ivec3 sub_pos=ivec3(g)*ivec3(8,1,1)+ivec3(t);
+uvec3 dims;
+ivec3 ivtargetTexture = imageSize(targetTexture);
+dims.x = ivtargetTexture.x;dims.y = ivtargetTexture.y;dims.z = ivtargetTexture.z;;
+int linear_pos=sub_pos.x+int(threadOffset.x);
+ivec3 pos=LinearThreadToPos2D(linear_pos,ivec3(dims));
+if((pos.x)>=targetSize.x||(pos.y)>=targetSize.y)return ;
+vec2 texc=(pos.xy+vec2(0.5,0.5))/vec2(targetSize.xy);
+vec4 previous_skyl=vec4(0.0,0.0,0.0,1.0);
+float sin_e=max(-1.0,min(1.0,1.0-2.0*(texc.y*texSize.y-texelOffset)/(texSize.y-1.0)));
+float cos_e=sqrt(1.0-sin_e*sin_e);
+float altTexc=(texc.x*texSize.x-texelOffset)/max(texSize.x-1.0,1.0);
+float viewAltKm=texcToAltKm(altTexc,minOutputAltKm,maxOutputAltKm);
+float spaceDistKm=getDistanceToSpace(sin_e,viewAltKm);
+float multiplier=skyBrightnessRW[0].a;
+float prevDist_km=0.0;
+for(uint i=0;i<targetSize.z;i++)
+{
+uvec3 idx=uvec3(pos.xy,i);
+float zPosition=pow(float(i)/(float(targetSize.z)-1.0),2.0);
+vec3 previous_loss=texelFetch(sampler3D(loss_texture[0]),ivec3(ivec4(idx,0)).xyz,int(ivec4(idx,0).w)).rgb;
+float dist_km=zPosition*maxDistanceKm;
+if(i==targetSize.z-1u)dist_km=1000.0;
+vec4 skyl=Skyl(insc_texture,density_texture,blackbody_texture,previous_loss,previous_skyl,maxDensityAltKm,spaceDistKm,viewAltKm,dist_km,prevDist_km,sin_e,cos_e,multiplier);
+imageStore(targetTexture,ivec3(idx),vec4(skyl));
+;
+prevDist_km=dist_km;
+previous_skyl=skyl;
+}
+
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_gpu_sky_CS_SubdivisionBrightness_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+
+
+layout(rgba32f, binding = 0) uniform image3D targetTexture;
+layout(std430, binding = 1) buffer skyBrightnessRW_ssbo
+{
+	vec4 skyBrightnessRW[]; 
+};
+#line 60 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/gpu_sky_constants.sl"
+layout(std140, binding = 8) uniform GpuSkyConstants
+{
+	vec2 texSize;
+	vec2 tableSize;
+	uvec3 threadOffset;
+	float emissivity;
+	vec3 zenith;
+	float distanceKm;
+	vec3 horizon;
+	float brightnessPower;
+	float texelOffset;
+	float prevDistanceKm;
+	float maxOutputAltKm;
+	float planetRadiusKm;
+	float maxDensityAltKm;
+	float hazeBaseHeightKm;
+	float hazeScaleHeightKm;
+	float seaLevelTemperatureK;
+	vec3 rayleigh;
+	float atmosphereThicknessKm;
+	vec3 hazeMie;
+	float XovercastRangeKmX;
+	vec3 ozone;
+	float sunRadiusRadians;
+	vec3 sunIrradiance;
+	float maxDistanceKm;
+	vec3 lightDir;
+	float hazeEccentricity;
+	vec3 starlight;
+	float previousZCoord;
+	vec3 mieRayleighRatio;
+	float minOutputAltKm;
+	vec4 yRange;
+	float texCoordZ;
+	float blendToColours;
+	float interpColours;
+	float sun_start_alt_km;
+	uvec3 targetSize;
+	int numMoons;
+	vec4 moonIrradianceFactor[10];
+	vec4 directionToMoon[10];
+};
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t density_texture[24];
+	uint64_t loss_texture[24];
+	uint64_t optical_depth_texture[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float texcToAltKm(float texc, float minOutputAltKm, float maxOutputAltKm)
+{
+return minOutputAltKm+texc*texc*(maxOutputAltKm-minOutputAltKm);
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getHazeFactorAtAltitude(float alt_km)
+{
+if(alt_km<hazeBaseHeightKm)alt_km=hazeBaseHeightKm;
+float val=exp((hazeBaseHeightKm-alt_km)/hazeScaleHeightKm);
+return val;
+}
+#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getHazeOpticalLength(float sine_elevation, float h_km)
+{
+float R=planetRadiusKm;
+float Rh=R+h_km;
+float RH=R+hazeBaseHeightKm;
+float c=sqrt(1.0-sine_elevation*sine_elevation);
+float u=RH*RH-Rh*Rh*c*c;
+float U=R*R-Rh*Rh*c*c;
+float haze_opt_len=0.0;
+if(sine_elevation<0&&u>0)haze_opt_len=2.0*sqrt(u);
+float Rmin=Rh*c;
+if(sine_elevation>0.0)Rmin=Rh;
+if(sine_elevation<0.0&&u>0.0)Rmin=RH;
+float h1=Rh-RH;
+float h2=Rmin-RH;
+float s=sine_elevation;
+float n=hazeScaleHeightKm;
+if(s<0.0)haze_opt_len+=n/s*(saturate(exp(-h1/n))-saturate(exp(-h2/n)));
+if(s<0.0)s*=-1.0;
+if(s<0.01)s=0.01;
+haze_opt_len+=n/s*(exp(-abs(h2)/n));
+return haze_opt_len;
+}
+#line 91 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float GetOpticalDepth(uint64_t density_texture[24], float max_altitude_km, float alt_km, vec3 dir)
+{
+float total=0;
+float RH=planetRadiusKm+atmosphereThicknessKm;
+float Rh=planetRadiusKm+max(0.0,alt_km);
+float cosine=-dir.z;
+float b=-2*Rh*cosine;
+float c=Rh*Rh-RH*RH;
+float U=max(0.0,b*b-4.0*c);
+float distance_to_edge=0.5*(-b+sqrt(U));
+int Steps=16;
+float step_=distance_to_edge/float(Steps);
+float d=step_/2.0;
+for(int i=0;i<Steps;i++)
+{
+float Ra=sqrt(Rh*Rh+d*d-2*Rh*d*cosine);
+float new_alt_km=Ra-planetRadiusKm;
+float dens_here=textureLod(sampler2D(density_texture[1 + 9]),vec2(new_alt_km/max_altitude_km,new_alt_km/max_altitude_km),0).x;
+total+=dens_here*step_;
+d+=step_;
+}
+
+return max(0.0,total);
+}
+#line 120 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+vec4 getSunlightFactor2(uint64_t optical_depth_texture[24], uint64_t density_texture[24], float max_altitude_km, float alt_km, vec3 lightDir)
+{
+float sine=clamp(lightDir.z,-1.0,1.0);
+float angle=asin(sine);
+vec2 table_texc=vec2(0.5+0.5*sine,alt_km/maxDensityAltKm);
+table_texc+=vec2(texelOffset/tableSize.x,texelOffset/tableSize.y);
+vec4 lookup=textureLod(sampler2D(optical_depth_texture[1 + 9]),table_texc,0);
+float opt_depth_km=GetOpticalDepth(density_texture,max_altitude_km,alt_km,lightDir);
+float vis=1;
+float ozone_length=lookup.w;
+float haze_opt_len=getHazeOpticalLength(sine,alt_km);
+vec4 factor=vec4(vis,vis,vis,vis);
+factor.rgb*=exp(-rayleigh*opt_depth_km-hazeMie*haze_opt_len-ozone*ozone_length);
+return saturate(factor);
+}
+#line 139 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+vec4 getSunlightFactor3(uint64_t optical_depth_texture[24], uint64_t density_texture[24], float max_altitude_km, float alt_km, vec3 lightDir, float planetRadiusKm, float radiusRadians)
+{
+if(lightDir.z>0.707)return getSunlightFactor2(optical_depth_texture,density_texture,max_altitude_km,alt_km,lightDir);
+vec3 side=normalize(cross(lightDir,vec3(0,0,1.0)));
+float sine=clamp(lightDir.z,-1.0,1.0);
+float elevation=asin(sine);
+vec4 result=vec4(0,0,0,0);
+for(int i=0;i<17;i++)
+{
+float new_elev=elevation+float(i-8)/8.0*radiusRadians;
+vec3 new_dir=vec3(lightDir.xy,sin(new_elev));
+new_dir.xy=normalize(new_dir.xy);
+new_dir.xy*=sqrt(1.0-(new_dir.z*new_dir.z));
+float vis=1.0;
+float horizon_rads=-acos(min(planetRadiusKm/(planetRadiusKm+alt_km),1.0));
+float above_horizon_rads=(elevation-horizon_rads);
+if(above_horizon_rads<-radiusRadians)vis=0;
+if(radiusRadians!=0)
+{
+if(above_horizon_rads<radiusRadians)
+{
+float h=clamp(above_horizon_rads/radiusRadians,-1.0,1.0);
+float a=acos(abs(h));
+float c=(a-abs(h*sin(a)))/3.1415926536;
+if(h>=0)vis=1.0-c;else
+vis=c;
+}
+
+}
+
+vec4 fac=getSunlightFactor2(optical_depth_texture,density_texture,max_altitude_km,alt_km,new_dir)*vis;
+result+=fac/17.0;
+}
+
+return result;
+}
+#line 181 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getShortestDistanceToAltitude(float sine_elevation, float start_h_km, float finish_h_km)
+{
+float RH=planetRadiusKm+finish_h_km;
+float Rh=planetRadiusKm+start_h_km;
+float cosine=-sine_elevation;
+float b=-2.0*Rh*cosine;
+float c=Rh*Rh-RH*RH;
+float b24c=b*b-4*c;
+if(b24c<0)return -1.0;
+float dist;
+float s=sqrt(b24c);
+dist=0.5*(-b+s);
+return dist;
+}
+#line 200 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_gpu_sky.sl"
+float getDistanceToSpace(float sine_elevation, float h_km)
+{
+return getShortestDistanceToAltitude(sine_elevation,h_km,maxDensityAltKm);
+}
+#line 174 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_gpu_sky.sfx"
+vec4 CalcInscatter(ivec3 pos, float multiplier, bool store)
+{
+vec2 texc=(pos.xy+vec2(0.5,0.5))/vec2(targetSize.xy);
+vec4 previous_insc=vec4(0.0,0.0,0.0,0.0);
+float sin_e=max(-1.0,min(1.0,1.0-2.0*(texc.y*texSize.y-texelOffset)/(texSize.y-1.0)));
+float cos_e=sqrt(1.0-sin_e*sin_e);
+float altTexc=(texc.x*texSize.x-texelOffset)/max(texSize.x-1.0,1.0);
+float viewAltKm=texcToAltKm(altTexc,minOutputAltKm,maxOutputAltKm);
+float spaceDistKm=getDistanceToSpace(sin_e,viewAltKm);
+float prevDist_km=0.0;
+vec3 mie_factor=vec3(1.0,1.0,1.0);
+vec4 store_insc=vec4(0.0,0.0,0.0,0.0);
+if(store)
+{
+imageStore(targetTexture,ivec3(uvec3(pos.xy,0)),vec4(vec4(0.0,0.0,0.0,0.0)));
+;
+}
+
+for(uint i=1;i<64;i++)
+{
+if(i>=targetSize.z)break;
+uvec3 idx=uvec3(pos.xy,i);
+float zPosition=pow(float(i)/(float(targetSize.z)-1.0),2.0);
+vec3 previous_loss=texelFetch(sampler3D(loss_texture[0]),ivec3(ivec4(uvec3(pos.xy,i-1),0)).xyz,int(ivec4(uvec3(pos.xy,i-1),0).w)).rgb;
+float dist_km=zPosition*maxDistanceKm;
+if(i==targetSize.z-1)dist_km=1000.0;
+float maxd=min(spaceDistKm,dist_km);
+float mind=min(spaceDistKm,prevDist_km);
+float dist=0.5*(mind+maxd);
+float stepLengthKm=max(0.0,maxd-mind);
+float y=planetRadiusKm+viewAltKm+dist*sin_e;
+float x=dist*cos_e;
+float r=sqrt(x*x+y*y);
+float alt_km=r-planetRadiusKm;
+float dens_texc=(alt_km/maxDensityAltKm*(tableSize.x-1.0)+texelOffset)/tableSize.x;
+vec4 lookups=textureLod(sampler2D(density_texture[1 + 9]),vec2(dens_texc,0.5),0);
+float dens_factor=lookups.x;
+float ozone_factor=lookups.y;
+float haze_factor=getHazeFactorAtAltitude(alt_km);
+vec4 light=multiplier*getSunlightFactor3(optical_depth_texture,density_texture,maxDensityAltKm,alt_km,lightDir,planetRadiusKm,0.000001);
+for(int j=0;j<numMoons;j++)light+=vec4(multiplier*moonIrradianceFactor[j].rgb,1.0)*getSunlightFactor3(optical_depth_texture,density_texture,maxDensityAltKm,alt_km,directionToMoon[j].xyz,planetRadiusKm,0.000001);
+light.rgb*=sunIrradiance;
+light.rgb*=0.0596831;
+vec4 insc=light;
+vec3 extinction=dens_factor*rayleigh+haze_factor*hazeMie;
+vec3 loss;
+loss=exp(-extinction*stepLengthKm);
+insc.rgb*=vec3(1.0,1.0,1.0)-loss;
+mie_factor*=exp(-insc.w*stepLengthKm*haze_factor*hazeMie);
+insc.rgb*=previous_loss.rgb;
+insc.rgb+=previous_insc.rgb;
+insc.w=saturate((1.0-mie_factor.x)/(1.0-previous_loss.x+0.0001f));
+vec3 ctexc=(vec3(idx)+vec3(0.5,0.5,0.5))/vec3(targetSize.xyz);
+vec3 insc_colour=mix((vec3(0,0,0)),mix(horizon,zenith,saturate(sin_e)),1.0-previous_loss.r);
+store_insc=mix(insc,vec4(insc_colour,insc.a),blendToColours);
+if(store)
+{
+imageStore(targetTexture,ivec3(idx),vec4(store_insc));
+;
+}
+
+prevDist_km=dist_km;
+previous_insc=insc;
+}
+
+return store_insc;
+}
+#line 254 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_gpu_sky.sfx"
+float CalcBrightness(vec3 res)
+{
+return 0.2126*res.r+0.7152*res.g+0.0722*res.b;
+}
+layout(local_size_x=4, local_size_y=1, local_size_z=1) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 261 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_gpu_sky.sfx"
+uvec3 sub_pos=g*4+t;
+uint linear_pos=uint(sub_pos.x)+uint(threadOffset.x);
+if(linear_pos>=targetSize.x)if(linear_pos<0||linear_pos>=targetSize.x)return ;
+ivec3 pos=ivec3(linear_pos,0,0);
+vec4 res=CalcInscatter(pos,1.0,false);
+float br=CalcBrightness(res.rgb+starlight.rgb);
+br*=200.0/CalcBrightness(sunIrradiance.rgb);
+br=max(0.0001,br);
+br=min(1000.0,br);
+res.a=max(1.0,min(1000.0,pow(br,brightnessPower-1.0)));
+skyBrightnessRW[linear_pos]=res;
+}

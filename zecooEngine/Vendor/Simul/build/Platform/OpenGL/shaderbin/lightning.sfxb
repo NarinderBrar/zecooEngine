@@ -1,0 +1,3151 @@
+#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_CS_BranchFractal_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 10) uniform LightningConstants
+{
+	vec3 lightningColour;
+	float branchAngleRadians;
+	vec3 startPos;
+	uint num_octaves;
+	vec3 endPos;
+	float strikeThicknessMetres;
+	float roughness;
+	float motion;
+	uint numLevels;
+	uint numBranches;
+	uint numBranchesPrevious;
+	float branchLengthMetres;
+	uint branchInterval;
+	float phaseTime;
+	int randomSeed;
+	float brightness;
+	float progress;
+	float vertical;
+	uint branchIndex;
+	uint curLevel;
+	vec2 padding;
+};
+#line 57 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 8) uniform LightningPerViewConstants
+{
+	mat4 worldViewProj;
+	vec4 depthToLinFadeDistParams;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 fullResToLowResTransformXYWH;
+	vec2 viewportPixels;
+	vec2 _line_width;
+	vec2 tanHalfFovUnused;
+	float brightnessToUnity;
+	float minPixelWidth;
+	vec4 tanHalfFov;
+	vec3 viewPosition;
+	float maxFadeDistance;
+	uint parent_point;
+	float padding2;
+	vec2 padding3;
+};
+#line 64 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+struct LightningVertex
+{
+	vec3 position;
+	vec2 texCoords;
+	float progress;
+};
+
+layout(std430, binding = 4) buffer vertices_ssbo
+{
+	LightningVertex vertices[]; 
+};
+layout(std430, binding = 0) buffer verticesRW_ssbo
+{
+	LightningVertex verticesRW[]; 
+};
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t randomTexture[24];
+};
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+float rand(float c)
+{
+return fract(sin(dot(vec2(c,11.1*c),vec2(12.9898,78.233)))*43758.5453);
+}
+#line 13 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+float rand(vec2 co)
+{
+return fract(sin(dot(co.xy,vec2(12.9898,78.233)))*43758.5453);
+}
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+void main()
+{
+uvec3 idx = gl_GlobalInvocationID;
+#line 78 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+int MAX_OCTAVES_BRANCH=5;
+int steps=1<<MAX_OCTAVES_BRANCH;
+int numVtx=steps+1;
+int delta=steps;
+LightningVertex OUT;
+LightningVertex IN0;
+LightningVertex IN1;
+if(curLevel==1)
+{
+int rndStart=int(30.0+rand(0.01*float(idx.x)+0.7*float(randomSeed))*60.0);
+IN0=vertices[rndStart];
+IN1=vertices[128];
+}
+else
+
+{
+int parentBranchOff=int(idx.x/numBranches)*numVtx;
+int rndStart=int(rand(idx.x+randomSeed)*33.0);
+rndStart=clamp(rndStart,0,31);
+IN0=vertices[parentBranchOff+rndStart];
+IN1=vertices[parentBranchOff+32];
+}
+
+vec3 startP=IN0.position;
+vec3 parentEndP=IN1.position;
+vec3 parentDir=normalize(parentEndP-startP);
+vec2 rand_texc=vec2(0.3*float(branchInterval)*float(randomSeed*(idx.x+1))+0.77*float(parent_point),1.92*float(branchInterval)+0.34*float(parent_point));
+vec3 rndvec=textureLod(sampler2D(randomTexture[1 + 6]),rand_texc,0).xyz;
+float along=dot(rndvec,parentDir);
+rndvec-=along*parentDir;
+rndvec=normalize(rndvec);
+vec3 dir=parentDir*cos(branchAngleRadians)+rndvec*sin(branchAngleRadians);
+dir=normalize(dir);
+float randLen=rand(randomSeed*(idx.x+1))*branchLengthMetres;
+randLen+=branchLengthMetres*0.25;
+randLen=min(branchLengthMetres,randLen);
+vec3 endP=startP+dir*randLen;
+endP.z=max(endP.z,0.0);
+vec3 outpos[33];
+outpos[0]=startP;
+outpos[steps]=endP;
+float persistence=0.8;
+float time=phaseTime;
+vec3 off=vec3(1.0,1.0,1.0)*roughness;
+for(int i=0;i<MAX_OCTAVES_BRANCH;i++)
+{
+for(int j=int(delta*0.5);j<steps;j+=delta)
+{
+vec3 s=outpos[j-int(delta*0.5)];
+vec3 e=outpos[j+int(delta*0.5)];
+vec3 XX=cross(vec3(1.0,0.0,0.0),(s-e));
+vec3 YY=cross(vec3(0.0,1.0,0.0),(s-e));
+vec3 x=0.5*(s+e);
+vec2 noise_texc=vec2(9.3*float(j+randomSeed)+time,3.1*float(i)+4.5*float(j));
+vec4 noise_lookup=textureLod(sampler2D(randomTexture[1 + 6]),noise_texc,0);
+float angle=noise_lookup.x*2.0*3.14159;
+x+=off*(XX*cos(angle)+YY*sin(angle));
+outpos[j]=x;
+}
+
+delta=int(delta*0.5);
+time*=2.0;
+}
+
+float rsteps=1.0/float(steps);
+for(int ii=0;ii<numVtx;ii++)
+{
+OUT.position=outpos[ii];
+OUT.progress=float(ii)*rsteps;
+OUT.texCoords=vec2(0,0);
+verticesRW[ii+(numVtx*idx.x)]=OUT;
+}
+
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_CS_InitialFractal_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 10) uniform LightningConstants
+{
+	vec3 lightningColour;
+	float branchAngleRadians;
+	vec3 startPos;
+	uint num_octaves;
+	vec3 endPos;
+	float strikeThicknessMetres;
+	float roughness;
+	float motion;
+	uint numLevels;
+	uint numBranches;
+	uint numBranchesPrevious;
+	float branchLengthMetres;
+	uint branchInterval;
+	float phaseTime;
+	int randomSeed;
+	float brightness;
+	float progress;
+	float vertical;
+	uint branchIndex;
+	uint curLevel;
+	vec2 padding;
+};
+#line 64 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+struct LightningVertex
+{
+	vec3 position;
+	vec2 texCoords;
+	float progress;
+};
+
+layout(std430, binding = 0) buffer verticesRW_ssbo
+{
+	LightningVertex verticesRW[]; 
+};
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t randomTexture[24];
+};
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+void main()
+{
+uvec3 idx = gl_GlobalInvocationID;
+#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+int MAX_OCTAVES=7;
+vec3 off=vec3(1.0,1.0,1.0)*roughness;
+float t=phaseTime;
+int steps=1<<MAX_OCTAVES;
+int delta=steps;
+vec3 outpos[129];
+outpos[0]=startPos;
+outpos[steps]=endPos;
+for(int i=0;i<MAX_OCTAVES;i++)
+{
+for(int j=int(delta*0.5);j<steps;j+=delta)
+{
+vec3 start=outpos[j-int(delta*0.5)];
+vec3 end=outpos[j+int(delta*0.5)];
+vec3 XX=cross(vec3(1.0,0.0,0.0),(start-end));
+vec3 YY=cross(vec3(0.0,1.0,0.0),(start-end));
+vec2 ntc=vec2(0.3*float(j+randomSeed)+t,0.1*float(i)+0.15*float(j));
+vec4 nlk=textureLod(sampler2D(randomTexture[1 + 6]),ntc,0);
+vec3 mid=0.5*(start+end);
+float angle=fract(nlk.x)*2.0*3.14159;
+mid+=off*fract(nlk.y)*(XX*cos(angle)+YY*sin(angle));
+outpos[j]=mid;
+}
+
+delta=int(delta*0.5);
+t*=2.0;
+}
+
+LightningVertex OUT;
+float rsteps=1.0/float(steps);
+for(int ii=0;ii<129;ii++)
+{
+OUT.position=outpos[ii];
+OUT.texCoords=vec2(strikeThicknessMetres,brightness);
+OUT.progress=float(ii)*rsteps;
+verticesRW[ii]=OUT;
+}
+
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_PS_Main_ForwardDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 10) uniform LightningConstants
+{
+	vec3 lightningColour;
+	float branchAngleRadians;
+	vec3 startPos;
+	uint num_octaves;
+	vec3 endPos;
+	float strikeThicknessMetres;
+	float roughness;
+	float motion;
+	uint numLevels;
+	uint numBranches;
+	uint numBranchesPrevious;
+	float branchLengthMetres;
+	uint branchInterval;
+	float phaseTime;
+	int randomSeed;
+	float brightness;
+	float progress;
+	float vertical;
+	uint branchIndex;
+	uint curLevel;
+	vec2 padding;
+};
+#line 57 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 8) uniform LightningPerViewConstants
+{
+	mat4 worldViewProj;
+	vec4 depthToLinFadeDistParams;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 fullResToLowResTransformXYWH;
+	vec2 viewportPixels;
+	vec2 _line_width;
+	vec2 tanHalfFovUnused;
+	float brightnessToUnity;
+	float minPixelWidth;
+	vec4 tanHalfFov;
+	vec3 viewPosition;
+	float maxFadeDistance;
+	uint parent_point;
+	float padding2;
+	vec2 padding3;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+struct transformedVertex
+{
+	vec4 hPosition;
+	float brightness;
+	vec2 hPosCentre1;
+	vec2 hPosCentre2;
+	vec2 screenPos;
+	vec2 texc;
+	float along;
+	float clipWidth;
+	vec4 clipPos;
+	float endpoint;
+	float progress;
+	vec3 view;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t cloudDepthTexture[24];
+	uint64_t depthTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 367 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+return texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0));
+}
+#line 376 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+float ProgressFunction(float _progress)
+{
+float p=abs(_progress);
+float a=0.1*saturate((100.0*_progress)-3.0);
+float b=10.0*exp(-p*p/0.0001);
+return a+b;
+}
+#line 386 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 PS_Main(transformedVertex IN, bool reverseDepth, bool msaa)
+{
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=depthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=reverseDepth;
+vec2 screen_texc=vec2(0.5*(IN.clipPos.x/IN.clipPos.w+1.0),0.5*(1.0-IN.clipPos.y/IN.clipPos.w));
+vec2 depth_texc=viewportCoordToTexRegionCoord(screen_texc,viewportToTexRegionScaleBias);
+vec4 dlookup;
+if(msaa)dlookup=ms_depth(depth_texc.xy);else
+dlookup=texture(sampler2D(depthTexture[1 + 9]),depth_texc.xy);
+vec3 view=normalize(IN.view);
+vec4 nearFarCloud=textureLod(samplerCube(cloudDepthTexture[1 + 4]),-view,0);
+;
+vec4 clip_pos=vec4(IN.screenPos,1.0,1.0);
+float l_depth=IN.clipPos.z/IN.clipPos.w;
+vec2 dist=depthToFadeDistance(vec2(l_depth,dlookup.x),IN.screenPos.xy,depthInterpretationStruct,tanHalfFov);
+float past=saturate((nearFarCloud.z-dist.x)/0.0001);
+past*=saturate((dist.y-dist.x)/0.01-0.9);
+vec2 dir=normalize(IN.hPosCentre2-IN.hPosCentre1);
+float along=dot(IN.screenPos-IN.hPosCentre1,dir);
+vec2 centre1=mix(IN.hPosCentre1,IN.hPosCentre2,saturate(IN.along));
+vec2 centre2=mix(IN.hPosCentre1,IN.hPosCentre2,saturate(along));
+vec2 diff1=IN.screenPos-centre1;
+vec2 diff2=IN.screenPos-centre2;
+float clipWidth2px=minPixelWidth/float(viewportPixels.x);
+float d=min(length(diff1),length(diff2));
+float m=d/clipWidth2px;
+float s=max(0.0,d-clipWidth2px)/IN.clipWidth;
+float br=saturate(2.0*(1.0-m));
+br+=brightnessToUnity*saturate(exp(-4.0*s)-0.05)/0.95;
+br*=brightness*IN.brightness;
+br*=saturate((exp(-4.0*s)-0.05)/0.95);
+if(progress>0.0)
+{
+br*=ProgressFunction(progress-IN.progress);
+}
+
+br*=past;
+if(br<0)br=0;
+vec4 colour=vec4(br*lightningColour.rgb,1.0);
+return colour;
+}
+layout(location = 0) in Block
+{
+transformedVertex BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+transformedVertex BlockData=ioblock.BlockData;
+#line 442 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+{returnObject_vec4=PS_Main(BlockData,false,false);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_PS_Main_ForwardDepth_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 10) uniform LightningConstants
+{
+	vec3 lightningColour;
+	float branchAngleRadians;
+	vec3 startPos;
+	uint num_octaves;
+	vec3 endPos;
+	float strikeThicknessMetres;
+	float roughness;
+	float motion;
+	uint numLevels;
+	uint numBranches;
+	uint numBranchesPrevious;
+	float branchLengthMetres;
+	uint branchInterval;
+	float phaseTime;
+	int randomSeed;
+	float brightness;
+	float progress;
+	float vertical;
+	uint branchIndex;
+	uint curLevel;
+	vec2 padding;
+};
+#line 57 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 8) uniform LightningPerViewConstants
+{
+	mat4 worldViewProj;
+	vec4 depthToLinFadeDistParams;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 fullResToLowResTransformXYWH;
+	vec2 viewportPixels;
+	vec2 _line_width;
+	vec2 tanHalfFovUnused;
+	float brightnessToUnity;
+	float minPixelWidth;
+	vec4 tanHalfFov;
+	vec3 viewPosition;
+	float maxFadeDistance;
+	uint parent_point;
+	float padding2;
+	vec2 padding3;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+struct transformedVertex
+{
+	vec4 hPosition;
+	float brightness;
+	vec2 hPosCentre1;
+	vec2 hPosCentre2;
+	vec2 screenPos;
+	vec2 texc;
+	float along;
+	float clipWidth;
+	vec4 clipPos;
+	float endpoint;
+	float progress;
+	vec3 view;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t cloudDepthTexture[24];
+	uint64_t depthTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 367 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+return texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0));
+}
+#line 376 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+float ProgressFunction(float _progress)
+{
+float p=abs(_progress);
+float a=0.1*saturate((100.0*_progress)-3.0);
+float b=10.0*exp(-p*p/0.0001);
+return a+b;
+}
+#line 386 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 PS_Main(transformedVertex IN, bool reverseDepth, bool msaa)
+{
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=depthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=reverseDepth;
+vec2 screen_texc=vec2(0.5*(IN.clipPos.x/IN.clipPos.w+1.0),0.5*(1.0-IN.clipPos.y/IN.clipPos.w));
+vec2 depth_texc=viewportCoordToTexRegionCoord(screen_texc,viewportToTexRegionScaleBias);
+vec4 dlookup;
+if(msaa)dlookup=ms_depth(depth_texc.xy);else
+dlookup=texture(sampler2D(depthTexture[1 + 9]),depth_texc.xy);
+vec3 view=normalize(IN.view);
+vec4 nearFarCloud=textureLod(samplerCube(cloudDepthTexture[1 + 4]),-view,0);
+;
+vec4 clip_pos=vec4(IN.screenPos,1.0,1.0);
+float l_depth=IN.clipPos.z/IN.clipPos.w;
+vec2 dist=depthToFadeDistance(vec2(l_depth,dlookup.x),IN.screenPos.xy,depthInterpretationStruct,tanHalfFov);
+float past=saturate((nearFarCloud.z-dist.x)/0.0001);
+past*=saturate((dist.y-dist.x)/0.01-0.9);
+vec2 dir=normalize(IN.hPosCentre2-IN.hPosCentre1);
+float along=dot(IN.screenPos-IN.hPosCentre1,dir);
+vec2 centre1=mix(IN.hPosCentre1,IN.hPosCentre2,saturate(IN.along));
+vec2 centre2=mix(IN.hPosCentre1,IN.hPosCentre2,saturate(along));
+vec2 diff1=IN.screenPos-centre1;
+vec2 diff2=IN.screenPos-centre2;
+float clipWidth2px=minPixelWidth/float(viewportPixels.x);
+float d=min(length(diff1),length(diff2));
+float m=d/clipWidth2px;
+float s=max(0.0,d-clipWidth2px)/IN.clipWidth;
+float br=saturate(2.0*(1.0-m));
+br+=brightnessToUnity*saturate(exp(-4.0*s)-0.05)/0.95;
+br*=brightness*IN.brightness;
+br*=saturate((exp(-4.0*s)-0.05)/0.95);
+if(progress>0.0)
+{
+br*=ProgressFunction(progress-IN.progress);
+}
+
+br*=past;
+if(br<0)br=0;
+vec4 colour=vec4(br*lightningColour.rgb,1.0);
+return colour;
+}
+layout(location = 0) in Block
+{
+transformedVertex BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+transformedVertex BlockData=ioblock.BlockData;
+#line 451 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+{returnObject_vec4=PS_Main(BlockData,false,true);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_PS_Main_ReverseDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 10) uniform LightningConstants
+{
+	vec3 lightningColour;
+	float branchAngleRadians;
+	vec3 startPos;
+	uint num_octaves;
+	vec3 endPos;
+	float strikeThicknessMetres;
+	float roughness;
+	float motion;
+	uint numLevels;
+	uint numBranches;
+	uint numBranchesPrevious;
+	float branchLengthMetres;
+	uint branchInterval;
+	float phaseTime;
+	int randomSeed;
+	float brightness;
+	float progress;
+	float vertical;
+	uint branchIndex;
+	uint curLevel;
+	vec2 padding;
+};
+#line 57 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 8) uniform LightningPerViewConstants
+{
+	mat4 worldViewProj;
+	vec4 depthToLinFadeDistParams;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 fullResToLowResTransformXYWH;
+	vec2 viewportPixels;
+	vec2 _line_width;
+	vec2 tanHalfFovUnused;
+	float brightnessToUnity;
+	float minPixelWidth;
+	vec4 tanHalfFov;
+	vec3 viewPosition;
+	float maxFadeDistance;
+	uint parent_point;
+	float padding2;
+	vec2 padding3;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+struct transformedVertex
+{
+	vec4 hPosition;
+	float brightness;
+	vec2 hPosCentre1;
+	vec2 hPosCentre2;
+	vec2 screenPos;
+	vec2 texc;
+	float along;
+	float clipWidth;
+	vec4 clipPos;
+	float endpoint;
+	float progress;
+	vec3 view;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t cloudDepthTexture[24];
+	uint64_t depthTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 367 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+return texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0));
+}
+#line 376 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+float ProgressFunction(float _progress)
+{
+float p=abs(_progress);
+float a=0.1*saturate((100.0*_progress)-3.0);
+float b=10.0*exp(-p*p/0.0001);
+return a+b;
+}
+#line 386 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 PS_Main(transformedVertex IN, bool reverseDepth, bool msaa)
+{
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=depthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=reverseDepth;
+vec2 screen_texc=vec2(0.5*(IN.clipPos.x/IN.clipPos.w+1.0),0.5*(1.0-IN.clipPos.y/IN.clipPos.w));
+vec2 depth_texc=viewportCoordToTexRegionCoord(screen_texc,viewportToTexRegionScaleBias);
+vec4 dlookup;
+if(msaa)dlookup=ms_depth(depth_texc.xy);else
+dlookup=texture(sampler2D(depthTexture[1 + 9]),depth_texc.xy);
+vec3 view=normalize(IN.view);
+vec4 nearFarCloud=textureLod(samplerCube(cloudDepthTexture[1 + 4]),-view,0);
+;
+vec4 clip_pos=vec4(IN.screenPos,1.0,1.0);
+float l_depth=IN.clipPos.z/IN.clipPos.w;
+vec2 dist=depthToFadeDistance(vec2(l_depth,dlookup.x),IN.screenPos.xy,depthInterpretationStruct,tanHalfFov);
+float past=saturate((nearFarCloud.z-dist.x)/0.0001);
+past*=saturate((dist.y-dist.x)/0.01-0.9);
+vec2 dir=normalize(IN.hPosCentre2-IN.hPosCentre1);
+float along=dot(IN.screenPos-IN.hPosCentre1,dir);
+vec2 centre1=mix(IN.hPosCentre1,IN.hPosCentre2,saturate(IN.along));
+vec2 centre2=mix(IN.hPosCentre1,IN.hPosCentre2,saturate(along));
+vec2 diff1=IN.screenPos-centre1;
+vec2 diff2=IN.screenPos-centre2;
+float clipWidth2px=minPixelWidth/float(viewportPixels.x);
+float d=min(length(diff1),length(diff2));
+float m=d/clipWidth2px;
+float s=max(0.0,d-clipWidth2px)/IN.clipWidth;
+float br=saturate(2.0*(1.0-m));
+br+=brightnessToUnity*saturate(exp(-4.0*s)-0.05)/0.95;
+br*=brightness*IN.brightness;
+br*=saturate((exp(-4.0*s)-0.05)/0.95);
+if(progress>0.0)
+{
+br*=ProgressFunction(progress-IN.progress);
+}
+
+br*=past;
+if(br<0)br=0;
+vec4 colour=vec4(br*lightningColour.rgb,1.0);
+return colour;
+}
+layout(location = 0) in Block
+{
+transformedVertex BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+transformedVertex BlockData=ioblock.BlockData;
+#line 438 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+{returnObject_vec4=PS_Main(BlockData,true,false);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_PS_Main_ReverseDepth_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 10) uniform LightningConstants
+{
+	vec3 lightningColour;
+	float branchAngleRadians;
+	vec3 startPos;
+	uint num_octaves;
+	vec3 endPos;
+	float strikeThicknessMetres;
+	float roughness;
+	float motion;
+	uint numLevels;
+	uint numBranches;
+	uint numBranchesPrevious;
+	float branchLengthMetres;
+	uint branchInterval;
+	float phaseTime;
+	int randomSeed;
+	float brightness;
+	float progress;
+	float vertical;
+	uint branchIndex;
+	uint curLevel;
+	vec2 padding;
+};
+#line 57 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 8) uniform LightningPerViewConstants
+{
+	mat4 worldViewProj;
+	vec4 depthToLinFadeDistParams;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 fullResToLowResTransformXYWH;
+	vec2 viewportPixels;
+	vec2 _line_width;
+	vec2 tanHalfFovUnused;
+	float brightnessToUnity;
+	float minPixelWidth;
+	vec4 tanHalfFov;
+	vec3 viewPosition;
+	float maxFadeDistance;
+	uint parent_point;
+	float padding2;
+	vec2 padding3;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+struct transformedVertex
+{
+	vec4 hPosition;
+	float brightness;
+	vec2 hPosCentre1;
+	vec2 hPosCentre2;
+	vec2 screenPos;
+	vec2 texc;
+	float along;
+	float clipWidth;
+	vec4 clipPos;
+	float endpoint;
+	float progress;
+	vec3 view;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t cloudDepthTexture[24];
+	uint64_t depthTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 367 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+return texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0));
+}
+#line 376 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+float ProgressFunction(float _progress)
+{
+float p=abs(_progress);
+float a=0.1*saturate((100.0*_progress)-3.0);
+float b=10.0*exp(-p*p/0.0001);
+return a+b;
+}
+#line 386 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 PS_Main(transformedVertex IN, bool reverseDepth, bool msaa)
+{
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=depthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=reverseDepth;
+vec2 screen_texc=vec2(0.5*(IN.clipPos.x/IN.clipPos.w+1.0),0.5*(1.0-IN.clipPos.y/IN.clipPos.w));
+vec2 depth_texc=viewportCoordToTexRegionCoord(screen_texc,viewportToTexRegionScaleBias);
+vec4 dlookup;
+if(msaa)dlookup=ms_depth(depth_texc.xy);else
+dlookup=texture(sampler2D(depthTexture[1 + 9]),depth_texc.xy);
+vec3 view=normalize(IN.view);
+vec4 nearFarCloud=textureLod(samplerCube(cloudDepthTexture[1 + 4]),-view,0);
+;
+vec4 clip_pos=vec4(IN.screenPos,1.0,1.0);
+float l_depth=IN.clipPos.z/IN.clipPos.w;
+vec2 dist=depthToFadeDistance(vec2(l_depth,dlookup.x),IN.screenPos.xy,depthInterpretationStruct,tanHalfFov);
+float past=saturate((nearFarCloud.z-dist.x)/0.0001);
+past*=saturate((dist.y-dist.x)/0.01-0.9);
+vec2 dir=normalize(IN.hPosCentre2-IN.hPosCentre1);
+float along=dot(IN.screenPos-IN.hPosCentre1,dir);
+vec2 centre1=mix(IN.hPosCentre1,IN.hPosCentre2,saturate(IN.along));
+vec2 centre2=mix(IN.hPosCentre1,IN.hPosCentre2,saturate(along));
+vec2 diff1=IN.screenPos-centre1;
+vec2 diff2=IN.screenPos-centre2;
+float clipWidth2px=minPixelWidth/float(viewportPixels.x);
+float d=min(length(diff1),length(diff2));
+float m=d/clipWidth2px;
+float s=max(0.0,d-clipWidth2px)/IN.clipWidth;
+float br=saturate(2.0*(1.0-m));
+br+=brightnessToUnity*saturate(exp(-4.0*s)-0.05)/0.95;
+br*=brightness*IN.brightness;
+br*=saturate((exp(-4.0*s)-0.05)/0.95);
+if(progress>0.0)
+{
+br*=ProgressFunction(progress-IN.progress);
+}
+
+br*=past;
+if(br<0)br=0;
+vec4 colour=vec4(br*lightningColour.rgb,1.0);
+return colour;
+}
+layout(location = 0) in Block
+{
+transformedVertex BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+transformedVertex BlockData=ioblock.BlockData;
+#line 447 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+{returnObject_vec4=PS_Main(BlockData,true,true);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_PS_Random.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+float rand(float c)
+{
+return fract(sin(dot(vec2(c,11.1*c),vec2(12.9898,78.233)))*43758.5453);
+}
+#line 13 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+float rand(vec2 co)
+{
+return fract(sin(dot(co.xy,vec2(12.9898,78.233)))*43758.5453);
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 c=2.0*vec4(rand(BlockData.texCoords),rand(1.7*BlockData.texCoords),rand(0.11*BlockData.texCoords),rand(513.1*BlockData.texCoords))-1.0;
+{returnObject_vec4=c;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_PS_Thin_ForwardDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 10) uniform LightningConstants
+{
+	vec3 lightningColour;
+	float branchAngleRadians;
+	vec3 startPos;
+	uint num_octaves;
+	vec3 endPos;
+	float strikeThicknessMetres;
+	float roughness;
+	float motion;
+	uint numLevels;
+	uint numBranches;
+	uint numBranchesPrevious;
+	float branchLengthMetres;
+	uint branchInterval;
+	float phaseTime;
+	int randomSeed;
+	float brightness;
+	float progress;
+	float vertical;
+	uint branchIndex;
+	uint curLevel;
+	vec2 padding;
+};
+#line 57 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 8) uniform LightningPerViewConstants
+{
+	mat4 worldViewProj;
+	vec4 depthToLinFadeDistParams;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 fullResToLowResTransformXYWH;
+	vec2 viewportPixels;
+	vec2 _line_width;
+	vec2 tanHalfFovUnused;
+	float brightnessToUnity;
+	float minPixelWidth;
+	vec4 tanHalfFov;
+	vec3 viewPosition;
+	float maxFadeDistance;
+	uint parent_point;
+	float padding2;
+	vec2 padding3;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+#line 211 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+struct transformedThinVertex
+{
+	vec4 hPosition;
+	float brightness;
+	float depth;
+	vec2 screenPos;
+	vec2 texc;
+	float progress;
+	vec3 view;
+	vec4 clipPos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t cloudDepthTexture[24];
+	uint64_t depthTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 367 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+return texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0));
+}
+#line 376 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+float ProgressFunction(float _progress)
+{
+float p=abs(_progress);
+float a=0.1*saturate((100.0*_progress)-3.0);
+float b=10.0*exp(-p*p/0.0001);
+return a+b;
+}
+#line 455 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 PS_Thin(transformedThinVertex IN, bool reverseDepth, bool msaa)
+{
+vec2 screen_texc=vec2(0.5*(IN.clipPos.x/IN.clipPos.w+1.0),0.5*(1.0-IN.clipPos.y/IN.clipPos.w));
+vec2 depth_texc=viewportCoordToTexRegionCoord(screen_texc,viewportToTexRegionScaleBias);
+vec4 dlookup;
+if(msaa)dlookup=ms_depth(depth_texc.xy);else
+dlookup=texture(sampler2D(depthTexture[1 + 9]),depth_texc.xy);
+vec3 view=normalize(IN.view);
+vec4 nearFarCloud=textureLod(samplerCube(cloudDepthTexture[1 + 4]),view,0);
+;
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=depthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=reverseDepth;
+vec2 dist=depthToFadeDistance(vec2(IN.depth,dlookup.x),IN.screenPos.xy,depthInterpretationStruct,tanHalfFov);
+float past=saturate((nearFarCloud.w-dist.x)/0.008+1.0);
+past*=saturate((dist.y-dist.x)/0.01-0.9);
+vec4 colour=vec4(lightningColour*IN.brightness*100.0,1.0);
+float br=brightness;
+if(progress>0.0)
+{
+br*=ProgressFunction(progress-IN.progress);
+}
+
+colour.rgb=lightningColour*br*saturate(past)*0.25;
+float f=pow(1.0-IN.progress,1.5);
+return colour*f;
+}
+layout(location = 0) in Block
+{
+transformedThinVertex BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+transformedThinVertex BlockData=ioblock.BlockData;
+#line 494 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+{returnObject_vec4=PS_Thin(BlockData,false,false);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_PS_Thin_ForwardDepth_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 10) uniform LightningConstants
+{
+	vec3 lightningColour;
+	float branchAngleRadians;
+	vec3 startPos;
+	uint num_octaves;
+	vec3 endPos;
+	float strikeThicknessMetres;
+	float roughness;
+	float motion;
+	uint numLevels;
+	uint numBranches;
+	uint numBranchesPrevious;
+	float branchLengthMetres;
+	uint branchInterval;
+	float phaseTime;
+	int randomSeed;
+	float brightness;
+	float progress;
+	float vertical;
+	uint branchIndex;
+	uint curLevel;
+	vec2 padding;
+};
+#line 57 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 8) uniform LightningPerViewConstants
+{
+	mat4 worldViewProj;
+	vec4 depthToLinFadeDistParams;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 fullResToLowResTransformXYWH;
+	vec2 viewportPixels;
+	vec2 _line_width;
+	vec2 tanHalfFovUnused;
+	float brightnessToUnity;
+	float minPixelWidth;
+	vec4 tanHalfFov;
+	vec3 viewPosition;
+	float maxFadeDistance;
+	uint parent_point;
+	float padding2;
+	vec2 padding3;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+#line 211 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+struct transformedThinVertex
+{
+	vec4 hPosition;
+	float brightness;
+	float depth;
+	vec2 screenPos;
+	vec2 texc;
+	float progress;
+	vec3 view;
+	vec4 clipPos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t cloudDepthTexture[24];
+	uint64_t depthTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 367 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+return texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0));
+}
+#line 376 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+float ProgressFunction(float _progress)
+{
+float p=abs(_progress);
+float a=0.1*saturate((100.0*_progress)-3.0);
+float b=10.0*exp(-p*p/0.0001);
+return a+b;
+}
+#line 455 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 PS_Thin(transformedThinVertex IN, bool reverseDepth, bool msaa)
+{
+vec2 screen_texc=vec2(0.5*(IN.clipPos.x/IN.clipPos.w+1.0),0.5*(1.0-IN.clipPos.y/IN.clipPos.w));
+vec2 depth_texc=viewportCoordToTexRegionCoord(screen_texc,viewportToTexRegionScaleBias);
+vec4 dlookup;
+if(msaa)dlookup=ms_depth(depth_texc.xy);else
+dlookup=texture(sampler2D(depthTexture[1 + 9]),depth_texc.xy);
+vec3 view=normalize(IN.view);
+vec4 nearFarCloud=textureLod(samplerCube(cloudDepthTexture[1 + 4]),view,0);
+;
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=depthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=reverseDepth;
+vec2 dist=depthToFadeDistance(vec2(IN.depth,dlookup.x),IN.screenPos.xy,depthInterpretationStruct,tanHalfFov);
+float past=saturate((nearFarCloud.w-dist.x)/0.008+1.0);
+past*=saturate((dist.y-dist.x)/0.01-0.9);
+vec4 colour=vec4(lightningColour*IN.brightness*100.0,1.0);
+float br=brightness;
+if(progress>0.0)
+{
+br*=ProgressFunction(progress-IN.progress);
+}
+
+colour.rgb=lightningColour*br*saturate(past)*0.25;
+float f=pow(1.0-IN.progress,1.5);
+return colour*f;
+}
+layout(location = 0) in Block
+{
+transformedThinVertex BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+transformedThinVertex BlockData=ioblock.BlockData;
+#line 503 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+{returnObject_vec4=PS_Thin(BlockData,false,true);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_PS_Thin_ReverseDepth.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 10) uniform LightningConstants
+{
+	vec3 lightningColour;
+	float branchAngleRadians;
+	vec3 startPos;
+	uint num_octaves;
+	vec3 endPos;
+	float strikeThicknessMetres;
+	float roughness;
+	float motion;
+	uint numLevels;
+	uint numBranches;
+	uint numBranchesPrevious;
+	float branchLengthMetres;
+	uint branchInterval;
+	float phaseTime;
+	int randomSeed;
+	float brightness;
+	float progress;
+	float vertical;
+	uint branchIndex;
+	uint curLevel;
+	vec2 padding;
+};
+#line 57 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 8) uniform LightningPerViewConstants
+{
+	mat4 worldViewProj;
+	vec4 depthToLinFadeDistParams;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 fullResToLowResTransformXYWH;
+	vec2 viewportPixels;
+	vec2 _line_width;
+	vec2 tanHalfFovUnused;
+	float brightnessToUnity;
+	float minPixelWidth;
+	vec4 tanHalfFov;
+	vec3 viewPosition;
+	float maxFadeDistance;
+	uint parent_point;
+	float padding2;
+	vec2 padding3;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+#line 211 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+struct transformedThinVertex
+{
+	vec4 hPosition;
+	float brightness;
+	float depth;
+	vec2 screenPos;
+	vec2 texc;
+	float progress;
+	vec3 view;
+	vec4 clipPos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t cloudDepthTexture[24];
+	uint64_t depthTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 367 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+return texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0));
+}
+#line 376 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+float ProgressFunction(float _progress)
+{
+float p=abs(_progress);
+float a=0.1*saturate((100.0*_progress)-3.0);
+float b=10.0*exp(-p*p/0.0001);
+return a+b;
+}
+#line 455 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 PS_Thin(transformedThinVertex IN, bool reverseDepth, bool msaa)
+{
+vec2 screen_texc=vec2(0.5*(IN.clipPos.x/IN.clipPos.w+1.0),0.5*(1.0-IN.clipPos.y/IN.clipPos.w));
+vec2 depth_texc=viewportCoordToTexRegionCoord(screen_texc,viewportToTexRegionScaleBias);
+vec4 dlookup;
+if(msaa)dlookup=ms_depth(depth_texc.xy);else
+dlookup=texture(sampler2D(depthTexture[1 + 9]),depth_texc.xy);
+vec3 view=normalize(IN.view);
+vec4 nearFarCloud=textureLod(samplerCube(cloudDepthTexture[1 + 4]),view,0);
+;
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=depthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=reverseDepth;
+vec2 dist=depthToFadeDistance(vec2(IN.depth,dlookup.x),IN.screenPos.xy,depthInterpretationStruct,tanHalfFov);
+float past=saturate((nearFarCloud.w-dist.x)/0.008+1.0);
+past*=saturate((dist.y-dist.x)/0.01-0.9);
+vec4 colour=vec4(lightningColour*IN.brightness*100.0,1.0);
+float br=brightness;
+if(progress>0.0)
+{
+br*=ProgressFunction(progress-IN.progress);
+}
+
+colour.rgb=lightningColour*br*saturate(past)*0.25;
+float f=pow(1.0-IN.progress,1.5);
+return colour*f;
+}
+layout(location = 0) in Block
+{
+transformedThinVertex BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+transformedThinVertex BlockData=ioblock.BlockData;
+#line 490 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+{returnObject_vec4=PS_Thin(BlockData,true,false);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_PS_Thin_ReverseDepth_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 10) uniform LightningConstants
+{
+	vec3 lightningColour;
+	float branchAngleRadians;
+	vec3 startPos;
+	uint num_octaves;
+	vec3 endPos;
+	float strikeThicknessMetres;
+	float roughness;
+	float motion;
+	uint numLevels;
+	uint numBranches;
+	uint numBranchesPrevious;
+	float branchLengthMetres;
+	uint branchInterval;
+	float phaseTime;
+	int randomSeed;
+	float brightness;
+	float progress;
+	float vertical;
+	uint branchIndex;
+	uint curLevel;
+	vec2 padding;
+};
+#line 57 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 8) uniform LightningPerViewConstants
+{
+	mat4 worldViewProj;
+	vec4 depthToLinFadeDistParams;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 fullResToLowResTransformXYWH;
+	vec2 viewportPixels;
+	vec2 _line_width;
+	vec2 tanHalfFovUnused;
+	float brightnessToUnity;
+	float minPixelWidth;
+	vec4 tanHalfFov;
+	vec3 viewPosition;
+	float maxFadeDistance;
+	uint parent_point;
+	float padding2;
+	vec2 padding3;
+};
+#line 14 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+struct DepthInterpretationStruct
+{
+	vec4 depthToLinFadeDistParams;
+	bool reverseDepth;
+};
+
+
+
+#line 211 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+struct transformedThinVertex
+{
+	vec4 hPosition;
+	float brightness;
+	float depth;
+	vec2 screenPos;
+	vec2 texc;
+	float progress;
+	vec3 view;
+	vec4 clipPos;
+};
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t cloudDepthTexture[24];
+	uint64_t depthTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 111 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+float depthToFadeDistance(float depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+if(dis.reverseDepth)
+{
+if(depth<=0)return 1.0;
+}
+else
+
+{
+if(depth>=1.0)return 1.0;
+}
+
+float linearFadeDistanceZ=dis.depthToLinFadeDistParams.x/(depth*dis.depthToLinFadeDistParams.y+dis.depthToLinFadeDistParams.z)+dis.depthToLinFadeDistParams.w*depth;
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+float fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+return fadeDist;
+}
+#line 130 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 depthToFadeDistance(vec2 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec2 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xx/(depth*dis.depthToLinFadeDistParams.yy+dis.depthToLinFadeDistParams.zz)+dis.depthToLinFadeDistParams.ww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec2 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+}
+
+return fadeDist;
+}
+#line 149 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec4 depthToFadeDistance(vec4 depth, vec2 xy, DepthInterpretationStruct dis, vec4 tanHalf)
+{
+vec4 linearFadeDistanceZ=saturate(dis.depthToLinFadeDistParams.xxxx/(depth*dis.depthToLinFadeDistParams.yyyy+dis.depthToLinFadeDistParams.zzzz)+dis.depthToLinFadeDistParams.wwww*depth);
+float Tx=xy.x*tanHalf.x+tanHalf.z;
+float Ty=xy.y*tanHalf.y+tanHalf.w;
+vec4 fadeDist=linearFadeDistanceZ*sqrt(1.0+Tx*Tx+Ty*Ty);
+if(dis.reverseDepth)
+{
+fadeDist.x=max(fadeDist.x,step(0.0,-depth.x));
+fadeDist.y=max(fadeDist.y,step(0.0,-depth.y));
+fadeDist.z=max(fadeDist.z,step(0.0,-depth.z));
+fadeDist.w=max(fadeDist.w,step(0.0,-depth.w));
+}
+else
+
+{
+fadeDist.x=max(fadeDist.x,step(1.0,depth.x));
+fadeDist.y=max(fadeDist.y,step(1.0,depth.y));
+fadeDist.z=max(fadeDist.z,step(1.0,depth.z));
+fadeDist.w=max(fadeDist.w,step(1.0,depth.w));
+}
+
+return fadeDist;
+}
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/depth.sl"
+vec2 viewportCoordToTexRegionCoord(vec2 iViewportCoord, vec4 iViewportToTexRegionScaleBias)
+{
+return iViewportCoord*iViewportToTexRegionScaleBias.xy+iViewportToTexRegionScaleBias.zw;
+}
+#line 367 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+return texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0));
+}
+#line 376 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+float ProgressFunction(float _progress)
+{
+float p=abs(_progress);
+float a=0.1*saturate((100.0*_progress)-3.0);
+float b=10.0*exp(-p*p/0.0001);
+return a+b;
+}
+#line 455 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec4 PS_Thin(transformedThinVertex IN, bool reverseDepth, bool msaa)
+{
+vec2 screen_texc=vec2(0.5*(IN.clipPos.x/IN.clipPos.w+1.0),0.5*(1.0-IN.clipPos.y/IN.clipPos.w));
+vec2 depth_texc=viewportCoordToTexRegionCoord(screen_texc,viewportToTexRegionScaleBias);
+vec4 dlookup;
+if(msaa)dlookup=ms_depth(depth_texc.xy);else
+dlookup=texture(sampler2D(depthTexture[1 + 9]),depth_texc.xy);
+vec3 view=normalize(IN.view);
+vec4 nearFarCloud=textureLod(samplerCube(cloudDepthTexture[1 + 4]),view,0);
+;
+DepthInterpretationStruct depthInterpretationStruct;
+depthInterpretationStruct.depthToLinFadeDistParams=depthToLinFadeDistParams;
+depthInterpretationStruct.reverseDepth=reverseDepth;
+vec2 dist=depthToFadeDistance(vec2(IN.depth,dlookup.x),IN.screenPos.xy,depthInterpretationStruct,tanHalfFov);
+float past=saturate((nearFarCloud.w-dist.x)/0.008+1.0);
+past*=saturate((dist.y-dist.x)/0.01-0.9);
+vec4 colour=vec4(lightningColour*IN.brightness*100.0,1.0);
+float br=brightness;
+if(progress>0.0)
+{
+br*=ProgressFunction(progress-IN.progress);
+}
+
+colour.rgb=lightningColour*br*saturate(past)*0.25;
+float f=pow(1.0-IN.progress,1.5);
+return colour*f;
+}
+layout(location = 0) in Block
+{
+transformedThinVertex BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+transformedThinVertex BlockData=ioblock.BlockData;
+#line 499 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+{returnObject_vec4=PS_Thin(BlockData,true,true);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_VS_SimpleFullscreen_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 119 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+#line 132 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 134 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_VS_SimpleFullscreen_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 119 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+#line 132 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 134 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_VS_Thick_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 57 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 8) uniform LightningPerViewConstants
+{
+	mat4 worldViewProj;
+	vec4 depthToLinFadeDistParams;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 fullResToLowResTransformXYWH;
+	vec2 viewportPixels;
+	vec2 _line_width;
+	vec2 tanHalfFovUnused;
+	float brightnessToUnity;
+	float minPixelWidth;
+	vec4 tanHalfFov;
+	vec3 viewPosition;
+	float maxFadeDistance;
+	uint parent_point;
+	float padding2;
+	vec2 padding3;
+};
+#line 64 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+struct LightningVertex
+{
+	vec3 position;
+	vec2 texCoords;
+	float progress;
+};
+layout(std430, binding = 4) buffer vertices_ssbo
+{
+	LightningVertex vertices[]; 
+};
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+struct transformedVertex
+{
+	vec4 hPosition;
+	float brightness;
+	vec2 hPosCentre1;
+	vec2 hPosCentre2;
+	vec2 screenPos;
+	vec2 texc;
+	float along;
+	float clipWidth;
+	vec4 clipPos;
+	float endpoint;
+	float progress;
+	vec3 view;
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 39 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+#line 43 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+#line 47 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+#line 51 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+#line 55 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+#line 59 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+#line 63 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+#line 67 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+#line 232 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec2 PixelPos(vec4 vertex)
+{
+vec2 p=vec2(vertex.xy/vertex.w)*viewportPixels;
+return p;
+}
+layout(location = 0) out Block
+{
+transformedVertex BlockData;
+} ioblock;
+void main()
+{
+idOnly id;
+id.vertex_id=gl_VertexID;
+#line 239 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+LightningVertex IN[4];
+vec4 hPos[4];
+int vertex_id=int(id.vertex_id/2);
+int left_right=int(typed_mod(id.vertex_id,2));
+for(int i=0;i<4;i++)
+{
+IN[i]=vertices[vertex_id+i];
+hPos[i]=mul(worldViewProj,vec4(IN[i].position.xyz,1.0));
+}
+
+transformedVertex OUT;
+OUT.hPosition=mul(worldViewProj,vec4(IN[0].position.xyz,1.0));
+OUT.view=normalize(viewPosition-IN[0].position.xyz);
+float thicknessMetres=IN[0].texCoords.x;
+float endpoint=saturate(1.0-IN[1].texCoords.y);
+OUT.brightness=IN[0].texCoords.y;
+OUT.progress=IN[0].progress;
+float depth=OUT.hPosition.z/OUT.hPosition.w;
+vec2 p0=PixelPos(hPos[0]);
+vec2 p1=PixelPos(hPos[1]);
+vec2 p2=PixelPos(hPos[2]);
+vec2 p3=PixelPos(hPos[3]);
+vec2 area=viewportPixels*1.2;
+vec4 start=hPos[1];
+vec4 end=hPos[2];
+vec2 v0=normalize(p1-p0);
+vec2 v1=normalize(p2-p1);
+vec2 v2=normalize(p3-p2);
+vec2 n0=vec2(-v0.y,v0.x);
+vec2 n1=vec2(-v1.y,v1.x);
+vec2 n2=vec2(-v2.y,v2.x);
+vec2 mitre1=normalize(n0+n1);
+vec2 mitre2=normalize(n1+n2);
+float l=length(p2-p1);
+float t1=min(0.5*l,thicknessMetres);
+float t2=min(0.5*l,thicknessMetres);
+float truePixelWidth1=(t1/start.w*viewportPixels.x);
+float truePixelWidth2=(t2/start.w*viewportPixels.x);
+float K1=IN[1].texCoords.y*truePixelWidth1;
+float K2=IN[2].texCoords.y*truePixelWidth2;
+float brightness1=IN[1].texCoords.y;
+float brightness2=IN[2].texCoords.y;
+float width1=t1;
+float width2=t2;
+float maxBrightness=1000.0;
+if(brightness1>maxBrightness)
+{
+width1*=brightness1/maxBrightness;
+brightness1=maxBrightness;
+}
+
+if(brightness2>maxBrightness)
+{
+width2*=brightness2/maxBrightness;
+brightness2=maxBrightness;
+}
+
+if(width1<minPixelWidth/viewportPixels.x*start.w)
+{
+brightness1*=width1/(minPixelWidth/viewportPixels.x*start.w);
+width1=minPixelWidth/viewportPixels.x*start.w;
+}
+
+if(width2<minPixelWidth/viewportPixels.x*start.w)
+{
+brightness2*=width2/(minPixelWidth/viewportPixels.x*start.w);
+width2=minPixelWidth/viewportPixels.x*start.w;
+}
+
+float lengthPixels_a=width1/start.w*viewportPixels.x/dot(mitre1,n1);
+lengthPixels_a=clamp(lengthPixels_a,minPixelWidth,10.0);
+float mitre_LIMIT=0.0;
+OUT.hPosCentre1=vec2(p1.xy/viewportPixels);
+OUT.hPosCentre2=vec2(p2.xy/viewportPixels);
+OUT.clipWidth=width1/start.w;
+vec2 diff=OUT.hPosCentre2-OUT.hPosCentre1;
+float dist=length(diff);
+float d2=dist*dist;
+vec2 mitre1_a=mitre1;
+vec2 mitre1_b=mitre1;
+if(left_right==0)
+{
+OUT.screenPos=(p1+lengthPixels_a*mitre1_a)/viewportPixels;
+}
+else
+
+{
+OUT.screenPos=(p1-lengthPixels_a*mitre1_b)/viewportPixels;
+}
+
+OUT.hPosition=vec4(OUT.screenPos.xy*start.w,start.z,start.w);
+OUT.texc=OUT.screenPos.xy*0.5+0.5;
+OUT.along=0.0;
+OUT.brightness=brightness1;
+OUT.endpoint=endpoint;
+OUT.progress=IN[1].progress;
+OUT.clipPos=OUT.hPosition;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_VS_Thick_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 57 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 8) uniform LightningPerViewConstants
+{
+	mat4 worldViewProj;
+	vec4 depthToLinFadeDistParams;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 fullResToLowResTransformXYWH;
+	vec2 viewportPixels;
+	vec2 _line_width;
+	vec2 tanHalfFovUnused;
+	float brightnessToUnity;
+	float minPixelWidth;
+	vec4 tanHalfFov;
+	vec3 viewPosition;
+	float maxFadeDistance;
+	uint parent_point;
+	float padding2;
+	vec2 padding3;
+};
+#line 64 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+struct LightningVertex
+{
+	vec3 position;
+	vec2 texCoords;
+	float progress;
+};
+layout(std430, binding = 4) buffer vertices_ssbo
+{
+	LightningVertex vertices[]; 
+};
+#line 199 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+struct transformedVertex
+{
+	vec4 hPosition;
+	float brightness;
+	vec2 hPosCentre1;
+	vec2 hPosCentre2;
+	vec2 screenPos;
+	vec2 texc;
+	float along;
+	float clipWidth;
+	vec4 clipPos;
+	float endpoint;
+	float progress;
+	vec3 view;
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 39 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+#line 43 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+#line 47 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+#line 51 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+#line 55 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+#line 59 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+#line 63 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+#line 67 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+#line 232 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+vec2 PixelPos(vec4 vertex)
+{
+vec2 p=vec2(vertex.xy/vertex.w)*viewportPixels;
+return p;
+}
+layout(location = 0) out Block
+{
+transformedVertex BlockData;
+} ioblock;
+void main()
+{
+idOnly id;
+id.vertex_id=gl_VertexID;
+#line 239 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+LightningVertex IN[4];
+vec4 hPos[4];
+int vertex_id=int(id.vertex_id/2);
+int left_right=int(typed_mod(id.vertex_id,2));
+for(int i=0;i<4;i++)
+{
+IN[i]=vertices[vertex_id+i];
+hPos[i]=mul(worldViewProj,vec4(IN[i].position.xyz,1.0));
+}
+
+transformedVertex OUT;
+OUT.hPosition=mul(worldViewProj,vec4(IN[0].position.xyz,1.0));
+OUT.view=normalize(viewPosition-IN[0].position.xyz);
+float thicknessMetres=IN[0].texCoords.x;
+float endpoint=saturate(1.0-IN[1].texCoords.y);
+OUT.brightness=IN[0].texCoords.y;
+OUT.progress=IN[0].progress;
+float depth=OUT.hPosition.z/OUT.hPosition.w;
+vec2 p0=PixelPos(hPos[0]);
+vec2 p1=PixelPos(hPos[1]);
+vec2 p2=PixelPos(hPos[2]);
+vec2 p3=PixelPos(hPos[3]);
+vec2 area=viewportPixels*1.2;
+vec4 start=hPos[1];
+vec4 end=hPos[2];
+vec2 v0=normalize(p1-p0);
+vec2 v1=normalize(p2-p1);
+vec2 v2=normalize(p3-p2);
+vec2 n0=vec2(-v0.y,v0.x);
+vec2 n1=vec2(-v1.y,v1.x);
+vec2 n2=vec2(-v2.y,v2.x);
+vec2 mitre1=normalize(n0+n1);
+vec2 mitre2=normalize(n1+n2);
+float l=length(p2-p1);
+float t1=min(0.5*l,thicknessMetres);
+float t2=min(0.5*l,thicknessMetres);
+float truePixelWidth1=(t1/start.w*viewportPixels.x);
+float truePixelWidth2=(t2/start.w*viewportPixels.x);
+float K1=IN[1].texCoords.y*truePixelWidth1;
+float K2=IN[2].texCoords.y*truePixelWidth2;
+float brightness1=IN[1].texCoords.y;
+float brightness2=IN[2].texCoords.y;
+float width1=t1;
+float width2=t2;
+float maxBrightness=1000.0;
+if(brightness1>maxBrightness)
+{
+width1*=brightness1/maxBrightness;
+brightness1=maxBrightness;
+}
+
+if(brightness2>maxBrightness)
+{
+width2*=brightness2/maxBrightness;
+brightness2=maxBrightness;
+}
+
+if(width1<minPixelWidth/viewportPixels.x*start.w)
+{
+brightness1*=width1/(minPixelWidth/viewportPixels.x*start.w);
+width1=minPixelWidth/viewportPixels.x*start.w;
+}
+
+if(width2<minPixelWidth/viewportPixels.x*start.w)
+{
+brightness2*=width2/(minPixelWidth/viewportPixels.x*start.w);
+width2=minPixelWidth/viewportPixels.x*start.w;
+}
+
+float lengthPixels_a=width1/start.w*viewportPixels.x/dot(mitre1,n1);
+lengthPixels_a=clamp(lengthPixels_a,minPixelWidth,10.0);
+float mitre_LIMIT=0.0;
+OUT.hPosCentre1=vec2(p1.xy/viewportPixels);
+OUT.hPosCentre2=vec2(p2.xy/viewportPixels);
+OUT.clipWidth=width1/start.w;
+vec2 diff=OUT.hPosCentre2-OUT.hPosCentre1;
+float dist=length(diff);
+float d2=dist*dist;
+vec2 mitre1_a=mitre1;
+vec2 mitre1_b=mitre1;
+if(left_right==0)
+{
+OUT.screenPos=(p1+lengthPixels_a*mitre1_a)/viewportPixels;
+}
+else
+
+{
+OUT.screenPos=(p1-lengthPixels_a*mitre1_b)/viewportPixels;
+}
+
+OUT.hPosition=vec4(OUT.screenPos.xy*start.w,start.z,start.w);
+OUT.texc=OUT.screenPos.xy*0.5+0.5;
+OUT.along=0.0;
+OUT.brightness=brightness1;
+OUT.endpoint=endpoint;
+OUT.progress=IN[1].progress;
+OUT.clipPos=OUT.hPosition;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_VS_Thin_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 10) uniform LightningConstants
+{
+	vec3 lightningColour;
+	float branchAngleRadians;
+	vec3 startPos;
+	uint num_octaves;
+	vec3 endPos;
+	float strikeThicknessMetres;
+	float roughness;
+	float motion;
+	uint numLevels;
+	uint numBranches;
+	uint numBranchesPrevious;
+	float branchLengthMetres;
+	uint branchInterval;
+	float phaseTime;
+	int randomSeed;
+	float brightness;
+	float progress;
+	float vertical;
+	uint branchIndex;
+	uint curLevel;
+	vec2 padding;
+};
+#line 57 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 8) uniform LightningPerViewConstants
+{
+	mat4 worldViewProj;
+	vec4 depthToLinFadeDistParams;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 fullResToLowResTransformXYWH;
+	vec2 viewportPixels;
+	vec2 _line_width;
+	vec2 tanHalfFovUnused;
+	float brightnessToUnity;
+	float minPixelWidth;
+	vec4 tanHalfFov;
+	vec3 viewPosition;
+	float maxFadeDistance;
+	uint parent_point;
+	float padding2;
+	vec2 padding3;
+};
+#line 64 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+struct LightningVertex
+{
+	vec3 position;
+	vec2 texCoords;
+	float progress;
+};
+layout(std430, binding = 4) buffer vertices_ssbo
+{
+	LightningVertex vertices[]; 
+};
+#line 211 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+struct transformedThinVertex
+{
+	vec4 hPosition;
+	float brightness;
+	float depth;
+	vec2 screenPos;
+	vec2 texc;
+	float progress;
+	vec3 view;
+	vec4 clipPos;
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+transformedThinVertex BlockData;
+} ioblock;
+void main()
+{
+idOnly id;
+id.vertex_id=gl_VertexID;
+#line 214 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+transformedThinVertex OUT;
+int idx=int(id.vertex_id+branchIndex);
+LightningVertex IN=vertices[idx];
+OUT.hPosition=mul(worldViewProj,vec4(IN.position.xyz,1.0));
+OUT.view=normalize(viewPosition-IN.position.xyz);
+OUT.brightness=IN.texCoords.y*10.0;
+OUT.depth=OUT.hPosition.z/OUT.hPosition.w;
+OUT.screenPos=OUT.hPosition.xy/OUT.hPosition.w;
+OUT.texc=OUT.screenPos.xy*0.5+0.5;
+OUT.progress=IN.progress;
+OUT.clipPos=OUT.hPosition;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/lightning_VS_Thin_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 10) uniform LightningConstants
+{
+	vec3 lightningColour;
+	float branchAngleRadians;
+	vec3 startPos;
+	uint num_octaves;
+	vec3 endPos;
+	float strikeThicknessMetres;
+	float roughness;
+	float motion;
+	uint numLevels;
+	uint numBranches;
+	uint numBranchesPrevious;
+	float branchLengthMetres;
+	uint branchInterval;
+	float phaseTime;
+	int randomSeed;
+	float brightness;
+	float progress;
+	float vertical;
+	uint branchIndex;
+	uint curLevel;
+	vec2 padding;
+};
+#line 57 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+layout(std140, binding = 8) uniform LightningPerViewConstants
+{
+	mat4 worldViewProj;
+	vec4 depthToLinFadeDistParams;
+	vec4 viewportToTexRegionScaleBias;
+	vec4 fullResToLowResTransformXYWH;
+	vec2 viewportPixels;
+	vec2 _line_width;
+	vec2 tanHalfFovUnused;
+	float brightnessToUnity;
+	float minPixelWidth;
+	vec4 tanHalfFov;
+	vec3 viewPosition;
+	float maxFadeDistance;
+	uint parent_point;
+	float padding2;
+	vec2 padding3;
+};
+#line 64 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/lightning_constants.sl"
+struct LightningVertex
+{
+	vec3 position;
+	vec2 texCoords;
+	float progress;
+};
+layout(std430, binding = 4) buffer vertices_ssbo
+{
+	LightningVertex vertices[]; 
+};
+#line 211 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+struct transformedThinVertex
+{
+	vec4 hPosition;
+	float brightness;
+	float depth;
+	vec2 screenPos;
+	vec2 texc;
+	float progress;
+	vec3 view;
+	vec4 clipPos;
+};
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+layout(location = 0) out Block
+{
+transformedThinVertex BlockData;
+} ioblock;
+void main()
+{
+idOnly id;
+id.vertex_id=gl_VertexID;
+#line 214 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/lightning.sfx"
+transformedThinVertex OUT;
+int idx=int(id.vertex_id+branchIndex);
+LightningVertex IN=vertices[idx];
+OUT.hPosition=mul(worldViewProj,vec4(IN.position.xyz,1.0));
+OUT.view=normalize(viewPosition-IN.position.xyz);
+OUT.brightness=IN.texCoords.y*10.0;
+OUT.depth=OUT.hPosition.z/OUT.hPosition.w;
+OUT.screenPos=OUT.hPosition.xy/OUT.hPosition.w;
+OUT.texc=OUT.screenPos.xy*0.5+0.5;
+OUT.progress=IN.progress;
+OUT.clipPos=OUT.hPosition;
+{
+ioblock.BlockData=OUT;
+gl_Position=OUT.hPosition;
+}
+}

@@ -116,13 +116,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)\zecooEngine\Vendor;$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\include\GLFW;$(SolutionDir)\zecooEngine\Vendor\glad\include;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\src;$(SolutionDir)\zecooEngine\Vendor\JsonStthm\Src;$(SolutionDir)\zecooEngine\Vendor\imgui;$(SolutionDir)\zecooEngine\Vendor\stb_image;$(SolutionDir)\zecooEngine\Vendor\assimp-3.3.1\include;$(SolutionDir)\zecooEngine\Vendor\irrKlang-64bit-1.6.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir)\zecooEngine\Vendor;$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\include\GLFW;$(SolutionDir)\zecooEngine\Vendor\glad\include;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\src;$(SolutionDir)\zecooEngine\Vendor\JsonStthm\Src;$(SolutionDir)\zecooEngine\Vendor\imgui;$(SolutionDir)\zecooEngine\Vendor\stb_image;$(SolutionDir)\zecooEngine\Vendor\assimp-3.3.1\include;$(SolutionDir)\zecooEngine\Vendor\irrKlang-64bit-1.6.0\include;$(SolutionDir)\zecooEngine\Vendor\Simul;$(SolutionDir)\zecooEngine\Vendor\Simul\Platform\Windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\build\src\Debug;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\build\lib\Debug;$(SolutionDir)\zecooEngine\Vendor\assimp-3.3.1\build\code\Debug;$(SolutionDir)\zecooEngine\Vendor\irrKlang-64bit-1.6.0\lib\Winx64-visualStudio;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\zecooEngine\Vendor\glfw-3.3.4\build\src\Debug;$(SolutionDir)\zecooEngine\Vendor\freeimage;$(SolutionDir)\zecooEngine\Vendor\bullet3-3.17\build\lib\Debug;$(SolutionDir)\zecooEngine\Vendor\assimp-3.3.1\build\code\Debug;$(SolutionDir)\zecooEngine\Vendor\irrKlang-64bit-1.6.0\lib\Winx64-visualStudio;$(SolutionDir)\zecooEngine\Vendor\Simul\build\lib\Debug\SimulCrossPlatform_MTd.lib;$(SolutionDir)\zecooEngine\Vendor\Simul\build\lib\Debug\SimulMath_MTd.lib;$(SolutionDir)\zecooEngine\Vendor\Simul\build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;FreeImage.lib;BulletDynamics_Debug.lib;BulletCollision_Debug.lib;LinearMath_Debug.lib;assimp-vc140-mt.lib;irrKlang.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -153,6 +153,7 @@
     <ClInclude Include="CubeMesh.h" />
     <ClInclude Include="CustomMesh.h" />
     <ClInclude Include="SceneAudioTest.h" />
+    <ClInclude Include="SceneSimul.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="CylinderMesh.h" />
@@ -231,6 +232,7 @@
     <ClCompile Include="CubeMesh.cpp" />
     <ClCompile Include="CustomMesh.cpp" />
     <ClCompile Include="SceneAudioTest.cpp" />
+    <ClCompile Include="SceneSimul.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="CylinderMesh.cpp" />

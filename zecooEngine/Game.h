@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "Wave.h"
+#include "SceneSimul.h"
 
 #include "Input.h"
 #include "Settings.h"
@@ -17,7 +17,7 @@ class Game
 public:
 	Input* input;
 
-	Wave* scene;
+	SceneSimul* scene;
 	PhysicsEngine* phyEng;
 
 	Game(Input* _input);

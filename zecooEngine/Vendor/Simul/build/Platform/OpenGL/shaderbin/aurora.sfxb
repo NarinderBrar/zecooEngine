@@ -1,0 +1,1528 @@
+#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/aurora_CS_AuroraIntensity_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 49 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora_constants.sl"
+layout(std140, binding = 5) uniform AuroraConstants
+{
+	vec2 FAC_Region1_ArcDawn_centrePoint;
+	float FAC_Region1_ArcDawn_startAzimuth;
+	float FAC_Region1_ArcDawn_endAzimuth;
+	float FAC_Region1_ArcDawn_radius;
+	float FAC_Region1_ArcDawn_strength;
+	vec2 FAC_Region1_ArcDusk_centrePoint;
+	float FAC_Region1_ArcDusk_startAzimuth;
+	float FAC_Region1_ArcDusk_endAzimuth;
+	float FAC_Region1_ArcDusk_radius;
+	float FAC_Region1_ArcDusk_strength;
+	vec2 FAC_Region2_ArcDawn_centrePoint;
+	float FAC_Region2_ArcDawn_startAzimuth;
+	float FAC_Region2_ArcDawn_endAzimuth;
+	float FAC_Region2_ArcDawn_radius;
+	float FAC_Region2_ArcDawn_strength;
+	vec2 FAC_Region2_ArcDusk_centrePoint;
+	float FAC_Region2_ArcDusk_startAzimuth;
+	float FAC_Region2_ArcDusk_endAzimuth;
+	float FAC_Region2_ArcDusk_radius;
+	float FAC_Region2_ArcDusk_strength;
+	vec3 globalDirectionSun;
+	uint auroraLayersCount;
+	float AGC_highestLatitude;
+	float AGC_lowestLatitide;
+	float AGC_maxAuroralBand;
+	float AGC_minAuroralBand;
+	float auroralLayerIntensity;
+	float time;
+	float atmosphericElectronVolumeDensity;
+	float atmosphericElectronFreeTime;
+	vec2 acPad;
+	uint intensityMapDrawFrameNumber;
+	uint auroraTraceLength;
+};
+
+layout(rgba32f, binding = 0) uniform image2D rwIntensityMap;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t FACmap[24];
+};
+#line 75 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_refract_reflect.sl"
+float NormalizeLERPPointWithinRange(float x0, float x1, float t)
+{
+return (t-x0)/(x1-x0);
+}
+#line 84 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora.sl"
+float Conductivity(float electronVolumeDensity, float electronFreeTime)
+{
+float sigma;
+sigma=electronVolumeDensity*-1.602176634e-19*-1.602176634e-19*(electronFreeTime/9.10938370156e-31);
+return sigma;
+}
+#line 125 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora.sl"
+vec2 LatLongToCentralisedTextureCoordinates(vec2 latLong)
+{
+float normalisedRadius=NormalizeLERPPointWithinRange(90.0,60.0,latLong.x);
+float theta=latLong.y-90.0;
+if(theta<0.0)theta+=360.0;
+float x=0.5*normalisedRadius*cos(theta*3.1415926536/180.0);
+float y=0.5*normalisedRadius*sin(theta*3.1415926536/180.0);
+return vec2(x,y);
+}
+layout(local_size_x=8, local_size_y=1, local_size_z=1) in;
+void main()
+{
+uvec3 p = gl_GlobalInvocationID;
+#line 192 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+uint defaultMapSize=1024;
+uvec2 mapSize;
+ivec2 ivrwIntensityMap = imageSize(rwIntensityMap);
+mapSize.x = ivrwIntensityMap.x;mapSize.y = ivrwIntensityMap.y;;
+float stepOrtho=1.0/float(mapSize.x);
+float stepDiag=sqrt(2*stepOrtho*stepOrtho);
+float startPos_lat=65+2*float(p.x);
+float startPos_lon=360*time+(10.0*float(intensityMapDrawFrameNumber));
+vec2 startPos=LatLongToCentralisedTextureCoordinates(vec2(startPos_lat,startPos_lon));
+vec2 currentPos=startPos;
+vec2 prevHall=vec2(0,0);
+float sigma=Conductivity(atmosphericElectronVolumeDensity,atmosphericElectronFreeTime);
+for(uint i=0;i<auroraTraceLength*(float(mapSize.x)/float(defaultMapSize));i++)
+{
+uvec2 p2=uvec2((currentPos+vec2(0.5,0.5))*vec2(mapSize));
+vec2 hall=0.001*textureLod(sampler2D(FACmap[1 + 9]),(currentPos+vec2(0.5,0.5)),0).xy;
+float J=sigma*abs(length(hall));
+float prevJ=sigma*abs(length(prevHall));
+float J_FAC=2.0*textureLod(sampler2D(FACmap[1 + 9]),(currentPos+vec2(0.5,0.5)),0).z;
+float Jfall=prevJ+J_FAC-J;
+if(hall.x>stepOrtho||hall.x<-stepOrtho)
+{
+if(hall.x>0)hall.x=clamp(hall.x,stepOrtho,stepDiag);else
+hall.x=clamp(hall.x,-stepDiag,-stepOrtho);
+}
+
+if(hall.y>stepOrtho||hall.y<-stepOrtho)
+{
+if(hall.y>0)hall.y=clamp(hall.y,stepOrtho,stepDiag);else
+hall.y=clamp(hall.y,-stepDiag,-stepOrtho);
+}
+
+currentPos+=hall;
+if(length(currentPos)>0.5)break;
+imageStore(rwIntensityMap,ivec2(p2),vec4(vec4(Jfall,1,-Jfall,1)*length(hall*1000)));
+prevHall=hall;
+}
+
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/aurora_PS_AuroraFACmap.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 49 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora_constants.sl"
+layout(std140, binding = 5) uniform AuroraConstants
+{
+	vec2 FAC_Region1_ArcDawn_centrePoint;
+	float FAC_Region1_ArcDawn_startAzimuth;
+	float FAC_Region1_ArcDawn_endAzimuth;
+	float FAC_Region1_ArcDawn_radius;
+	float FAC_Region1_ArcDawn_strength;
+	vec2 FAC_Region1_ArcDusk_centrePoint;
+	float FAC_Region1_ArcDusk_startAzimuth;
+	float FAC_Region1_ArcDusk_endAzimuth;
+	float FAC_Region1_ArcDusk_radius;
+	float FAC_Region1_ArcDusk_strength;
+	vec2 FAC_Region2_ArcDawn_centrePoint;
+	float FAC_Region2_ArcDawn_startAzimuth;
+	float FAC_Region2_ArcDawn_endAzimuth;
+	float FAC_Region2_ArcDawn_radius;
+	float FAC_Region2_ArcDawn_strength;
+	vec2 FAC_Region2_ArcDusk_centrePoint;
+	float FAC_Region2_ArcDusk_startAzimuth;
+	float FAC_Region2_ArcDusk_endAzimuth;
+	float FAC_Region2_ArcDusk_radius;
+	float FAC_Region2_ArcDusk_strength;
+	vec3 globalDirectionSun;
+	uint auroraLayersCount;
+	float AGC_highestLatitude;
+	float AGC_lowestLatitide;
+	float AGC_maxAuroralBand;
+	float AGC_minAuroralBand;
+	float auroralLayerIntensity;
+	float time;
+	float atmosphericElectronVolumeDensity;
+	float atmosphericElectronFreeTime;
+	vec2 acPad;
+	uint intensityMapDrawFrameNumber;
+	uint auroraTraceLength;
+};
+#line 75 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_refract_reflect.sl"
+float NormalizeLERPPointWithinRange(float x0, float x1, float t)
+{
+return (t-x0)/(x1-x0);
+}
+#line 125 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora.sl"
+vec2 LatLongToCentralisedTextureCoordinates(vec2 latLong)
+{
+float normalisedRadius=NormalizeLERPPointWithinRange(90.0,60.0,latLong.x);
+float theta=latLong.y-90.0;
+if(theta<0.0)theta+=360.0;
+float x=0.5*normalisedRadius*cos(theta*3.1415926536/180.0);
+float y=0.5*normalisedRadius*sin(theta*3.1415926536/180.0);
+return vec2(x,y);
+}
+#line 28 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+vec2 GetElectricField(vec2 centre, vec2 intersect, float strength, float start, float end, float radius)
+{
+vec2 E={0.0f,0.0f};
+float ke=-0.1;
+float dQ=strength*1/abs(end-start);
+for(int i=(180/1);i>=(-180/1);i--)
+{
+float angle=float(i)*float(1);
+float angle_rad=angle*(3.1415926536/180.0);
+if(angle>start)continue;
+if(angle<end)break;
+float x=0.5*(radius/30.0)*cos(angle_rad-3.1415926536*0.5);
+float y=0.5*(radius/30.0)*sin(angle_rad-3.1415926536*0.5);
+vec2 rQ={intersect.x+x,intersect.y+y};
+vec2 rO=centre;
+vec2 r=rO-rQ;
+float rLength2=length(r)*length(r);
+E=E+(r*(ke*(dQ/rLength2)));
+}
+
+return E;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 131 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+vec2 texc=BlockData.texCoords.xy;
+#line 136 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+vec2 centred_texc=texc-vec2(0.5,0.5);
+if(length(centred_texc)>0.5)discard;
+float electricPotential=0.0;
+vec2 pedersonCurrent=vec2(0,0);
+vec2 electricField;
+electricField=GetElectricField(centred_texc,LatLongToCentralisedTextureCoordinates(FAC_Region1_ArcDawn_centrePoint),FAC_Region1_ArcDawn_strength,FAC_Region1_ArcDawn_startAzimuth,FAC_Region1_ArcDawn_endAzimuth,FAC_Region1_ArcDawn_radius);
+pedersonCurrent+=electricField;
+electricPotential+=abs(length(electricField))*FAC_Region1_ArcDawn_strength;
+electricField=GetElectricField(centred_texc,LatLongToCentralisedTextureCoordinates(FAC_Region1_ArcDusk_centrePoint),FAC_Region1_ArcDusk_strength,FAC_Region1_ArcDusk_startAzimuth,FAC_Region1_ArcDusk_endAzimuth,FAC_Region1_ArcDusk_radius);
+pedersonCurrent+=electricField;
+electricPotential+=abs(length(electricField))*FAC_Region1_ArcDusk_strength;
+electricField=GetElectricField(centred_texc,LatLongToCentralisedTextureCoordinates(FAC_Region2_ArcDawn_centrePoint),FAC_Region2_ArcDawn_strength,FAC_Region2_ArcDawn_startAzimuth,FAC_Region2_ArcDawn_endAzimuth,FAC_Region2_ArcDawn_radius);
+pedersonCurrent+=electricField;
+electricPotential+=abs(length(electricField))*FAC_Region2_ArcDawn_strength;
+electricField=GetElectricField(centred_texc,LatLongToCentralisedTextureCoordinates(FAC_Region2_ArcDusk_centrePoint),FAC_Region2_ArcDusk_strength,FAC_Region2_ArcDusk_startAzimuth,FAC_Region2_ArcDusk_endAzimuth,FAC_Region2_ArcDusk_radius);
+pedersonCurrent+=electricField;
+electricPotential+=abs(length(electricField))*FAC_Region2_ArcDusk_strength;
+vec2 hallCurrent=cross(vec3(pedersonCurrent,0),vec3(0,0,1)).xy;
+{returnObject_vec4=vec4(-hallCurrent,electricPotential,-electricPotential);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/aurora_PS_AuroralLayer.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 49 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora_constants.sl"
+layout(std140, binding = 5) uniform AuroraConstants
+{
+	vec2 FAC_Region1_ArcDawn_centrePoint;
+	float FAC_Region1_ArcDawn_startAzimuth;
+	float FAC_Region1_ArcDawn_endAzimuth;
+	float FAC_Region1_ArcDawn_radius;
+	float FAC_Region1_ArcDawn_strength;
+	vec2 FAC_Region1_ArcDusk_centrePoint;
+	float FAC_Region1_ArcDusk_startAzimuth;
+	float FAC_Region1_ArcDusk_endAzimuth;
+	float FAC_Region1_ArcDusk_radius;
+	float FAC_Region1_ArcDusk_strength;
+	vec2 FAC_Region2_ArcDawn_centrePoint;
+	float FAC_Region2_ArcDawn_startAzimuth;
+	float FAC_Region2_ArcDawn_endAzimuth;
+	float FAC_Region2_ArcDawn_radius;
+	float FAC_Region2_ArcDawn_strength;
+	vec2 FAC_Region2_ArcDusk_centrePoint;
+	float FAC_Region2_ArcDusk_startAzimuth;
+	float FAC_Region2_ArcDusk_endAzimuth;
+	float FAC_Region2_ArcDusk_radius;
+	float FAC_Region2_ArcDusk_strength;
+	vec3 globalDirectionSun;
+	uint auroraLayersCount;
+	float AGC_highestLatitude;
+	float AGC_lowestLatitide;
+	float AGC_maxAuroralBand;
+	float AGC_minAuroralBand;
+	float auroralLayerIntensity;
+	float time;
+	float atmosphericElectronVolumeDensity;
+	float atmosphericElectronFreeTime;
+	vec2 acPad;
+	uint intensityMapDrawFrameNumber;
+	uint auroraTraceLength;
+};
+#line 72 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora_constants.sl"
+struct AuroralLayer
+{
+	float base;
+	float top;
+	float emittedWavelength;
+	float strength;
+};
+layout(std430, binding = 5) buffer sb_AuroralLayers_ssbo
+{
+	AuroralLayer sb_AuroralLayers[]; 
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 39 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_refract_reflect.sl"
+vec3 WavelengthToRGB(float wavelength)
+{
+float normalisedWavelength=(wavelength-400.0)/300.0;
+float r=cos(2.0*3.1415926536*(normalisedWavelength-(625.0-400.0)/300.0));
+float g=cos(2.0*3.1415926536*(normalisedWavelength-(555.0-400.0)/300.0));
+float b=cos(2.0*3.1415926536*(normalisedWavelength-(475.0-400.0)/300.0));
+if(normalisedWavelength>0.5)b=0.0;else
+r=0.05*cos(12.00*(normalisedWavelength-(440.0-400.0)/300.0));
+if(normalisedWavelength.x<((470.0-400.0)/300.0))
+{
+b=cos(2.15*3.1415926536*(normalisedWavelength-(470.0-400.0)/300.0));
+}
+
+return vec3(r,g,b);
+}
+#line 75 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_refract_reflect.sl"
+float NormalizeLERPPointWithinRange(float x0, float x1, float t)
+{
+return (t-x0)/(x1-x0);
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora.sl"
+float AtmosphericDensity(float altitude_metres)
+{
+if(altitude_metres/1000<=180)
+{
+float h=altitude_metres/1000;
+float a0=+7.001985e-2;
+float a1=-4.336216e-3;
+float a2=-5.009831e-3;
+float a3=+1.621827e-4;
+float a4=-2.471283e-6;
+float a5=+1.904383e-8;
+float a6=-7.189421e-11;
+float a7=+1.060067e-13;
+float polyfn=((((((a7*h+a6)*h+a5)*h+a4)*h+a3)*h+a2)*h+a1)*h+a0;
+return pow(10,polyfn);
+}
+else
+if(altitude_metres/1000<=500)
+{
+float F10=(300.0+70.0)/2.0;
+float Ap=0.0;
+float T=900.0+2.5*(F10-70.0)+1.5*Ap;
+float u=27.0-0.012*(altitude_metres/1000-200.0);
+float H=T/u;
+return 6.0e-10*exp(-(altitude_metres/1000-175.0)/H);
+}
+else
+return 0.0;
+}
+#line 54 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora.sl"
+float AtmosphericTotalShieldingMass(float altitude_metres)
+{
+float h=50;
+float range=500*1000-altitude_metres;
+float dx=range/h;
+float result=0;
+for(int i=0;i<h;i++)
+{
+result+=AtmosphericDensity(altitude_metres+i*dx)*dx;
+}
+
+return result;
+}
+#line 69 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora.sl"
+float AuroralEnergyDepositionRate(float initialEnergy, float altitude_metres)
+{
+float E=initialEnergy;
+float z=altitude_metres;
+float Dz=AtmosphericDensity(z)/1000.0;
+float Mz=AtmosphericTotalShieldingMass(z)/10.0;
+float Me=4.6e-6*pow(E,1.65);
+float r=(Mz/Me);
+float L=4.2*r*exp(-(r*r)-r)+0.48*exp(-17.4*pow(r,1.37));
+float Az=L*E*(Dz/Me);
+return Az*1000000;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 96 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+vec2 texc=BlockData.texCoords.xy;
+#line 100 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+float energy=(texc.x*32)+0.5;
+float h_km=texc.y*500;
+float blend_height_km=1;
+vec4 res=vec4(0,0,0,0);
+for(uint i=0;i<auroraLayersCount;i++)
+{
+float base=sb_AuroralLayers[i].base;
+float top=sb_AuroralLayers[i].top;
+float emittedWavelength=sb_AuroralLayers[i].emittedWavelength;
+float strength=sb_AuroralLayers[i].strength;
+if(h_km<top&&h_km>base)
+{
+float blend=1.0;
+if(h_km<base+blend_height_km)blend=saturate(NormalizeLERPPointWithinRange(base,base+blend_height_km,h_km));
+if(h_km>top-blend_height_km)blend=saturate(NormalizeLERPPointWithinRange(top,top-blend_height_km,h_km));
+res+=vec4(WavelengthToRGB(emittedWavelength),1.0)*blend*strength/500.0;
+}
+
+}
+
+{returnObject_vec4=res*auroralLayerIntensity*AuroralEnergyDepositionRate(energy,h_km*1000.0);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/aurora_PS_CompositeAurora_Forward.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 64 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora_constants.sl"
+layout(std140, binding = 6) uniform AuroraPerViewConstants
+{
+	mat4 worldViewProj;
+	mat4 worldViewProj_Inv;
+	vec2 cloudWindowLatLonPos;
+	vec2 cloudWindowSize;
+	float cloudWindowHeading;
+	float cloudWindowHeight;
+	float planetRadius;
+	float apvcPad;
+};
+
+
+
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t auroralColours[24];
+	uint64_t intensityMap[24];
+	uint64_t depthTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 75 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_refract_reflect.sl"
+float NormalizeLERPPointWithinRange(float x0, float x1, float t)
+{
+return (t-x0)/(x1-x0);
+}
+#line 125 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora.sl"
+vec2 LatLongToCentralisedTextureCoordinates(vec2 latLong)
+{
+float normalisedRadius=NormalizeLERPPointWithinRange(90.0,60.0,latLong.x);
+float theta=latLong.y-90.0;
+if(theta<0.0)theta+=360.0;
+float x=0.5*normalisedRadius*cos(theta*3.1415926536/180.0);
+float y=0.5*normalisedRadius*sin(theta*3.1415926536/180.0);
+return vec2(x,y);
+}
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora.sl"
+vec2 LatLongToCornerTextureCoordinates(vec2 latLong)
+{
+return LatLongToCentralisedTextureCoordinates(latLong)+vec2(0.5,0.5);
+}
+#line 82 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+float ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+float depth=texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0)).x;
+return depth;
+}
+#line 255 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+vec4 PS_CompositeAurora(posTexVertexOutput IN, bool reverseDepth, bool msaa)
+{
+#line 257 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+IN.texCoords.y=1.0-IN.texCoords.y;
+#line 260 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+float depth=0.0;
+if(msaa)depth=ms_depth(IN.texCoords.xy);else
+depth=texture(sampler2D(depthTexture[1 + 9]),IN.texCoords.xy).x;
+if(reverseDepth)
+{
+if(depth!=0.0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+vec2 texc=IN.texCoords.xy;
+vec2 clip_pos=vec2(-1.0,1.0);
+clip_pos.x+=2.0*texc.x;
+clip_pos.y-=2.0*texc.y;
+vec3 view_dir=normalize(mul(worldViewProj_Inv,vec4(clip_pos,1.0,1.0)).xyz);
+float s=sin(cloudWindowHeading-(cloudWindowLatLonPos.y/180.0*3.1415926536));
+float c=cos(cloudWindowHeading-(cloudWindowLatLonPos.y/180.0*3.1415926536));
+mat2 offsetRotMat={{c,-s},{s,c}};
+#line 290 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+view_dir.xy=mul(offsetRotMat,view_dir.xy);
+#line 296 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+float view_az=atan(view_dir.y,view_dir.x);
+float view_el=acos(-view_dir.z)-(3.1415926536/2.0);
+vec2 cloudWindowTCPos=LatLongToCornerTextureCoordinates(cloudWindowLatLonPos);
+cloudWindowTCPos.y=1.0-cloudWindowTCPos.y;
+float viewDistanceKm=0.5*cloudWindowSize.x;
+float cloudWindowAngularSizeX=(viewDistanceKm/planetRadius);
+float cloudWindowAngularSizeY=(viewDistanceKm/planetRadius);
+float textureAugularSize=60.0/180.0*3.1415926536;
+float cloudWindowTCSize=cloudWindowAngularSizeX/textureAugularSize;
+uvec2 intensityMapSize;
+ivec2 ivintensityMap = textureSize(sampler2D(intensityMap[0]),0);
+intensityMapSize.x = ivintensityMap.x;intensityMapSize.y = ivintensityMap.y;;
+float stepOrtho=1.0/float(intensityMapSize.x);
+float stepDiag=sqrt(2*stepOrtho*stepOrtho);
+uint maxAuroraColourTableHeightKm;
+uint maxAuroraColourTableInputEnergyKeV;
+ivec2 ivauroralColours = textureSize(sampler2D(auroralColours[0]),0);
+maxAuroraColourTableInputEnergyKeV = ivauroralColours.x;maxAuroraColourTableHeightKm = ivauroralColours.y;;
+vec2 view_dir_xy=normalize(view_dir.xy);
+view_dir_xy*=stepOrtho;
+int maxTexelStep=abs(int((cloudWindowTCSize/stepOrtho)+1));
+float rayLengthKm=(viewDistanceKm*maxAuroraColourTableHeightKm)/sqrt(pow(maxAuroraColourTableHeightKm*cos(view_el),2)+pow(viewDistanceKm*sin(view_el),2));
+vec2 intensityLookPos=cloudWindowTCPos;
+vec3 accumulatedColour=vec3(0,0,0);
+float cloudWindowHeightKm=cloudWindowHeight/1000;
+int raySteps=100;
+for(uint i=0;i<raySteps;i++)
+{
+float currentRayLengthKM=(float(i)/float(raySteps))*rayLengthKm;
+float height=(currentRayLengthKM*sin(view_el))+cloudWindowHeightKm/maxAuroraColourTableHeightKm;
+float distance=currentRayLengthKM*cos(view_el);
+intensityLookPos=cloudWindowTCPos+(view_dir_xy*distance);
+vec4 intensity=textureLod(sampler2D(intensityMap[1 + 9]),intensityLookPos,0);
+if(intensity.y>0.0)
+{
+float intensity2=saturate(pow(abs(intensity.x),3))*maxAuroraColourTableInputEnergyKeV;
+height=clamp(height,0.0,float(maxAuroraColourTableHeightKm));
+height=1.0-height;
+accumulatedColour+=textureLod(sampler2D(auroralColours[1 + 9]),vec2(intensity2,height),0).rgb*intensity2;
+}
+
+}
+
+accumulatedColour=clamp(accumulatedColour,vec3(0,0,0),vec3(1,1,1));
+return vec4(accumulatedColour,1);
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 384 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+{returnObject_vec4=PS_CompositeAurora(BlockData,false,false);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/aurora_PS_CompositeAurora_Forward_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 64 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora_constants.sl"
+layout(std140, binding = 6) uniform AuroraPerViewConstants
+{
+	mat4 worldViewProj;
+	mat4 worldViewProj_Inv;
+	vec2 cloudWindowLatLonPos;
+	vec2 cloudWindowSize;
+	float cloudWindowHeading;
+	float cloudWindowHeight;
+	float planetRadius;
+	float apvcPad;
+};
+
+
+
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t auroralColours[24];
+	uint64_t intensityMap[24];
+	uint64_t depthTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 75 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_refract_reflect.sl"
+float NormalizeLERPPointWithinRange(float x0, float x1, float t)
+{
+return (t-x0)/(x1-x0);
+}
+#line 125 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora.sl"
+vec2 LatLongToCentralisedTextureCoordinates(vec2 latLong)
+{
+float normalisedRadius=NormalizeLERPPointWithinRange(90.0,60.0,latLong.x);
+float theta=latLong.y-90.0;
+if(theta<0.0)theta+=360.0;
+float x=0.5*normalisedRadius*cos(theta*3.1415926536/180.0);
+float y=0.5*normalisedRadius*sin(theta*3.1415926536/180.0);
+return vec2(x,y);
+}
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora.sl"
+vec2 LatLongToCornerTextureCoordinates(vec2 latLong)
+{
+return LatLongToCentralisedTextureCoordinates(latLong)+vec2(0.5,0.5);
+}
+#line 82 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+float ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+float depth=texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0)).x;
+return depth;
+}
+#line 255 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+vec4 PS_CompositeAurora(posTexVertexOutput IN, bool reverseDepth, bool msaa)
+{
+#line 257 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+IN.texCoords.y=1.0-IN.texCoords.y;
+#line 260 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+float depth=0.0;
+if(msaa)depth=ms_depth(IN.texCoords.xy);else
+depth=texture(sampler2D(depthTexture[1 + 9]),IN.texCoords.xy).x;
+if(reverseDepth)
+{
+if(depth!=0.0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+vec2 texc=IN.texCoords.xy;
+vec2 clip_pos=vec2(-1.0,1.0);
+clip_pos.x+=2.0*texc.x;
+clip_pos.y-=2.0*texc.y;
+vec3 view_dir=normalize(mul(worldViewProj_Inv,vec4(clip_pos,1.0,1.0)).xyz);
+float s=sin(cloudWindowHeading-(cloudWindowLatLonPos.y/180.0*3.1415926536));
+float c=cos(cloudWindowHeading-(cloudWindowLatLonPos.y/180.0*3.1415926536));
+mat2 offsetRotMat={{c,-s},{s,c}};
+#line 290 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+view_dir.xy=mul(offsetRotMat,view_dir.xy);
+#line 296 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+float view_az=atan(view_dir.y,view_dir.x);
+float view_el=acos(-view_dir.z)-(3.1415926536/2.0);
+vec2 cloudWindowTCPos=LatLongToCornerTextureCoordinates(cloudWindowLatLonPos);
+cloudWindowTCPos.y=1.0-cloudWindowTCPos.y;
+float viewDistanceKm=0.5*cloudWindowSize.x;
+float cloudWindowAngularSizeX=(viewDistanceKm/planetRadius);
+float cloudWindowAngularSizeY=(viewDistanceKm/planetRadius);
+float textureAugularSize=60.0/180.0*3.1415926536;
+float cloudWindowTCSize=cloudWindowAngularSizeX/textureAugularSize;
+uvec2 intensityMapSize;
+ivec2 ivintensityMap = textureSize(sampler2D(intensityMap[0]),0);
+intensityMapSize.x = ivintensityMap.x;intensityMapSize.y = ivintensityMap.y;;
+float stepOrtho=1.0/float(intensityMapSize.x);
+float stepDiag=sqrt(2*stepOrtho*stepOrtho);
+uint maxAuroraColourTableHeightKm;
+uint maxAuroraColourTableInputEnergyKeV;
+ivec2 ivauroralColours = textureSize(sampler2D(auroralColours[0]),0);
+maxAuroraColourTableInputEnergyKeV = ivauroralColours.x;maxAuroraColourTableHeightKm = ivauroralColours.y;;
+vec2 view_dir_xy=normalize(view_dir.xy);
+view_dir_xy*=stepOrtho;
+int maxTexelStep=abs(int((cloudWindowTCSize/stepOrtho)+1));
+float rayLengthKm=(viewDistanceKm*maxAuroraColourTableHeightKm)/sqrt(pow(maxAuroraColourTableHeightKm*cos(view_el),2)+pow(viewDistanceKm*sin(view_el),2));
+vec2 intensityLookPos=cloudWindowTCPos;
+vec3 accumulatedColour=vec3(0,0,0);
+float cloudWindowHeightKm=cloudWindowHeight/1000;
+int raySteps=100;
+for(uint i=0;i<raySteps;i++)
+{
+float currentRayLengthKM=(float(i)/float(raySteps))*rayLengthKm;
+float height=(currentRayLengthKM*sin(view_el))+cloudWindowHeightKm/maxAuroraColourTableHeightKm;
+float distance=currentRayLengthKM*cos(view_el);
+intensityLookPos=cloudWindowTCPos+(view_dir_xy*distance);
+vec4 intensity=textureLod(sampler2D(intensityMap[1 + 9]),intensityLookPos,0);
+if(intensity.y>0.0)
+{
+float intensity2=saturate(pow(abs(intensity.x),3))*maxAuroraColourTableInputEnergyKeV;
+height=clamp(height,0.0,float(maxAuroraColourTableHeightKm));
+height=1.0-height;
+accumulatedColour+=textureLod(sampler2D(auroralColours[1 + 9]),vec2(intensity2,height),0).rgb*intensity2;
+}
+
+}
+
+accumulatedColour=clamp(accumulatedColour,vec3(0,0,0),vec3(1,1,1));
+return vec4(accumulatedColour,1);
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 386 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+{returnObject_vec4=PS_CompositeAurora(BlockData,false,true);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/aurora_PS_CompositeAurora_Reverse.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 64 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora_constants.sl"
+layout(std140, binding = 6) uniform AuroraPerViewConstants
+{
+	mat4 worldViewProj;
+	mat4 worldViewProj_Inv;
+	vec2 cloudWindowLatLonPos;
+	vec2 cloudWindowSize;
+	float cloudWindowHeading;
+	float cloudWindowHeight;
+	float planetRadius;
+	float apvcPad;
+};
+
+
+
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t auroralColours[24];
+	uint64_t intensityMap[24];
+	uint64_t depthTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 75 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_refract_reflect.sl"
+float NormalizeLERPPointWithinRange(float x0, float x1, float t)
+{
+return (t-x0)/(x1-x0);
+}
+#line 125 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora.sl"
+vec2 LatLongToCentralisedTextureCoordinates(vec2 latLong)
+{
+float normalisedRadius=NormalizeLERPPointWithinRange(90.0,60.0,latLong.x);
+float theta=latLong.y-90.0;
+if(theta<0.0)theta+=360.0;
+float x=0.5*normalisedRadius*cos(theta*3.1415926536/180.0);
+float y=0.5*normalisedRadius*sin(theta*3.1415926536/180.0);
+return vec2(x,y);
+}
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora.sl"
+vec2 LatLongToCornerTextureCoordinates(vec2 latLong)
+{
+return LatLongToCentralisedTextureCoordinates(latLong)+vec2(0.5,0.5);
+}
+#line 82 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+float ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+float depth=texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0)).x;
+return depth;
+}
+#line 255 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+vec4 PS_CompositeAurora(posTexVertexOutput IN, bool reverseDepth, bool msaa)
+{
+#line 257 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+IN.texCoords.y=1.0-IN.texCoords.y;
+#line 260 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+float depth=0.0;
+if(msaa)depth=ms_depth(IN.texCoords.xy);else
+depth=texture(sampler2D(depthTexture[1 + 9]),IN.texCoords.xy).x;
+if(reverseDepth)
+{
+if(depth!=0.0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+vec2 texc=IN.texCoords.xy;
+vec2 clip_pos=vec2(-1.0,1.0);
+clip_pos.x+=2.0*texc.x;
+clip_pos.y-=2.0*texc.y;
+vec3 view_dir=normalize(mul(worldViewProj_Inv,vec4(clip_pos,1.0,1.0)).xyz);
+float s=sin(cloudWindowHeading-(cloudWindowLatLonPos.y/180.0*3.1415926536));
+float c=cos(cloudWindowHeading-(cloudWindowLatLonPos.y/180.0*3.1415926536));
+mat2 offsetRotMat={{c,-s},{s,c}};
+#line 290 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+view_dir.xy=mul(offsetRotMat,view_dir.xy);
+#line 296 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+float view_az=atan(view_dir.y,view_dir.x);
+float view_el=acos(-view_dir.z)-(3.1415926536/2.0);
+vec2 cloudWindowTCPos=LatLongToCornerTextureCoordinates(cloudWindowLatLonPos);
+cloudWindowTCPos.y=1.0-cloudWindowTCPos.y;
+float viewDistanceKm=0.5*cloudWindowSize.x;
+float cloudWindowAngularSizeX=(viewDistanceKm/planetRadius);
+float cloudWindowAngularSizeY=(viewDistanceKm/planetRadius);
+float textureAugularSize=60.0/180.0*3.1415926536;
+float cloudWindowTCSize=cloudWindowAngularSizeX/textureAugularSize;
+uvec2 intensityMapSize;
+ivec2 ivintensityMap = textureSize(sampler2D(intensityMap[0]),0);
+intensityMapSize.x = ivintensityMap.x;intensityMapSize.y = ivintensityMap.y;;
+float stepOrtho=1.0/float(intensityMapSize.x);
+float stepDiag=sqrt(2*stepOrtho*stepOrtho);
+uint maxAuroraColourTableHeightKm;
+uint maxAuroraColourTableInputEnergyKeV;
+ivec2 ivauroralColours = textureSize(sampler2D(auroralColours[0]),0);
+maxAuroraColourTableInputEnergyKeV = ivauroralColours.x;maxAuroraColourTableHeightKm = ivauroralColours.y;;
+vec2 view_dir_xy=normalize(view_dir.xy);
+view_dir_xy*=stepOrtho;
+int maxTexelStep=abs(int((cloudWindowTCSize/stepOrtho)+1));
+float rayLengthKm=(viewDistanceKm*maxAuroraColourTableHeightKm)/sqrt(pow(maxAuroraColourTableHeightKm*cos(view_el),2)+pow(viewDistanceKm*sin(view_el),2));
+vec2 intensityLookPos=cloudWindowTCPos;
+vec3 accumulatedColour=vec3(0,0,0);
+float cloudWindowHeightKm=cloudWindowHeight/1000;
+int raySteps=100;
+for(uint i=0;i<raySteps;i++)
+{
+float currentRayLengthKM=(float(i)/float(raySteps))*rayLengthKm;
+float height=(currentRayLengthKM*sin(view_el))+cloudWindowHeightKm/maxAuroraColourTableHeightKm;
+float distance=currentRayLengthKM*cos(view_el);
+intensityLookPos=cloudWindowTCPos+(view_dir_xy*distance);
+vec4 intensity=textureLod(sampler2D(intensityMap[1 + 9]),intensityLookPos,0);
+if(intensity.y>0.0)
+{
+float intensity2=saturate(pow(abs(intensity.x),3))*maxAuroraColourTableInputEnergyKeV;
+height=clamp(height,0.0,float(maxAuroraColourTableHeightKm));
+height=1.0-height;
+accumulatedColour+=textureLod(sampler2D(auroralColours[1 + 9]),vec2(intensity2,height),0).rgb*intensity2;
+}
+
+}
+
+accumulatedColour=clamp(accumulatedColour,vec3(0,0,0),vec3(1,1,1));
+return vec4(accumulatedColour,1);
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 383 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+{returnObject_vec4=PS_CompositeAurora(BlockData,true,false);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/aurora_PS_CompositeAurora_Reverse_MSAA.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 64 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora_constants.sl"
+layout(std140, binding = 6) uniform AuroraPerViewConstants
+{
+	mat4 worldViewProj;
+	mat4 worldViewProj_Inv;
+	vec2 cloudWindowLatLonPos;
+	vec2 cloudWindowSize;
+	float cloudWindowHeading;
+	float cloudWindowHeight;
+	float planetRadius;
+	float apvcPad;
+};
+
+
+
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t auroralColours[24];
+	uint64_t intensityMap[24];
+	uint64_t depthTexture[24];
+	uint64_t depthTextureMS[24];
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 20 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(mat4 mat, vec4 vec)
+{
+return mat*vec;
+}
+#line 21 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(mat3 mat, vec3 vec)
+{
+return mat*vec;
+}
+#line 22 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(mat2 mat, vec2 vec)
+{
+return mat*vec;
+}
+#line 24 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 mul(vec4 vec, mat4 mat)
+{
+return vec*mat;
+}
+#line 25 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 mul(vec3 vec, mat3 mat)
+{
+return vec*mat;
+}
+#line 26 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 mul(vec2 vec, mat2 mat)
+{
+return vec*mat;
+}
+#line 75 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/simul_refract_reflect.sl"
+float NormalizeLERPPointWithinRange(float x0, float x1, float t)
+{
+return (t-x0)/(x1-x0);
+}
+#line 125 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora.sl"
+vec2 LatLongToCentralisedTextureCoordinates(vec2 latLong)
+{
+float normalisedRadius=NormalizeLERPPointWithinRange(90.0,60.0,latLong.x);
+float theta=latLong.y-90.0;
+if(theta<0.0)theta+=360.0;
+float x=0.5*normalisedRadius*cos(theta*3.1415926536/180.0);
+float y=0.5*normalisedRadius*sin(theta*3.1415926536/180.0);
+return vec2(x,y);
+}
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/aurora.sl"
+vec2 LatLongToCornerTextureCoordinates(vec2 latLong)
+{
+return LatLongToCentralisedTextureCoordinates(latLong)+vec2(0.5,0.5);
+}
+#line 82 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+float ms_depth(vec2 depth_texc)
+{
+uvec2 texsize;
+uint numberOfSamples;
+ivec2 ivdepthTextureMS = textureSize(sampler2DMS(depthTextureMS[0]));
+texsize.x = ivdepthTextureMS.x;texsize.y = ivdepthTextureMS.y;;
+ivec2 pos=ivec2(depth_texc*vec2(texsize));
+float depth=texelFetch(sampler2DMS(depthTextureMS[0]),ivec2(pos),int(0)).x;
+return depth;
+}
+#line 255 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+vec4 PS_CompositeAurora(posTexVertexOutput IN, bool reverseDepth, bool msaa)
+{
+#line 257 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+IN.texCoords.y=1.0-IN.texCoords.y;
+#line 260 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+float depth=0.0;
+if(msaa)depth=ms_depth(IN.texCoords.xy);else
+depth=texture(sampler2D(depthTexture[1 + 9]),IN.texCoords.xy).x;
+if(reverseDepth)
+{
+if(depth!=0.0)discard;
+}
+else
+
+{
+if(depth<1.0)discard;
+}
+
+vec2 texc=IN.texCoords.xy;
+vec2 clip_pos=vec2(-1.0,1.0);
+clip_pos.x+=2.0*texc.x;
+clip_pos.y-=2.0*texc.y;
+vec3 view_dir=normalize(mul(worldViewProj_Inv,vec4(clip_pos,1.0,1.0)).xyz);
+float s=sin(cloudWindowHeading-(cloudWindowLatLonPos.y/180.0*3.1415926536));
+float c=cos(cloudWindowHeading-(cloudWindowLatLonPos.y/180.0*3.1415926536));
+mat2 offsetRotMat={{c,-s},{s,c}};
+#line 290 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+view_dir.xy=mul(offsetRotMat,view_dir.xy);
+#line 296 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+
+float view_az=atan(view_dir.y,view_dir.x);
+float view_el=acos(-view_dir.z)-(3.1415926536/2.0);
+vec2 cloudWindowTCPos=LatLongToCornerTextureCoordinates(cloudWindowLatLonPos);
+cloudWindowTCPos.y=1.0-cloudWindowTCPos.y;
+float viewDistanceKm=0.5*cloudWindowSize.x;
+float cloudWindowAngularSizeX=(viewDistanceKm/planetRadius);
+float cloudWindowAngularSizeY=(viewDistanceKm/planetRadius);
+float textureAugularSize=60.0/180.0*3.1415926536;
+float cloudWindowTCSize=cloudWindowAngularSizeX/textureAugularSize;
+uvec2 intensityMapSize;
+ivec2 ivintensityMap = textureSize(sampler2D(intensityMap[0]),0);
+intensityMapSize.x = ivintensityMap.x;intensityMapSize.y = ivintensityMap.y;;
+float stepOrtho=1.0/float(intensityMapSize.x);
+float stepDiag=sqrt(2*stepOrtho*stepOrtho);
+uint maxAuroraColourTableHeightKm;
+uint maxAuroraColourTableInputEnergyKeV;
+ivec2 ivauroralColours = textureSize(sampler2D(auroralColours[0]),0);
+maxAuroraColourTableInputEnergyKeV = ivauroralColours.x;maxAuroraColourTableHeightKm = ivauroralColours.y;;
+vec2 view_dir_xy=normalize(view_dir.xy);
+view_dir_xy*=stepOrtho;
+int maxTexelStep=abs(int((cloudWindowTCSize/stepOrtho)+1));
+float rayLengthKm=(viewDistanceKm*maxAuroraColourTableHeightKm)/sqrt(pow(maxAuroraColourTableHeightKm*cos(view_el),2)+pow(viewDistanceKm*sin(view_el),2));
+vec2 intensityLookPos=cloudWindowTCPos;
+vec3 accumulatedColour=vec3(0,0,0);
+float cloudWindowHeightKm=cloudWindowHeight/1000;
+int raySteps=100;
+for(uint i=0;i<raySteps;i++)
+{
+float currentRayLengthKM=(float(i)/float(raySteps))*rayLengthKm;
+float height=(currentRayLengthKM*sin(view_el))+cloudWindowHeightKm/maxAuroraColourTableHeightKm;
+float distance=currentRayLengthKM*cos(view_el);
+intensityLookPos=cloudWindowTCPos+(view_dir_xy*distance);
+vec4 intensity=textureLod(sampler2D(intensityMap[1 + 9]),intensityLookPos,0);
+if(intensity.y>0.0)
+{
+float intensity2=saturate(pow(abs(intensity.x),3))*maxAuroraColourTableInputEnergyKeV;
+height=clamp(height,0.0,float(maxAuroraColourTableHeightKm));
+height=1.0-height;
+accumulatedColour+=textureLod(sampler2D(auroralColours[1 + 9]),vec2(intensity2,height),0).rgb*intensity2;
+}
+
+}
+
+accumulatedColour=clamp(accumulatedColour,vec3(0,0,0),vec3(1,1,1));
+return vec4(accumulatedColour,1);
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 385 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/aurora.sfx"
+{returnObject_vec4=PS_CompositeAurora(BlockData,true,true);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/aurora_VS_SimpleFullscreen_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 119 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+#line 132 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 134 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/aurora_VS_SimpleFullscreen_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 119 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+#line 132 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 134 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/aurora_VS_SimpleFullscreen_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 119 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+#line 132 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 134 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/aurora_VS_SimpleFullscreen_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 119 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+#line 132 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 134 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}

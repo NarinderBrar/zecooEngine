@@ -1,0 +1,879 @@
+#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_rendernoise_CS_MakeMips3D_float_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+
+layout(rgba32f, binding = 0) uniform image3D targetTexture32;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t random_texture_3d[24];
+};
+layout(local_size_x=4, local_size_y=4, local_size_z=4) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 179 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_rendernoise.sfx"
+uvec3 p=g*8+t;
+ivec3 pos=ivec3(p);
+vec4 result=texelFetch(sampler3D(random_texture_3d[0]),ivec3(ivec4(pos*2,0)).xyz,int(ivec4(pos*2,0).w));
+result+=texelFetch(sampler3D(random_texture_3d[0]),ivec3(ivec4(pos*2+ivec3(0,1,0),0)).xyz,int(ivec4(pos*2+ivec3(0,1,0),0).w));
+result+=texelFetch(sampler3D(random_texture_3d[0]),ivec3(ivec4(pos*2+ivec3(1,0,0),0)).xyz,int(ivec4(pos*2+ivec3(1,0,0),0).w));
+result+=texelFetch(sampler3D(random_texture_3d[0]),ivec3(ivec4(pos*2+ivec3(1,1,0),0)).xyz,int(ivec4(pos*2+ivec3(1,1,0),0).w));
+result+=texelFetch(sampler3D(random_texture_3d[0]),ivec3(ivec4(pos*2+ivec3(0,0,1),0)).xyz,int(ivec4(pos*2+ivec3(0,0,1),0).w));
+result+=texelFetch(sampler3D(random_texture_3d[0]),ivec3(ivec4(pos*2+ivec3(0,1,1),0)).xyz,int(ivec4(pos*2+ivec3(0,1,1),0).w));
+result+=texelFetch(sampler3D(random_texture_3d[0]),ivec3(ivec4(pos*2+ivec3(1,0,1),0)).xyz,int(ivec4(pos*2+ivec3(1,0,1),0).w));
+result+=texelFetch(sampler3D(random_texture_3d[0]),ivec3(ivec4(pos*2+ivec3(1,1,1),0)).xyz,int(ivec4(pos*2+ivec3(1,1,1),0).w));
+result/=8.0;
+imageStore(targetTexture32,ivec3(pos),vec4(result));
+;
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_rendernoise_CS_Noise3D_8_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/noise_constants.sl"
+layout(std140, binding = 10) uniform RendernoiseConstants
+{
+	int octaves;
+	float persistence;
+	uint noise_texture_size;
+	int mip;
+	int noise_texture_frequency;
+	float strength;
+	float rnc_pad1;
+	float rnc_pad2;
+};
+
+layout(rgba8_snorm, binding = 1) uniform image3D targetTexture8;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t random_texture_3d[24];
+};
+#line 120 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+vec4 Noise3D(uint64_t random_texture_3d[24], int freq, vec3 texCoords, int octaves, float persistence, float strength)
+{
+vec4 result=vec4(0,0,0,0);
+float mult=0.5;
+float total=0.0;
+float prevx=1.0;
+vec3 last;
+
+{
+vec4 c=textureLod(sampler3D(random_texture_3d[1 + 6]),texCoords,0);
+texCoords*=2.0;
+total+=mult;
+result+=mult*cos(2.0*3.1415926536*prevx)*c*1.414;
+mult*=persistence;
+prevx=c.a;
+last=c.rgb;
+}
+
+for(int i=1;i<octaves;i++)
+{
+vec4 c=textureLod(sampler3D(random_texture_3d[1 + 6]),texCoords,0);
+vec3 u=cross(last.rgb,c.rgb);
+float ul=length(u)+0.001;
+u=u/ul*length(c.rgb);
+c.rgb=u;
+texCoords*=2.0;
+total+=mult;
+result+=mult*cos(2.0*3.1415926536*prevx)*c*1.414;
+mult*=persistence;
+prevx=c.a;
+last=c.rgb;
+}
+
+result*=strength/total;
+result=clamp(result,vec4(-1.0,-1.0,-1.0,-1.0),vec4(1.0,1.0,1.0,1.0));
+return result;
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=8) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 70 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_rendernoise.sfx"
+uvec3 pos=g*8+t;
+uvec3 dims=ivec3(noise_texture_size,noise_texture_size,noise_texture_size);
+if(pos.x>=dims.x||pos.y>=dims.y||pos.z>=dims.z)return ;
+vec3 texCoords=(vec3(pos)+vec3(0.5,0.5,0.5))/vec3(dims);
+vec4 result=Noise3D(random_texture_3d,noise_texture_frequency,texCoords,octaves,persistence,strength);
+imageStore(targetTexture8,ivec3(pos),vec4(result));
+;
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_rendernoise_CS_Noise3D_float_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/noise_constants.sl"
+layout(std140, binding = 10) uniform RendernoiseConstants
+{
+	int octaves;
+	float persistence;
+	uint noise_texture_size;
+	int mip;
+	int noise_texture_frequency;
+	float strength;
+	float rnc_pad1;
+	float rnc_pad2;
+};
+
+layout(rgba32f, binding = 0) uniform image3D targetTexture32;
+layout(std140, binding = 0) uniform _TextureHandles_
+{
+	uint64_t random_texture_3d[24];
+};
+#line 120 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+vec4 Noise3D(uint64_t random_texture_3d[24], int freq, vec3 texCoords, int octaves, float persistence, float strength)
+{
+vec4 result=vec4(0,0,0,0);
+float mult=0.5;
+float total=0.0;
+float prevx=1.0;
+vec3 last;
+
+{
+vec4 c=textureLod(sampler3D(random_texture_3d[1 + 6]),texCoords,0);
+texCoords*=2.0;
+total+=mult;
+result+=mult*cos(2.0*3.1415926536*prevx)*c*1.414;
+mult*=persistence;
+prevx=c.a;
+last=c.rgb;
+}
+
+for(int i=1;i<octaves;i++)
+{
+vec4 c=textureLod(sampler3D(random_texture_3d[1 + 6]),texCoords,0);
+vec3 u=cross(last.rgb,c.rgb);
+float ul=length(u)+0.001;
+u=u/ul*length(c.rgb);
+c.rgb=u;
+texCoords*=2.0;
+total+=mult;
+result+=mult*cos(2.0*3.1415926536*prevx)*c*1.414;
+mult*=persistence;
+prevx=c.a;
+last=c.rgb;
+}
+
+result*=strength/total;
+result=clamp(result,vec4(-1.0,-1.0,-1.0,-1.0),vec4(1.0,1.0,1.0,1.0));
+return result;
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=8) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 82 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_rendernoise.sfx"
+uvec3 pos=g*8+t;
+uvec3 dims=ivec3(noise_texture_size,noise_texture_size,noise_texture_size);
+if(pos.x>=dims.x||pos.y>=dims.y||pos.z>=dims.z)return ;
+vec3 texCoords=(vec3(pos)+vec3(0.5,0.5,0.5))/vec3(dims);
+vec4 result=Noise3D(random_texture_3d,noise_texture_frequency,texCoords,octaves,persistence,strength);
+imageStore(targetTexture32,ivec3(pos),vec4(result));
+;
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_rendernoise_CS_PerlinWorley3D_8_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/noise_constants.sl"
+layout(std140, binding = 10) uniform RendernoiseConstants
+{
+	int octaves;
+	float persistence;
+	uint noise_texture_size;
+	int mip;
+	int noise_texture_frequency;
+	float strength;
+	float rnc_pad1;
+	float rnc_pad2;
+};
+layout(rgba8, binding = 2) uniform image3D targetTextureU8;
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 39 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+#line 43 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+#line 47 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+#line 51 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+#line 55 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+#line 59 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+#line 63 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+#line 67 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+float rand3(vec3 co)
+{
+return fract(sin(dot(co.xyz,vec3(12.9898,78.233,42.1897)))*43758.5453);
+}
+#line 42 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+vec3 SphericalRandom(vec3 co)
+{
+float r=1.f-pow(rand3(co),4.0);
+float az=rand3(43.1138*co)*2*3.1415926536;
+float sine_el=rand3(17.981*co)*2.0-1.0;
+float el=asin(sine_el);
+float cos_el=cos(el);
+vec3 v;
+v.x=r*sin(az)*cos_el;
+v.y=r*cos(az)*cos_el;
+v.z=r*sine_el;
+return v;
+}
+#line 95 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_rendernoise.sfx"
+vec4 Worley(vec3 texc, int grid, int seed)
+{
+vec3 pos=float(grid)*texc;
+vec3 fractional,intpart;
+fractional=modf(pos,intpart);
+ivec3 ip=ivec3(intpart);
+vec3 loc=fractional-vec3(0.5,0.5,0.5);
+float n=float(grid);
+float t=float(grid);
+float b=float(grid);
+vec3 nearest_centre=vec3(0.5,0.5,0.5);
+for(int i=-1;i<2;++i)
+{
+for(int j=-1;j<2;++j)
+{
+for(int k=-1;k<2;++k)
+{
+vec3 c=vec3(i,j,k);
+ivec3 u=(ip+ivec3(i,j,k));
+ivec3 v=ivec3(typed_mod((u+ivec3(grid,grid,grid)),ivec3(grid,grid,grid)));
+vec3 random=SphericalRandom(vec3(v)*seed);
+c+=random.xyz;
+vec3 diff=loc-c;
+float dist=length(diff);
+n=min(n,dist);
+t=min(t,dist);
+b=min(b,dist);
+}
+
+}
+
+}
+
+float p=saturate(1.0-n/1.0);
+float q=saturate(1.0-t/1.0);
+float r=saturate(1.0-b/1.0);
+return vec4(p,q,r,p);
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=8) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 140 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_rendernoise.sfx"
+uvec3 idx=g*8+t;
+uvec3 dims=uvec3(noise_texture_size,noise_texture_size,noise_texture_size);
+if(idx.x>=dims.x||idx.y>=dims.y||idx.z>=dims.z)return ;
+vec3 texCoords=(vec3(idx)+vec3(0.5,0.5,0.5))/vec3(dims);
+vec4 result;
+int n=5;
+vec4 worley=vec4(0,0,0,0);
+float r=1.0;
+float R=0.0;
+for(int i=0;i<4;i++)
+{
+vec4 w=Worley(texCoords,n,1).xyzw;
+worley+=w*r;
+n=n*2;
+R+=r;
+r*=0.75;
+}
+
+result=saturate(worley/R-0.2);
+imageStore(targetTextureU8,ivec3(idx),vec4(result));
+;
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_rendernoise_CS_Random3D_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/noise_constants.sl"
+layout(std140, binding = 10) uniform RendernoiseConstants
+{
+	int octaves;
+	float persistence;
+	uint noise_texture_size;
+	int mip;
+	int noise_texture_frequency;
+	float strength;
+	float rnc_pad1;
+	float rnc_pad2;
+};
+layout(rgba32f, binding = 0) uniform image3D targetTexture32;
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+float rand3(vec3 co)
+{
+return fract(sin(dot(co.xyz,vec3(12.9898,78.233,42.1897)))*43758.5453);
+}
+#line 42 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+vec3 SphericalRandom(vec3 co)
+{
+float r=1.f-pow(rand3(co),4.0);
+float az=rand3(43.1138*co)*2*3.1415926536;
+float sine_el=rand3(17.981*co)*2.0-1.0;
+float el=asin(sine_el);
+float cos_el=cos(el);
+vec3 v;
+v.x=r*sin(az)*cos_el;
+v.y=r*cos(az)*cos_el;
+v.z=r*sine_el;
+return v;
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=8) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 44 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_rendernoise.sfx"
+uvec3 pos=g*8+t;
+if(pos.x>=noise_texture_size||pos.y>=noise_texture_size||pos.z>=noise_texture_size)return ;
+vec3 texCoords=(vec3(pos)+vec3(0.5,0.5,0.5))/float(noise_texture_size);
+vec4 c=vec4(SphericalRandom(texCoords),rand3(513.1*texCoords));
+imageStore(targetTexture32,ivec3(pos),vec4(c.xyzw));
+;
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_rendernoise_CS_Random3D_8_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/noise_constants.sl"
+layout(std140, binding = 10) uniform RendernoiseConstants
+{
+	int octaves;
+	float persistence;
+	uint noise_texture_size;
+	int mip;
+	int noise_texture_frequency;
+	float strength;
+	float rnc_pad1;
+	float rnc_pad2;
+};
+layout(rgba8_snorm, binding = 1) uniform image3D targetTexture8;
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+float rand3(vec3 co)
+{
+return fract(sin(dot(co.xyz,vec3(12.9898,78.233,42.1897)))*43758.5453);
+}
+#line 42 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+vec3 SphericalRandom(vec3 co)
+{
+float r=1.f-pow(rand3(co),4.0);
+float az=rand3(43.1138*co)*2*3.1415926536;
+float sine_el=rand3(17.981*co)*2.0-1.0;
+float el=asin(sine_el);
+float cos_el=cos(el);
+vec3 v;
+v.x=r*sin(az)*cos_el;
+v.y=r*cos(az)*cos_el;
+v.z=r*sine_el;
+return v;
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=8) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 58 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_rendernoise.sfx"
+uvec3 pos=g*8+t;
+if(pos.x>=noise_texture_size||pos.y>=noise_texture_size||pos.z>=noise_texture_size)return ;
+vec3 texCoords=(vec3(pos)+vec3(0.5,0.5,0.5))/float(noise_texture_size);
+vec4 c=vec4(SphericalRandom(texCoords),rand3(513.1*texCoords));
+imageStore(targetTexture8,ivec3(pos),vec4(c.xyzw));
+;
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#extension GL_ARB_shader_storage_buffer_object : enable
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_image_load_store : enable
+#line 9 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_rendernoise_CS_Worley3D_8_c.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/noise_constants.sl"
+layout(std140, binding = 10) uniform RendernoiseConstants
+{
+	int octaves;
+	float persistence;
+	uint noise_texture_size;
+	int mip;
+	int noise_texture_frequency;
+	float strength;
+	float rnc_pad1;
+	float rnc_pad2;
+};
+layout(rgba8, binding = 2) uniform image3D targetTextureU8;
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+float saturate(float value)
+{
+return clamp(value,0.0,1.0);
+}
+#line 16 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec2 saturate(vec2 vvalue)
+{
+return clamp(vvalue,vec2(0.0,0.0),vec2(1.0,1.0));
+}
+#line 17 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec3 saturate(vec3 vvalue)
+{
+return clamp(vvalue,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+vec4 saturate(vec4 vvalue)
+{
+return clamp(vvalue,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));
+}
+#line 39 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+int typed_mod(int a, int b)
+{
+return int(mod(a,b));
+}
+#line 43 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec2 typed_mod(ivec2 a, ivec2 b)
+{
+return ivec2(mod(a,b));
+}
+#line 47 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec3 typed_mod(ivec3 a, ivec3 b)
+{
+return ivec3(mod(a,b));
+}
+#line 51 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+ivec4 typed_mod(ivec4 a, ivec4 b)
+{
+return ivec4(mod(a,b));
+}
+#line 55 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uint typed_mod(uint a, uint b)
+{
+return uint(mod(a,b));
+}
+#line 59 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec2 typed_mod(uvec2 a, uvec2 b)
+{
+return uvec2(mod(a,b));
+}
+#line 63 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec3 typed_mod(uvec3 a, uvec3 b)
+{
+return uvec3(mod(a,b));
+}
+#line 67 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/OpenGL/GLSL/shader_platform.sl"
+uvec4 typed_mod(uvec4 a, uvec4 b)
+{
+return uvec4(mod(a,b));
+}
+#line 18 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+float rand3(vec3 co)
+{
+return fract(sin(dot(co.xyz,vec3(12.9898,78.233,42.1897)))*43758.5453);
+}
+#line 42 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+vec3 SphericalRandom(vec3 co)
+{
+float r=1.f-pow(rand3(co),4.0);
+float az=rand3(43.1138*co)*2*3.1415926536;
+float sine_el=rand3(17.981*co)*2.0-1.0;
+float el=asin(sine_el);
+float cos_el=cos(el);
+vec3 v;
+v.x=r*sin(az)*cos_el;
+v.y=r*cos(az)*cos_el;
+v.z=r*sine_el;
+return v;
+}
+#line 95 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_rendernoise.sfx"
+vec4 Worley(vec3 texc, int grid, int seed)
+{
+vec3 pos=float(grid)*texc;
+vec3 fractional,intpart;
+fractional=modf(pos,intpart);
+ivec3 ip=ivec3(intpart);
+vec3 loc=fractional-vec3(0.5,0.5,0.5);
+float n=float(grid);
+float t=float(grid);
+float b=float(grid);
+vec3 nearest_centre=vec3(0.5,0.5,0.5);
+for(int i=-1;i<2;++i)
+{
+for(int j=-1;j<2;++j)
+{
+for(int k=-1;k<2;++k)
+{
+vec3 c=vec3(i,j,k);
+ivec3 u=(ip+ivec3(i,j,k));
+ivec3 v=ivec3(typed_mod((u+ivec3(grid,grid,grid)),ivec3(grid,grid,grid)));
+vec3 random=SphericalRandom(vec3(v)*seed);
+c+=random.xyz;
+vec3 diff=loc-c;
+float dist=length(diff);
+n=min(n,dist);
+t=min(t,dist);
+b=min(b,dist);
+}
+
+}
+
+}
+
+float p=saturate(1.0-n/1.0);
+float q=saturate(1.0-t/1.0);
+float r=saturate(1.0-b/1.0);
+return vec4(p,q,r,p);
+}
+layout(local_size_x=8, local_size_y=8, local_size_z=8) in;
+void main()
+{
+uvec3 g = gl_WorkGroupID;
+uvec3 t = gl_LocalInvocationID;
+#line 165 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_rendernoise.sfx"
+uvec3 idx=g*8+t;
+uvec3 dims=uvec3(noise_texture_size,noise_texture_size,noise_texture_size);
+if(idx.x>=dims.x||idx.y>=dims.y||idx.z>=dims.z)return ;
+vec3 texCoords=(vec3(idx)+vec3(0.5,0.5,0.5))/vec3(dims);
+int grid=8;
+vec4 result;
+result=Worley(texCoords,5,7).wwww;
+imageStore(targetTextureU8,ivec3(idx),vec4(result));
+;
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_rendernoise_NoisePS.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 15 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SL/noise_constants.sl"
+layout(std140, binding = 10) uniform RendernoiseConstants
+{
+	int octaves;
+	float persistence;
+	uint noise_texture_size;
+	int mip;
+	int noise_texture_frequency;
+	float strength;
+	float rnc_pad1;
+	float rnc_pad2;
+};
+
+layout(std140, binding = 0) uniform _TextureHandles_c
+{
+	uint64_t noise_texture[24];
+};
+#line 56 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+vec4 Noise(uint64_t noise_texture[24], vec2 texCoords, float persistence, int octaves)
+{
+vec4 result=vec4(0,0,0,0);
+float mult=0.5;
+float total=0.0;
+for(int i=0;i<octaves;i++)
+{
+vec4 c=textureLod(sampler2D(noise_texture[1 + 6]),texCoords,0);
+texCoords*=2.0;
+total+=mult;
+result+=mult*c;
+mult*=persistence;
+}
+
+result*=1.0/total;
+return result;
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 38 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_rendernoise.sfx"
+{returnObject_vec4=Noise(noise_texture,BlockData.texCoords,persistence,octaves);}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_rendernoise_RandomPS.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 8 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+float rand(float c)
+{
+return fract(sin(dot(vec2(c,11.1*c),vec2(12.9898,78.233)))*43758.5453);
+}
+#line 13 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/noise.sl"
+float rand(vec2 co)
+{
+return fract(sin(dot(co.xy,vec2(12.9898,78.233)))*43758.5453);
+}
+layout(location = 0) in Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+layout(location = 0) out vec4 returnObject_vec4;
+
+void main()
+{
+posTexVertexOutput BlockData=ioblock.BlockData;
+#line 30 "D:/Jarvis/workspace/Simul/4.3/Simul/Shaders/SFX/simul_rendernoise.sfx"
+vec4 c=2.0*vec4(rand(BlockData.texCoords),rand(1.7*BlockData.texCoords),rand(0.11*BlockData.texCoords),rand(513.1*BlockData.texCoords))-1.0;
+{returnObject_vec4=c;}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_rendernoise_VS_SimpleFullscreen_vv.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 119 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+#line 132 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 134 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}#version 450
+#extension GL_ARB_gpu_shader5 : enable
+#extension GL_ARB_bindless_texture : enable
+
+#line 6 "D:/Jarvis/workspace/Simul/4.3/Simul/build/Platform/OpenGL/sfx_intermediate/simul_rendernoise_VS_SimpleFullscreen_ve.glsl"
+#define GLSL 1
+#define SFX 1
+#define SFX_GLSL 1
+#define SFX_OPENGL 1
+#define SFX_TYPED_UAV_LOADS 1
+#define uint64_t uvec2
+#pragma warning(disable:1)
+#line 99 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct idOnly
+{
+	flat uint vertex_id;
+};
+#line 105 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+struct posTexVertexOutput
+{
+	vec4 hPosition;
+	vec2 texCoords;
+};
+#line 119 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput SimpleFullscreen(idOnly IN)
+{
+posTexVertexOutput OUT;
+vec2 poss[4];
+poss[0]=vec2(1.0,-1.0);
+poss[1]=vec2(1.0,1.0);
+poss[2]=vec2(-1.0,-1.0);
+poss[3]=vec2(-1.0,1.0);
+vec2 pos=poss[IN.vertex_id];
+OUT.hPosition=vec4(pos,0.0,1.0);
+OUT.hPosition.z=0.0;
+OUT.texCoords=0.5*(vec2(1.0,1.0)+vec2(pos.x,-pos.y));
+#line 132 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+OUT.texCoords.y=1.0-OUT.texCoords.y;
+#line 134 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+
+return OUT;
+}
+layout(location = 0) out Block
+{
+posTexVertexOutput BlockData;
+} ioblock;
+void main()
+{
+idOnly IN;
+IN.vertex_id=gl_VertexID;
+#line 138 "D:/Jarvis/workspace/Simul/4.3/Simul/Platform/Shaders/SL/common.sl"
+posTexVertexOutput pt=SimpleFullscreen(IN);
+{
+ioblock.BlockData=pt;
+gl_Position=pt.hPosition;
+}
+}
