@@ -1,2 +1,0 @@
-WinPixEventRuntime 1.0.210209001 2021/02/09
-Redistribution - No Modifications.

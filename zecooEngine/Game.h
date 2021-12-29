@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "SceneSimul.h"
+#include "SceneB.h"
 
 #include "Input.h"
 #include "Settings.h"
@@ -11,13 +11,12 @@
 
 #include "btBulletDynamicsCommon.h"
 
-
 class Game
 {
 public:
 	Input* input;
 
-	SceneSimul* scene;
+	SceneB* scene;
 	PhysicsEngine* phyEng;
 
 	Game(Input* _input);

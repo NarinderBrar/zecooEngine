@@ -67,6 +67,12 @@
     <Filter Include="Source Files\Scene\Physics">
       <UniqueIdentifier>{4a13fc34-8767-43fd-9273-ae8aa56b7f77}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ZMQ">
+      <UniqueIdentifier>{6155fc7a-9b3b-4797-a2dd-f4bf618bfab9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ZMQ">
+      <UniqueIdentifier>{1bbddf26-dd96-4a28-970a-1160274befc1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CubeMesh.h">
@@ -300,8 +306,11 @@
     <ClInclude Include="Wave.h">
       <Filter>Header Files\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="SceneSimul.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="ZMQClient.h">
+      <Filter>Header Files\ZMQ</Filter>
+    </ClInclude>
+    <ClInclude Include="ZMQServer.h">
+      <Filter>Header Files\ZMQ</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -527,8 +536,11 @@
     <ClCompile Include="Wave.cpp">
       <Filter>Source Files\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="SceneSimul.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="ZMQClient.cpp">
+      <Filter>Source Files\ZMQ</Filter>
+    </ClCompile>
+    <ClCompile Include="ZMQServer.cpp">
+      <Filter>Source Files\ZMQ</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
