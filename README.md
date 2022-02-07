@@ -116,24 +116,24 @@ If you need any help please feel free to contact me at nsidhubrar@gmail.com
 ## Contributing
 As engine developed during the course, So following students contributed and provided assistance in development. 
 - <a href="https://github.com/Yuvraj2705">Yuvraj Gupta</a>
-- Ritik Bansal
-- Vaibhav Sharma
-- Ridhampreet Singh Saini
-- Uddhav Jindal
-- Manav Sharma
-- Garvit Nangru
-- Achintya Gaur
-- Davesh Mehta
-- Mandeep Riar
-- Sarang Sharma
-- Saksham P. Kumar
-- Anmol Rattan Kaushal
-- Anirudh Banot
-- Ankur Goel
-- Harneeraj Singh
-- Raghav Gupta
-- Manas Chakrabarti
-- Rajat Sharma
+- <a href="">Ritik Bansal</a>
+- <a href="https://github.com/ZEPPELIN023">Vaibhav Sharma</a>
+- <a href="https://github.com/sainiridu">Ridhampreet Singh Saini</a>
+- <a href="https://github.com/UddhavJindal">Uddhav Jindal</a>
+- <a href="https://github.com/manav008">Manav Sharma</a>
+- <a href="https://github.com/GarvitNangru">Garvit Nangru</a>
+- <a href="https://github.com/Achintyagaur">Achintya Gaur</a>
+- <a href="">Davesh Mehtal</a>
+- <a href="">Mandeep Riar</a>
+- <a href="https://github.com/LeafBlade47">Sarang Sharma</a>
+- <a href="">Saksham P. Kumar</a>
+- <a href="">Anmol Rattan Kaushal</a>
+- <a href="">Anirudh Banot</a>
+- <a href="">Ankur Goel</a>
+- <a href="">Harneeraj Singh</a>
+- <a href="">Raghav Gupta</a>
+- <a href="">Manas Chakrabarti</a> 
+- <a href="">Rajat Sharma</a> 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
