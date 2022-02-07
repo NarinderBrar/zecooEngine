@@ -123,7 +123,7 @@ As engine developed during the course, So following students contributed and pro
 - <a href="https://github.com/manav008">Manav Sharma</a>
 - <a href="https://github.com/GarvitNangru">Garvit Nangru</a>
 - <a href="https://github.com/Achintyagaur">Achintya Gaur</a>
-- <a href="">Davesh Mehtal</a>
+- <a href="https://github.com/Daveshmehta">Davesh Mehtal</a>
 - <a href="">Mandeep Riar</a>
 - <a href="https://github.com/LeafBlade47">Sarang Sharma</a>
 - <a href="">Saksham P. Kumar</a>
