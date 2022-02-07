@@ -115,11 +115,25 @@ If you need any help please feel free to contact me at nsidhubrar@gmail.com
 
 ## Contributing
 As engine developed during the course, So following students contributed and provided assistance in development. 
-- Student 1
-- Student 2
-- Student 3
-- Student 4
-- Student 5
+- <a href="https://github.com/Yuvraj2705">Yuvraj Gupta</a>
+- Ritik Bansal
+- Vaibhav Sharma
+- Ridhampreet Singh Saini
+- Uddhav Jindal
+- Manav Sharma
+- Garvit Nangru
+- Achintya Gaur
+- Davesh Mehta
+- Mandeep Riar
+- Sarang Sharma
+- Saksham P. Kumar
+- Anmol Rattan Kaushal
+- Anirudh Banot
+- Ankur Goel
+- Harneeraj Singh
+- Raghav Gupta
+- Manas Chakrabarti
+- Rajat Sharma
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
