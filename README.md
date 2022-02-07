@@ -116,7 +116,7 @@ If you need any help please feel free to contact me at nsidhubrar@gmail.com
 ## Contributing
 As engine developed during the course, So following students contributed and provided assistance in development. 
 - <a href="https://github.com/Yuvraj2705">Yuvraj Gupta</a>
-- <a href="">Ritik Bansal</a>
+- <a href="https://github.com/Ritikbansal">Ritik Bansal</a>
 - <a href="https://github.com/ZEPPELIN023">Vaibhav Sharma</a>
 - <a href="https://github.com/sainiridu">Ridhampreet Singh Saini</a>
 - <a href="https://github.com/UddhavJindal">Uddhav Jindal</a>
