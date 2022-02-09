@@ -124,7 +124,7 @@ As engine developed during the course, So following students contributed and pro
 - <a href="https://github.com/GarvitNangru">Garvit Nangru</a>
 - <a href="https://github.com/Achintyagaur">Achintya Gaur</a>
 - <a href="https://github.com/Daveshmehta">Davesh Mehtal</a>
-- <a href="https://github.com/Mandeep585">Mandeep Riar</a>
+- <a href="https://github.com/Mandeep895">Mandeep Riar</a>
 - <a href="https://github.com/LeafBlade47">Sarang Sharma</a>
 - <a href="https://github.com/YoiTsReTr0">Saksham P. Kumar</a>
 - <a href="https://github.com/09BUBBLES">Anmol Rattan Kaushal</a>
