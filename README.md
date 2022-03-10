@@ -19,6 +19,8 @@
 </div>
 
 
+![Product Name Screen Shot][product-screenshot-2]
+
 <!-- TABLE OF CONTENTS -->
 
 <summary>Table of Contents</summary>
@@ -138,3 +140,4 @@ As engine developed during the course, So following students contributed and pro
 
 <!-- MARKDOWN LINKS & IMAGES -->
 [product-screenshot]: images/productImage.jpg
+[product-screenshot-2]: images/productImage_2.jpg
