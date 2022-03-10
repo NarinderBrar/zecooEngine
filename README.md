@@ -7,7 +7,7 @@
     <img src="images/logo.png" alt="Logo" width="200" height="137">
   </a>
   <p align="center">
-    An Educational Open Source 3d Graphics Engine
+    Open Source 3d Graphics Engine
     <br />
     <br />
     <a href="https://github.com/NarinderBrar/zecooEngine/tree/master/zecooEngine/Vendor">Dependencies</a>
@@ -33,7 +33,7 @@
 
 ## About The Project
 ![Product Name Screen Shot][product-screenshot]
-zecooEngine is an open-source C++ graphics engine mainly developed for educational purposes. It developed while teaching the fundamental of graphics programming. zecooEngine supports OpenGL 3.3 as a graphic API. You can draw 3d models, add lights, apply textures while creating materials. It provides features to add physics on the models using Bullet Physics Engine, can add force, apply constraints, can test collision between bodies.
+zecooEngine is an open-source C++ graphics engine developed to support research and development areas those involve 3d graphics, Some of them are scientific visualization, computational photography, scientific computing, computational geometry, Physics and other Simulations, Game development etc. zecooEngine supports OpenGL 3.3 as a graphic API. You can draw 3d models, add lights, apply textures while creating materials. It provides features to add physics on the models using Bullet Physics Engine, can add force, apply constraints, can test collision between bodies.
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Features
